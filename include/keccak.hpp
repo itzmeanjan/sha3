@@ -9,9 +9,12 @@ namespace keccak {
 // Bit width of each lane of Keccak-p[1600, 24] state
 constexpr size_t LANE_SIZE = 64;
 
+// Logarithmic base 2 of bit width of lane i.e. log2(LANE_SIZE)
+constexpr size_t L = 6;
+
 // Keccak-p[b, nr] permutation to be applied `nr` ( = 24 ) rounds
 // s.t. b = 1600, w = b/ 25, l = log2(w), nr = 12 + 2l
-constexpr size_t ROUNDS = 12 + 2 * 6;
+constexpr size_t ROUNDS = 12 + 2 * L;
 
 // Leftwards circular rotation offset of 25 lanes ( each lane is 64 -bit wide )
 // of state array, as provided in table 2 below algorithm 2 in section 3.2.2 of
@@ -68,5 +71,35 @@ rc(const size_t t)
 
   return static_cast<bool>((r >> 7) & 1);
 }
+
+// Computes 64 -bit round constant ( at compile-time ), which is XOR-ed into
+// very first lane ( = lane(0, 0) ) of Keccak-p[1600, 24] permutation state
+//
+// Taken from
+// https://github.com/itzmeanjan/elephant/blob/2a21c7e/include/keccak.hpp#L61-L74
+consteval static uint64_t
+compute_rc(const size_t r_idx)
+{
+  uint64_t tmp = 0;
+
+  for (size_t j = 0; j < (L + 1); j++) {
+    const size_t boff = (1 << j) - 1;
+    tmp |= static_cast<uint64_t>(rc(j + 7 * r_idx)) << boff;
+  }
+
+  return tmp;
+}
+
+// Round constants to be XORed with lane (0, 0) of keccak-p[1600, 24]
+// permutation state, see section 3.2.5 of
+// https://dx.doi.org/10.s6028/NIST.FIPS.202
+constexpr uint64_t RC[ROUNDS]{ compute_rc(0),  compute_rc(1),  compute_rc(2),
+                               compute_rc(3),  compute_rc(4),  compute_rc(5),
+                               compute_rc(6),  compute_rc(7),  compute_rc(8),
+                               compute_rc(9),  compute_rc(10), compute_rc(11),
+                               compute_rc(12), compute_rc(13), compute_rc(14),
+                               compute_rc(15), compute_rc(16), compute_rc(17),
+                               compute_rc(18), compute_rc(19), compute_rc(20),
+                               compute_rc(21), compute_rc(22), compute_rc(23) };
 
 }
