@@ -190,4 +190,20 @@ iota(uint64_t* const state, const size_t r_idx)
   state[0] ^= RC[r_idx];
 }
 
+// Keccak-p[1600, 24] round function, which applies all five
+// step mapping functions in order, updates state array
+//
+// See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
+inline static void
+round(uint64_t* const state, const size_t r_idx)
+{
+  uint64_t tmp[25];
+
+  theta(state);
+  rho(state);
+  pi(state, tmp);
+  chi(tmp, state);
+  iota(state, r_idx);
+}
+
 }
