@@ -182,4 +182,12 @@ chi(const uint64_t* const __restrict istate, // input permutation state
   }
 }
 
+// Keccak-p[1600, 24] step mapping function ι, see section 3.2.5 of SHA3
+// specification https://dx.doi.org/10.6028/NIST.FIPS.202
+inline static void
+iota(uint64_t* const state, const size_t r_idx)
+{
+  state[0] ^= RC[r_idx];
+}
+
 }
