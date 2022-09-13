@@ -145,4 +145,21 @@ rho(uint64_t* const state)
   }
 }
 
+// Keccak-p[1600, 24] step mapping function π, see section 3.2.3 of SHA3
+// specification https://dx.doi.org/10.6028/NIST.FIPS.202
+inline static void
+pi(const uint64_t* const __restrict istate, // input permutation state
+   uint64_t* const __restrict ostate        // output permutation state
+)
+{
+  for (size_t i = 0; i < 5; i++) {
+    const size_t ix3 = i * 3;
+    const size_t ix5 = i * 5;
+
+    for (size_t j = 0; j < 5; j++) {
+      ostate[ix5 + j] = istate[5 * j + (ix3 + j) % 5];
+    }
+  }
+}
+
 }
