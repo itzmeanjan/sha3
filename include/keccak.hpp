@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -101,5 +102,37 @@ constexpr uint64_t RC[ROUNDS]{ compute_rc(0),  compute_rc(1),  compute_rc(2),
                                compute_rc(15), compute_rc(16), compute_rc(17),
                                compute_rc(18), compute_rc(19), compute_rc(20),
                                compute_rc(21), compute_rc(22), compute_rc(23) };
+
+// Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
+// specification https://dx.doi.org/10.6028/NIST.FIPS.202
+inline static void
+theta(uint64_t* const state)
+{
+  uint64_t c[5];
+  uint64_t d[5];
+
+  for (size_t i = 0; i < 5; i++) {
+    const uint64_t t0 = state[i] ^ state[i + 5];
+    const uint64_t t1 = state[i + 10] ^ state[i + 15];
+    const uint64_t t2 = t0 ^ t1 ^ state[i + 20];
+
+    c[i] = t2;
+  }
+
+  for (size_t i = 0; i < 5; i++) {
+    const size_t pidx = (i + 4) % 5;
+    const size_t nidx = (i + 1) % 5;
+
+    d[i] = c[pidx] ^ std::rotl(c[nidx], 1);
+  }
+
+  for (size_t i = 0; i < 5; i++) {
+    state[i + 0] ^= d[i];
+    state[i + 5] ^= d[i];
+    state[i + 10] ^= d[i];
+    state[i + 15] ^= d[i];
+    state[i + 20] ^= d[i];
+  }
+}
 
 }
