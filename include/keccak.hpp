@@ -135,4 +135,14 @@ theta(uint64_t* const state)
   }
 }
 
+// Keccak-p[1600, 24] step mapping function ρ, see section 3.2.2 of SHA3
+// specification https://dx.doi.org/10.6028/NIST.FIPS.202
+inline static void
+rho(uint64_t* const state)
+{
+  for (size_t i = 0; i < 25; i++) {
+    state[i] = std::rotl(state[i], ROT[i]);
+  }
+}
+
 }
