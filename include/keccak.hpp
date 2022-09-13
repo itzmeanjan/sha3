@@ -29,4 +29,44 @@ constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE,
                         66 % LANE_SIZE,  253 % LANE_SIZE, 120 % LANE_SIZE,
                         78 % LANE_SIZE };
 
+// Computes single bit of Keccak-p[1600, 24] round constant ( at compile-time ),
+// using binary LFSR, defined by primitive polynomial x^8 + x^6 + x^5 + x^4 + 1
+//
+// See algorithm 5 in section 3.2.5 of http://dx.doi.org/10.6028/NIST.FIPS.202
+//
+// Taken from
+// https://github.com/itzmeanjan/elephant/blob/2a21c7e/include/keccak.hpp#L24-L59
+consteval static bool
+rc(const size_t t)
+{
+  // step 1 of algorithm 5
+  if (t % 255 == 0) {
+    return 1;
+  }
+
+  // step 2 of algorithm 5
+  //
+  // note, step 3.a of algorithm 5 is also being
+  // executed in this statement ( for first iteration, with i = 1 ) !
+  uint16_t r = 0b10000000;
+
+  // step 3 of algorithm 5
+  for (size_t i = 1; i <= t % 255; i++) {
+    const uint16_t b0 = r & 1;
+
+    r = (r & 0b011111111) ^ ((((r >> 8) & 1) ^ b0) << 8);
+    r = (r & 0b111101111) ^ ((((r >> 4) & 1) ^ b0) << 4);
+    r = (r & 0b111110111) ^ ((((r >> 3) & 1) ^ b0) << 3);
+    r = (r & 0b111111011) ^ ((((r >> 2) & 1) ^ b0) << 2);
+
+    // step 3.f of algorithm 5
+    //
+    // note, this statement also executes step 3.a for upcoming
+    // iterations ( i.e. when i > 1 )
+    r >>= 1;
+  }
+
+  return static_cast<bool>((r >> 7) & 1);
+}
+
 }
