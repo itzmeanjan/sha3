@@ -1,6 +1,5 @@
 #pragma once
 #include <bit>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 
@@ -126,12 +125,12 @@ theta(uint64_t* const state)
     d[i] = c[pidx] ^ std::rotl(c[nidx], 1);
   }
 
-  for (size_t i = 0; i < 5; i++) {
-    state[i + 0] ^= d[i];
-    state[i + 5] ^= d[i];
-    state[i + 10] ^= d[i];
-    state[i + 15] ^= d[i];
-    state[i + 20] ^= d[i];
+  for (size_t i = 0; i < 25; i += 5) {
+    state[i + 0] ^= d[0];
+    state[i + 1] ^= d[1];
+    state[i + 2] ^= d[2];
+    state[i + 3] ^= d[3];
+    state[i + 4] ^= d[4];
   }
 }
 
@@ -197,7 +196,7 @@ iota(uint64_t* const state, const size_t r_idx)
 inline static void
 round(uint64_t* const state, const size_t r_idx)
 {
-  uint64_t tmp[25];
+  uint64_t tmp[25]{};
 
   theta(state);
   rho(state);
