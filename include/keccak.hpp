@@ -206,22 +206,13 @@ round(uint64_t* const state, const size_t r_idx)
   iota(state, r_idx);
 }
 
-// Compile-time check to ensure that # -of requested rounds for Keccak-p[1600,
-// 24] is lesser than or equal to maximum # -of times ( = 24 ) it can be.
-constexpr inline static bool
-check_rounds(const size_t rounds)
-{
-  return rounds <= ROUNDS;
-}
-
-// Keccak-p[1600, 24] permutation, applying `rounds` -many rounds of permutation
-// on state of dimension 5 x 5 x 64 -bits, using algorithm 7 defined in
-// section 3.3 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
-template<const size_t rounds>
+// Keccak-p[1600, 24] permutation, applying 24 rounds of permutation
+// on state of dimension 5 x 5 x 64 ( = 1600 ) -bits, using algorithm 7 defined
+// in section 3.3 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
 inline static void
-permute(uint8_t* const state) requires(check_rounds(rounds))
+permute(uint64_t* const state)
 {
-  for (size_t i = 0; i < rounds; i++) {
+  for (size_t i = 0; i < ROUNDS; i++) {
     round(state, i);
   }
 }
