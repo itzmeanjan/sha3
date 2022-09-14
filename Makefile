@@ -11,7 +11,7 @@ wrapper/libsha3.so: wrapper/sha3.cpp include/*.hpp
 lib: wrapper/libsha3.so
 
 test: lib
-	pushd wrapper/python; python3 -m pytest -v; popd
+	cd wrapper/python; python3 -m pytest -v; cd ..
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
