@@ -4,8 +4,8 @@ import random
 import hashlib
 import sha3
 
-FROM_BYTES = 0
-TO_BYTES = 1024
+FROM_BYTES = 0  # minimum test input message byte length
+TO_BYTES = 1024  # maximum test input message byte length
 
 
 def gen_rand_bytes(n: int) -> bytes:
@@ -22,8 +22,24 @@ def test_sha3_224_hash():
         dig0 = sha3.sha3_224_hash(msg)
         dig1 = hashlib.sha3_224(msg).digest()
 
-        flg = dig0 == dig1
-        assert flg, f"Expected {dig1.hex()}, found {dig0.hex()}, for input {msg.hex()}"
+        assert (
+            dig0 == dig1
+        ), f"[SHA3-224] Expected {dig1.hex()}, found {dig0.hex()}, for input {msg.hex()}"
+
+
+def test_sha3_256_hash():
+    """
+    Test functional correctness of SHA3-256 hash function implementation
+    """
+    for i in range(FROM_BYTES, TO_BYTES + 1):
+        msg = gen_rand_bytes(i)
+
+        dig0 = sha3.sha3_256_hash(msg)
+        dig1 = hashlib.sha3_256(msg).digest()
+
+        assert (
+            dig0 == dig1
+        ), f"[SHA3-256] Expected {dig1.hex()}, found {dig0.hex()}, for input {msg.hex()}"
 
 
 if __name__ == "__main__":
