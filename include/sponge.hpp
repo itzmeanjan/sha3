@@ -139,4 +139,39 @@ absorb(uint64_t* const __restrict state,
   }
 }
 
+// Squeezes N -bytes output from sponge state which has consumed input message
+//
+// See step (7 - 10) of algorithm 8 defined in section 4 of SHA3 specification
+// https://dx.doi.org/10.6028/NIST.FIPS.202
+template<const size_t rate>
+static void
+squeeze(uint64_t* const __restrict state,
+        uint8_t* const __restrict dig,
+        const size_t dlen)
+{
+  constexpr size_t rbytes = rate >> 3;
+
+  size_t off = 0;
+  while (off < dlen) {
+    const size_t read = std::min(rbytes, dlen - off);
+
+    if constexpr (std::endian::native == std::endian::little) {
+      std::memcpy(dig + off, state, read);
+    } else {
+      for (size_t i = 0; i < read; i++) {
+        const size_t woff = i >> 3;
+        const size_t boff = (i & 7ul) << 3;
+
+        dig[off + i] = static_cast<uint8_t>(state[woff] >> boff);
+      }
+    }
+
+    if (read == rbytes) {
+      keccak::permute(state);
+    }
+
+    off += read;
+  }
+}
+
 }
