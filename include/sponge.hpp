@@ -86,4 +86,57 @@ get_msg_blk(
   }
 }
 
+// Sequentially absorbs N -message blocks into keccak[c] sponge state
+//
+// See step (1 - 6) of algorithm 8 defined in section 4 of SHA3 specification
+// https://dx.doi.org/10.6028/NIST.FIPS.202
+template<const uint8_t dom_sep, const size_t bits, const size_t rate>
+static void
+absorb(uint64_t* const __restrict state,
+       const uint8_t* const __restrict msg,
+       const size_t mlen) requires(check_domain_seperator(bits))
+{
+  const size_t mblen = mlen << 3;        // in bits
+  const size_t tot_mblen = mblen + bits; // in bits
+
+  constexpr size_t rbytes = rate >> 3;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+
+  uint8_t pad[rbytes]{};
+  uint8_t blk_bytes[rbytes]{};
+  uint64_t blk_words[rwords]{};
+
+  const size_t plen = pad101<dom_sep, bits, rate>(tot_mblen, pad); // in bits
+  const size_t padded_len = tot_mblen + plen;                      // in bits
+  const size_t blk_cnt = padded_len / rate;
+
+  std::memset(state, 0, 200);
+
+  for (size_t i = 0; i < blk_cnt; i++) {
+    get_msg_blk<dom_sep, bits, rate>(msg, mlen, pad, plen, blk_bytes, i);
+
+    if constexpr (std::endian::native == std::endian::little) {
+      std::memcpy(blk_words, blk_bytes, rbytes);
+    } else {
+      for (size_t j = 0; j < rwords; j++) {
+        const size_t off = j << 3;
+        blk_words[j] = (static_cast<uint64_t>(blk_bytes[off ^ 7]) << 56) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 6]) << 48) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 5]) << 40) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 4]) << 32) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 3]) << 24) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 2]) << 16) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 1]) << 8) |
+                       (static_cast<uint64_t>(blk_bytes[off ^ 0]) << 0);
+      }
+    }
+
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= blk_words[j];
+    }
+
+    keccak::permute(state);
+  }
+}
+
 }
