@@ -1,4 +1,5 @@
 #include "sha3_224.hpp"
+#include "sha3_256.hpp"
 
 // Thin C wrapper on top of underlying C++ implementation of SHA3 hash functions
 // and XOFs, which can be used for producing shared library object with
@@ -8,6 +9,11 @@
 extern "C"
 {
   void sha3_224_hash(const uint8_t* const __restrict, // input message
+                     const size_t,                    // input byte length
+                     uint8_t* const __restrict        // output digest
+  );
+
+  void sha3_256_hash(const uint8_t* const __restrict, // input message
                      const size_t,                    // input byte length
                      uint8_t* const __restrict        // output digest
   );
@@ -26,5 +32,16 @@ extern "C"
   )
   {
     sha3_224::hash(in, ilen, out);
+  }
+
+  // Given N (>=0) -bytes input message, this routines computes 32 -bytes output
+  // digest, using SHA3-256 hashing algorithm
+  void sha3_256_hash(
+    const uint8_t* const __restrict in, // input message
+    const size_t ilen,                  // len(in) | >= 0
+    uint8_t* const __restrict out       // 32 -bytes digest, to be computed
+  )
+  {
+    sha3_256::hash(in, ilen, out);
   }
 }
