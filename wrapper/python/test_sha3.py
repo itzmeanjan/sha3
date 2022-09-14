@@ -8,12 +8,16 @@ FROM_BYTES = 0
 TO_BYTES = 1024
 
 
+def gen_rand_bytes(n: int) -> bytes:
+    return bytes([random.randint(0, 255) for _ in range(n)])
+
+
 def test_sha3_224_hash():
     """
     Test functional correctness of SHA3-224 hash function implementation
     """
     for i in range(FROM_BYTES, TO_BYTES + 1):
-        msg = random.randbytes(i)
+        msg = gen_rand_bytes(i)
 
         dig0 = sha3.sha3_224_hash(msg)
         dig1 = hashlib.sha3_224(msg).digest()
