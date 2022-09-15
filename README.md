@@ -297,3 +297,50 @@ bench_sha3::sha3_512/1024      15748 ns        15747 ns        44481 bytes_per_s
 bench_sha3::sha3_512/2048      30539 ns        30537 ns        22973 bytes_per_second=63.9597M/s
 bench_sha3::sha3_512/4096      59782 ns        59779 ns        11710 bytes_per_second=65.3451M/s
 ```
+
+## Usage
+
+`sha3` C++ library is written such that it's fairly easy for one to start using it in their project. All one needs to do
+
+- Include proper header files
+- Properly use API
+- When compiling, let your compiler know where it can find respective header files
+
+Algorithm | Header/ Namespace | Example
+--- | --- | --:
+SHA3-224 | [`sha3_224::`](./include/sha3_224.hpp) | [example/sha3_224.cpp](./example/sha3_224.cpp)
+SHA3-256 | [`sha3_256::`](./include/sha3_256.hpp) | [example/sha3_256.cpp](./example/sha3_256.cpp)
+SHA3-384 | [`sha3_384::`](./include/sha3_384.hpp) | [example/sha3_384.cpp](./example/sha3_384.cpp)
+SHA3-512 | [`sha3_512::`](./include/sha3_512.hpp) | [example/sha3_512.cpp](./example/sha3_512.cpp)
+
+```fish
+$ g++ -std=c++20 -Wall -O3 -I include example/sha3_224.cpp && ./a.out
+SHA3-224
+
+Input  : 043f0fa310343b6ca42c3d2ab6f168574fd41774d49c9c1e5922c2cd60b43dbb
+Output : 3bfbd5e41e850f29daf9c08dbcaca7c43ca939e7d6c0b6d8993c6af4
+
+# ---
+
+$ g++ -std=c++20 -Wall -O3 -I include example/sha3_256.cpp && ./a.out
+SHA3-256
+
+Input  : 70a3bf382218c7f4ae25775ab1d21f9d48e2f03af70dcdec790a338e982e6fa8
+Output : 57be0ef9634da2d94219c53032809f4ffc145df6782279a8059afe607715d675
+
+# ---
+
+$ g++ -std=c++20 -Wall -O3 -I include example/sha3_384.cpp && ./a.out
+SHA3-384
+
+Input  : 314686636dc0499f2ebf0a201fe2d44e2e8888ac1109939998230f2cba5d0e94
+Output : 554f4506a1b73724d0ce25cc4a0c0b4fc26478cde43013a59c7e25a22e3e73fbcfa731fe9f5050f77e82530fba7de512
+
+# ---
+
+$ g++ -std=c++20 -Wall -O3 -I include example/sha3_512.cpp && ./a.out
+SHA3-512
+
+Input  : 2c3c0ae485204067f1ecbc69a8fefd19a94c9c1552158a8d57a6612b3202f373
+Output : 578386bdd6eb816d6d0cbc984351c889f70675a2661ba605aa65ce204b88a6d6553946c52eeac937647929f99a2ddd7cc6645bc1e89df8ab795faba6dd7d0d45
+```
