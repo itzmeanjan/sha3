@@ -43,5 +43,23 @@ def sha3_224_hash(msg: bytes) -> bytes:
     return digest_
 
 
+def sha3_256_hash(msg: bytes) -> bytes:
+    """
+    Given a N ( >= 0 ) -bytes input message, this function computes 32 -bytes
+    SHA3-256 digest
+    """
+    mlen = len(msg)
+    msg_ = np.frombuffer(msg, dtype=u8)
+    digest = np.empty(32, dtype=u8)
+
+    args = [uint8_tp, len_t, uint8_tp]
+    SO_LIB.sha3_256_hash.argtypes = args
+
+    SO_LIB.sha3_256_hash(msg_, mlen, digest)
+
+    digest_ = digest.tobytes()
+    return digest_
+
+
 if __name__ == "__main__":
     print("Use `sha3` as a library module")
