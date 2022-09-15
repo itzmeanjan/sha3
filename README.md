@@ -1,6 +1,33 @@
 # sha3
 SHA3: Permutation-Based Hash and Extendable-Output Functions
 
+## Motivation
+
+SHA3 standard by NIST specifies four permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
+
+These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for key encapsulation & digital signature generation ) i.e. some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium etc. ) of NIST PQC standardization effort or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. This is exactly why I decided to implement SHA3 specification as **zero-dependency, header-only and easy-to-use C++ library**.
+
+`sha3` - this project will be used in future implementations of various post-quantum cryptographic algorithms which are already selected or will be selected by NIST.
+
+Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{11, 17, 20} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms are implemented in `sha3` library
+
+Algorithm | Input | Output | Behaviour | Interface
+--- | --- | --- | --- | ---
+SHA3-224 | N ( >=0 ) -bytes message | 28 -bytes digest | Given N -bytes input message this routine computes 28 -bytes sha3-224 digest, while consuming message into Keccak[448] sponge | [`sha3_224::hash(...)`](./include/sha3_224.hpp)
+SHA3-256 | N ( >=0 ) -bytes message | 32 -bytes digest | Given N -bytes input message this routine computes 32 -bytes sha3-256 digest, while consuming message into Keccak[512] sponge | [`sha3_256::hash(...)`](./include/sha3_256.hpp)
+SHA3-384 | N ( >=0 ) -bytes message | 48 -bytes digest | Given N -bytes input message this routine computes 48 -bytes sha3-384 digest, while consuming message into Keccak[768] sponge | [`sha3_384::hash(...)`](./include/sha3_384.hpp)
+SHA3-512 | N ( >=0 ) -bytes message | 64 -bytes digest | Given N -bytes input message this routine computes 64 -bytes sha3-512 digest, while consuming message into Keccak[1024] sponge | [`sha3_512::hash(...)`](./include/sha3_512.hpp)
+
+> SHA3 extendable-output functions i.e. SHAKE{128, 256} are yet to be implemented.
+
+---
+
+> During implementation NIST FIPS PUB 202 was followed, which you can find [here](https://dx.doi.org/10.6028/NIST.FIPS.202)
+
+> Learn more about NIST PQC standardization effort [here](https://csrc.nist.gov/projects/post-quantum-cryptography/)
+
+> Find NIST PQC selected algorithms [here](https://csrc.nist.gov/projects/post-quantum-cryptography/selected-algorithms-2022)
+
 ## Prerequisites
 
 - A C++ compiler such as `g++`/ `clang++`, which has support for C++20 standard library
@@ -62,7 +89,11 @@ make
 
 ## Benchmarking
 
-For benchmarking my SHA3 hash functions and extendable output functions, on CPU systems, using `google-benchmark`, issue following command
+For benchmarking SHA3 hash functions and extendable output functions, on CPU systems, using `google-benchmark`, issue following command
+
+> For disabling CPU scaling during benchmarking, follow [this](https://github.com/google/benchmark/blob/60b16f1/docs/user_guide.md#disabling-cpu-frequency-scaling)
+
+> During benchmarking a byte array of length N is used as input | 32 <= N <= 4096 and N = 2^i
 
 ```fish
 make benchmark
