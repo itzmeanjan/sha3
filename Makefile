@@ -13,6 +13,9 @@ lib: wrapper/libsha3.so
 test: lib
 	cd wrapper/python; python3 -m pytest -v; cd ..
 
+benchpy: lib
+	cd wrapper/python; python3 -m pytest -k bench -v; cd ..
+
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
 

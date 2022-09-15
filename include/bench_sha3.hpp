@@ -31,6 +31,9 @@ sha3_224(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+  std::free(msg);
+  std::free(dig);
 }
 
 // Benchmarks SHA3-256 hash function with specified number of random input bytes
@@ -55,6 +58,9 @@ sha3_256(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+  std::free(msg);
+  std::free(dig);
 }
 
 // Benchmarks SHA3-384 hash function with specified number of random input bytes
@@ -79,6 +85,9 @@ sha3_384(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+  std::free(msg);
+  std::free(dig);
 }
 
 // Benchmarks SHA3-512 hash function with specified number of random input bytes
@@ -103,6 +112,9 @@ sha3_512(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+  std::free(msg);
+  std::free(dig);
 }
 
 }
