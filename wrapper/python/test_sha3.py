@@ -73,6 +73,23 @@ def test_sha3_512_hash():
         ), f"[SHA3-512] Expected {dig1.hex()}, found {dig0.hex()}, for input {msg.hex()}"
 
 
+def test_shake128_xof():
+    """
+    Test functional correctness of SHAKE128 extendable output function implementation
+    """
+    DLEN = 256  # bytes from SHAKE128 XoF
+
+    for i in range(FROM_BYTES, TO_BYTES + 1):
+        msg = gen_rand_bytes(i)
+
+        dig0 = sha3.shake128_xof(msg, DLEN)
+        dig1 = hashlib.shake_128(msg).digest(DLEN)
+
+        assert (
+            dig0 == dig1
+        ), f"[SHAKE-128] Expected {dig1.hex()}, found {dig0.hex()}, for input {msg.hex()}"
+
+
 @pytest.mark.benchmark(group="sha3-224", min_rounds=5, disable_gc=True, warmup=True)
 def test_bench_sha3_224_self(benchmark):
     """
