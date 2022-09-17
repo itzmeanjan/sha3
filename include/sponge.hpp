@@ -6,11 +6,18 @@
 // Keccak family of sponge functions
 namespace sponge {
 
-// Compile-time check to ensure that domain seperator can only be 2 -bits wide
+// Compile-time check to ensure that domain seperator can only be 2/ 4 -bits
+// wide
+//
+// When used in context of extendable output functions ( SHAKE{128, 256} )
+// domain seperator bits are 4 -bit wide
+//
+// See section 6.{1, 2} of SHA3 specification
+// https://dx.doi.org/10.6028/NIST.FIPS.202
 static constexpr bool
 check_domain_seperator(const size_t dom_sep_bit_len)
 {
-  return dom_sep_bit_len == 2;
+  return (dom_sep_bit_len == 2) | (dom_sep_bit_len == 4);
 }
 
 // Pad10*1 --- generates padding string P = 1 || 0^j || 1 such that when padded
