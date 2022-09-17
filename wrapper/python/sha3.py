@@ -84,5 +84,21 @@ def sha3_512_hash(msg: bytes) -> bytes:
     return dig.raw
 
 
+def shake128_xof(msg: bytes, dlen: int) -> bytes:
+    """
+    Given a N ( >= 0 ) -bytes input message, this function computes `dlen` -bytes
+    SHAKE128 output | dlen >= 0
+    """
+    mlen = len(msg)
+    dig = create_string_buffer(dlen)
+
+    args = [c_char_p, c_size_t, c_char_p, c_size_t]
+    SO_LIB.shake128_xof.argtypes = args
+
+    SO_LIB.shake128_xof(msg, mlen, dig, dlen)
+
+    return dig.raw
+
+
 if __name__ == "__main__":
     print("Use `sha3` as a library module")
