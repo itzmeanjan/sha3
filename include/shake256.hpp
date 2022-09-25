@@ -15,18 +15,25 @@ constexpr size_t rate = 1600 - capacity;
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
 struct shake256
 {
+private:
   uint64_t state[25];
   bool absorbed = false;
   size_t readable = 0;
 
+public:
   // Given N -bytes input message, this routine consumes it into keccak[512]
   // sponge state
+  //
+  // Once you call this function on some object, calling it again doesn't do
+  // anything !
   void hash(const uint8_t* const __restrict msg, const size_t mlen)
   {
-    sponge::absorb<0b00001111, 4, rate>(state, msg, mlen);
+    if (!absorbed) {
+      sponge::absorb<0b00001111, 4, rate>(state, msg, mlen);
 
-    absorbed = true;
-    readable = rate >> 3;
+      absorbed = true;
+      readable = rate >> 3;
+    }
   }
 
   // Given that N -bytes input message is already absorbed into sponge state
@@ -35,6 +42,9 @@ struct shake256
   //
   // This routine can be used for squeezing arbitrary number of bytes from
   // sponge keccak[512]
+  //
+  // Make sure you absorb ( see hash(...) routine ) message bytes first, then
+  // only call this function, otherwise it can't squeeze out anything.
   void read(uint8_t* const __restrict dig, const size_t dlen)
   {
     if (!absorbed) {
