@@ -3,15 +3,19 @@ CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic
 OPTFLAGS = -O3 -march=native
 IFLAGS = -I ./include
 
-all: test
+all: tests
 
 wrapper/libsha3.so: wrapper/sha3.cpp include/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) -fPIC --shared $< -o $@
 
 lib: wrapper/libsha3.so
 
-test: lib
+test/a.out: test/main.cpp include/*.hpp
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -o $@
+
+tests: lib test/a.out
 	cd wrapper/python; python3 -m pytest -v; cd ..
+	./test/a.out
 
 benchpy: lib
 	cd wrapper/python; python3 -m pytest -k bench -v; cd ..
