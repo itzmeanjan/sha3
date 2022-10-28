@@ -36,7 +36,7 @@ main()
     hasher.read(dig + i, 1);
   }
 
-  std::cout << "SHAKE-256" << std::endl << std::endl;
+  std::cout << "Incremental SHAKE-256" << std::endl << std::endl;
   std::cout << "Input 0  : " << to_hex(msg0, ilen0) << std::endl;
   std::cout << "Input 1  : " << to_hex(msg1, ilen1) << std::endl;
   std::cout << "Output   : " << to_hex(dig, olen) << std::endl;

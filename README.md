@@ -5,9 +5,15 @@ SHA3: Permutation-Based Hash and Extendable-Output Functions
 
 SHA3 standard by NIST specifies four permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
 
-These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for key encapsulation & digital signature generation ) i.e. some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium etc. ) of NIST PQC standardization effort or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. This is exactly why I decided to implement SHA3 specification as **zero-dependency, header-only and easy-to-use C++ library**.
+These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature generation ) i.e. some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium etc. ) of NIST PQC standardization effort or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. This is exactly why I decided to implement SHA3 specification as **zero-dependency, header-only and easy-to-use C++ library**.
 
-`sha3` - this project will be used in future implementations of various post-quantum cryptographic algorithms which are already selected or will be selected by NIST.
+> **Note**
+> `sha3` - this project will be used in various post-quantum cryptographic algorithm implementations which are already selected or will be selected by NIST.
+
+Few of those places, where I've already used `sha3` as ( git submodule based ) dependency
+
+- [Kyber: Post-Quantum Public-key Encryption & Key-establishment Algorithm](https://github.com/itzmeanjan/kyber)
+- [Dilithium: Post-Quantum Digital Signature Algorithm](https://github.com/itzmeanjan/dilithium)
 
 Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{11, 17, 20} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms are implemented in `sha3` library
 
@@ -17,8 +23,8 @@ SHA3-224 | N ( >=0 ) -bytes message | 28 -bytes digest | Given N -bytes input me
 SHA3-256 | N ( >=0 ) -bytes message | 32 -bytes digest | Given N -bytes input message this routine computes 32 -bytes sha3-256 digest, while consuming message into Keccak[512] sponge | [`sha3_256::hash(...)`](./include/sha3_256.hpp)
 SHA3-384 | N ( >=0 ) -bytes message | 48 -bytes digest | Given N -bytes input message this routine computes 48 -bytes sha3-384 digest, while consuming message into Keccak[768] sponge | [`sha3_384::hash(...)`](./include/sha3_384.hpp)
 SHA3-512 | N ( >=0 ) -bytes message | 64 -bytes digest | Given N -bytes input message this routine computes 64 -bytes sha3-512 digest, while consuming message into Keccak[1024] sponge | [`sha3_512::hash(...)`](./include/sha3_512.hpp)
-SHAKE-128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes input message this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already absorbed input bytes | [`shake128::{hash(...), read(...)}`](./include/shake128.hpp)
-SHAKE-256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes input message this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already absorbed input bytes | [`shake256::{hash(...), read(...)}`](./include/shake256.hpp)
+SHAKE-128 | N ( >=0 ) -bytes message **[ Supports incremental message consumption ]** | M ( >=0 ) -bytes digest | Given N -bytes input message this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already absorbed input bytes | [`shake128::{hash(...), read(...)}`](./include/shake128.hpp)
+SHAKE-256 | N ( >=0 ) -bytes message **[ Supports incremental message consumption ]** | M ( >=0 ) -bytes digest | Given N -bytes input message this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already absorbed input bytes | [`shake256::{hash(...), read(...)}`](./include/shake256.hpp)
 
 ---
 
@@ -560,8 +566,8 @@ Legend:
 
 `sha3` C++ library is written such that it's fairly easy for one to start using it in their project. All one needs to do
 
-- Include proper header files
-- Properly use API
+- Include proper header files ( select what you need by name )
+- Properly use API ( see usage examples/ test cases )
 - When compiling, let your compiler know where it can find respective header files
 
 Hash Function | Header/ Namespace | Example
@@ -573,8 +579,13 @@ SHA3-512 | [`sha3_512::`](./include/sha3_512.hpp) | [example/sha3_512.cpp](./exa
 
 Extendable Output Function | Header/ Namespace | Absorb API | Squeeze API | Example
 --- | --- | --- | --- | --:
-SHAKE128 | [`shake128::`](./include/shake128.hpp) | `shake128::hash(...)` : Absorbs N (>=0) -bytes input into keccak[256] sponge | `shake128::read(...)` : Squeezes N (>=0) -bytes output from keccak[256] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/shake128.cpp](./example/shake128.cpp)
-SHAKE256 | [`shake256::`](./include/shake256.hpp) | `shake256::hash(...)` : Absorbs N (>=0) -bytes input into keccak[512] sponge | `shake256::read(...)` : Squeezes N (>=0) -bytes output from keccak[512] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/shake256.cpp](./example/shake256.cpp)
+SHAKE128 ( default option, one-shot consumption ) | [`shake128::`](./include/shake128.hpp) | `shake128::hash(...)` : Absorbs N (>=0) -bytes input into keccak[256] sponge | `shake128::read(...)` : Squeezes N (>=0) -bytes output from keccak[256] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/shake128.cpp](./example/shake128.cpp)
+SHAKE256 ( default option, one-shot consumption ) | [`shake256::`](./include/shake256.hpp) | `shake256::hash(...)` : Absorbs N (>=0) -bytes input into keccak[512] sponge | `shake256::read(...)` : Squeezes N (>=0) -bytes output from keccak[512] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/shake256.cpp](./example/shake256.cpp)
+
+Extendable Output Function | Header/ Namespace | Incremental Absorption API | Finalize API | Squeeze API | Example
+--- | --- | --- | --- | --- | --:
+SHAKE128 ( explicit incremental consumption ) | [`shake128::`](./include/shake128.hpp) | `shake128<true>::absorb(...)` : Absorbs N (>=0) -bytes input into keccak[256] sponge, arbitrary many times | `shake128<true>::finalize()` : Finalizes state of keccak[256] sponge, so that it's ready for squeezing | `shake128<true>::read(...)` : Squeezes N (>=0) -bytes output from keccak[256] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/incremental_shake128.cpp](./example/incremental_shake128.cpp)
+SHAKE256 ( explicit incremental consumption ) | [`shake256::`](./include/shake256.hpp) | `shake256<true>::absorb(...)` : Absorbs N (>=0) -bytes input into keccak[512] sponge, arbitrary many times | `shake256<true>::finalize()` : Finalizes state of keccak[512] sponge, so that it's ready for squeezing | `shake256<true>::read(...)` : Squeezes N (>=0) -bytes output from keccak[512] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/incremental_shake256.cpp](./example/incremental_shake256.cpp)
 
 ```fish
 $ g++ -std=c++20 -Wall -O3 -I include example/sha3_224.cpp && ./a.out
@@ -622,4 +633,22 @@ SHAKE-256
 
 Input  : a6506638e34127e0a8415241479c968c20422f46497663eaf244f205a756f0b3
 Output : ce679163b642380365c3c11dcbca7a36ddd01cefba35b8ec18ad937268f584999c6e8ae061c251dd
+
+# ---
+
+g++ -std=c++20 -Wall -O3 -I include example/incremental_shake128.cpp && ./a.out
+Incremental SHAKE-128
+
+Input 0  : 8ee149be89652aa3a96bb1cb21c03a
+Input 1  : 6c5240ef768e7a0100946e0f83bea78364
+Output   : 94f03616a7ed0168833dcec6f51a359b3c3cd42ac0c27409106424f0adb2257f4bfe214f371b3935
+
+# ---
+
+g++ -std=c++20 -Wall -O3 -I include example/incremental_shake256.cpp && ./a.out
+Incremental SHAKE-256
+
+Input 0  : 58efcb50a9a8bb61cd25f89be74fe6
+Input 1  : 355dc311ebdae75dd8c382dd5d04e9d17a
+Output   : 7c342b6f8b03d4ef09e4cbed70280c0ca8bbfbb3180f1acb268d6e1e67585adf18dd6e98fd71211f
 ```
