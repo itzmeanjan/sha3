@@ -31,8 +31,8 @@ check_domain_seperator(const size_t dom_sep_bit_len)
 // https://dx.doi.org/10.6028/NIST.FIPS.202
 template<const uint8_t dom_sep, const size_t bits, const size_t rate>
 static size_t
-pad101(const size_t mlen,
-       uint8_t* const pad) requires(check_domain_seperator(bits))
+pad101(const size_t mlen, uint8_t* const pad)
+  requires(check_domain_seperator(bits))
 {
   const size_t j = rate - (mlen + 2ul) % rate;
   const bool flg = j <= (6ul - bits);
@@ -63,7 +63,8 @@ get_msg_blk(
   const size_t plen,                   // in bits
   uint8_t* const __restrict blk,       // extracted block
   const size_t blk_idx                 // index of block to extract
-  ) requires(check_domain_seperator(bits))
+  )
+  requires(check_domain_seperator(bits))
 {
   const size_t mblen = mlen << 3;             // in bits | < first segment >
   const size_t tot_mblen = mblen + bits;      // in bits | < middle segment >
@@ -101,7 +102,8 @@ template<const uint8_t dom_sep, const size_t bits, const size_t rate>
 static void
 absorb(uint64_t* const __restrict state,
        const uint8_t* const __restrict msg,
-       const size_t mlen) requires(check_domain_seperator(bits))
+       const size_t mlen)
+  requires(check_domain_seperator(bits))
 {
   const size_t mblen = mlen << 3;        // in bits
   const size_t tot_mblen = mblen + bits; // in bits

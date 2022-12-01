@@ -29,8 +29,8 @@ public:
   //
   // Once you call this function on some object, calling it again doesn't do
   // anything !
-  void hash(const uint8_t* const __restrict msg,
-            const size_t mlen) requires(!incremental)
+  void hash(const uint8_t* const __restrict msg, const size_t mlen)
+    requires(!incremental)
   {
     if (!absorbed) {
       sponge::absorb<0b00001111, 4, rate>(state, msg, mlen);
@@ -50,8 +50,8 @@ public:
   // This function is only enabled, when you decide to use SHAKE256 in
   // incremental mode ( compile-time decision ). By default one uses SHAKE256
   // API in non-incremental mode.
-  void absorb(const uint8_t* const __restrict msg,
-              const size_t mlen) requires(incremental)
+  void absorb(const uint8_t* const __restrict msg, const size_t mlen)
+    requires(incremental)
   {
     constexpr size_t rbytes = rate >> 3;   // # -of bytes
     constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
@@ -141,7 +141,8 @@ public:
   // This function is only enabled, when you decide to use SHAKE256 in
   // incremental mode ( compile-time decision ). By default one uses SHAKE256
   // API in non-incremental mode.
-  void finalize() requires(incremental)
+  void finalize()
+    requires(incremental)
   {
     constexpr size_t rbytes = rate >> 3;   // # -of bytes
     constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
