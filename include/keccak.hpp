@@ -107,15 +107,15 @@ constexpr uint64_t RC[ROUNDS]{ compute_rc(0),  compute_rc(1),  compute_rc(2),
 inline static void
 theta(uint64_t* const state)
 {
-  uint64_t c[5];
+  uint64_t c[5]{};
   uint64_t d[5];
 
-  for (size_t i = 0; i < 5; i++) {
-    const uint64_t t0 = state[i] ^ state[i + 5];
-    const uint64_t t1 = state[i + 10] ^ state[i + 15];
-    const uint64_t t2 = t0 ^ t1 ^ state[i + 20];
-
-    c[i] = t2;
+  for (size_t i = 0; i < 25; i += 5) {
+    c[0] ^= state[i + 0];
+    c[1] ^= state[i + 1];
+    c[2] ^= state[i + 2];
+    c[3] ^= state[i + 3];
+    c[4] ^= state[i + 4];
   }
 
   for (size_t i = 0; i < 5; i++) {
