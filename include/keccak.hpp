@@ -366,6 +366,55 @@ permute(uint64_t* const state)
     const auto t53 = s14__;                                        // s''[22], _, _, _
     const auto t54 = s15__;                                        // s''[23], _, _, _
     const auto t55 = _mm256_permute4x64_epi64(s20__, 0b01010101u); // s''[24], _, _, _
+
+    // χ step mapping
+
+    const auto t56 = _mm256_andnot_si256(t44, t45);
+    const auto t57 = _mm256_xor_si256(t41, t56); // s'''[0], s'''[5], s'''[10], s'''[15]
+
+    const auto t58 = _mm256_andnot_si256(t45, t47);
+    const auto t59 = _mm256_xor_si256(t44, t58); // s'''[1], s'''[6], s'''[11], s'''[16]
+
+    const auto t60 = _mm256_andnot_si256(t47, t50);
+    const auto t61 = _mm256_xor_si256(t45, t60); // s'''[2], s'''[7], s'''[12], s'''[17]
+
+    const auto t62 = _mm256_andnot_si256(t50, t41);
+    const auto t63 = _mm256_xor_si256(t47, t62); // s'''[3], s'''[8], s'''[13], s'''[18]
+
+    const auto t64 = _mm256_andnot_si256(t41, t44);
+    const auto t65 = _mm256_xor_si256(t50, t64); // s'''[4], s'''[9], s'''[14], s'''[19]
+
+    const auto t66 = _mm256_xor_si256(t51, _mm256_andnot_si256(t52, t53)); // s'''[20], _, _, _
+    const auto t67 = _mm256_xor_si256(t52, _mm256_andnot_si256(t53, t54)); // s'''[21], _, _, _
+    const auto t68 = _mm256_xor_si256(t53, _mm256_andnot_si256(t54, t55)); // s'''[22], _, _, _
+    const auto t69 = _mm256_xor_si256(t54, _mm256_andnot_si256(t55, t51)); // s'''[23], _, _, _
+    const auto t70 = _mm256_xor_si256(t55, _mm256_andnot_si256(t51, t52)); // s'''[24], _, _, _
+
+    const auto t71 = _mm256_permute4x64_epi64(t59, 0b10010011u); // s'''[16], s'''[1], s'''[6], s'''[11]
+    const auto t72 = _mm256_permute4x64_epi64(t61, 0b01001110u); // s'''[12], s'''[17], s'''[2], s'''[7]
+    const auto t73 = _mm256_permute4x64_epi64(t63, 0b00111001u); // s'''[8], s'''[13], s'''[18], s'''[3]
+
+    const auto t74 = _mm256_blend_epi32(t57, t71, 0b11001100u); // s'''[0], s'''[1], s'''[10], s'''[11]
+    const auto t75 = _mm256_blend_epi32(t72, t73, 0b11001100u); // s'''[12], s'''[13], s'''[2], s'''[3]
+    s0 = _mm256_blend_epi32(t74, t75, 0b11110000u);             // s'''[0], s'''[1], s'''[2], s'''[3]
+
+    const auto t76 = _mm256_blend_epi32(t65, t57, 0b11001100u); // s'''[4], s'''[5], s'''[14], s'''[15]
+    const auto t77 = _mm256_blend_epi32(t71, t72, 0b11001100u); // s'''[16], s'''[17], s'''[6], s'''[7]
+    s4 = _mm256_blend_epi32(t76, t77, 0b11110000u);             // s'''[4], s'''[5], s'''[6], s'''[7]
+
+    const auto t78 = _mm256_blend_epi32(t65, t73, 0b00110011u); // s'''[8], s'''[9], s'''[18], s'''[19]
+    s8 = _mm256_blend_epi32(t78, t74, 0b11110000u);             // s'''[8], s'''[9], s'''[10], s'''[11]
+
+    s12 = _mm256_blend_epi32(t75, t76, 0b11110000u); // s'''[12], s'''[13], s'''[14], s'''[15]
+    s16 = _mm256_blend_epi32(t77, t78, 0b11110000u); // s'''[16], s'''[17], s'''[18], s'''[19]
+
+    const auto t79 = _mm256_permute4x64_epi64(t67, 0b11100001u); // _, s'''[21], _, _
+    const auto t80 = _mm256_permute4x64_epi64(t68, 0b11001001u); // _, _, s'''[22], _
+    const auto t81 = _mm256_permute4x64_epi64(t69, 0b00111001u); // _, _, _, s'''[23]
+    const auto t82 = _mm256_blend_epi32(t66, t79, 0b00001100u);
+    const auto t83 = _mm256_blend_epi32(t82, t80, 0b00110000u);
+    s20 = _mm256_blend_epi32(t83, t81, 0b11000000u); // s'''[20], s'''[21], s'''[22], s'''[23]
+    s24 = t70;                                       // s'''[24], _, _, _
   }
 
   _mm256_store_si256((__m256i*)(tmp + 0), s0);
