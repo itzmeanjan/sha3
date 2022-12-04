@@ -101,7 +101,7 @@ For benchmarking SHA3 hash functions and extendable output functions, on CPU sys
 
 > During benchmarking a byte array of length N is used as input | 32 <= N <= 4096 and N = 2^i
 
-> When benchmarking extendable output functions ( XoFs ), output of 32, 64 and 128 -bytes are squeezed from sponge, for each input byte array of length N | 32 <= N <= 4096 and N = 2^i
+> When benchmarking extendable output functions ( XoFs ), output of 32, 64 and 128 -bytes are squeezed from sponge ( s.t. single byte is read at a time to demonstrate performance in worst case scenario ), for each input byte array of length N | 32 <= N <= 4096 and N = 2^i
 
 ```fish
 make benchmark
@@ -110,7 +110,7 @@ make benchmark
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( using `clang++` )
 
 ```fish
-2022-09-15T13:21:41+04:00
+2022-12-04T12:21:12+04:00
 Running ./bench/a.out
 Run on (8 X 2400 MHz CPU s)
 CPU Caches:
@@ -118,194 +118,291 @@ CPU Caches:
   L1 Instruction 32 KiB
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB
-Load Average: 1.35, 1.68, 1.89
-------------------------------------------------------------------------------------
-Benchmark                          Time             CPU   Iterations UserCounters...
-------------------------------------------------------------------------------------
-bench_sha3::keccakf1600          367 ns          360 ns      1965977 bytes_per_second=530.175M/s
-bench_sha3::sha3_224/32          372 ns          367 ns      1863958 bytes_per_second=83.0749M/s
-bench_sha3::sha3_224/64          366 ns          362 ns      1926729 bytes_per_second=168.652M/s
-bench_sha3::sha3_224/128         375 ns          370 ns      1926146 bytes_per_second=329.865M/s
-bench_sha3::sha3_224/256         751 ns          740 ns       912813 bytes_per_second=329.742M/s
-bench_sha3::sha3_224/512        1453 ns         1438 ns       481318 bytes_per_second=339.666M/s
-bench_sha3::sha3_224/1024       2898 ns         2866 ns       245217 bytes_per_second=340.797M/s
-bench_sha3::sha3_224/2048       5391 ns         5335 ns       128947 bytes_per_second=366.13M/s
-bench_sha3::sha3_224/4096      10444 ns        10332 ns        67750 bytes_per_second=378.072M/s
-bench_sha3::sha3_256/32          370 ns          366 ns      1905846 bytes_per_second=83.445M/s
-bench_sha3::sha3_256/64          413 ns          402 ns      1842183 bytes_per_second=151.96M/s
-bench_sha3::sha3_256/128         382 ns          374 ns      1869154 bytes_per_second=326.226M/s
-bench_sha3::sha3_256/256         730 ns          722 ns       933719 bytes_per_second=338.117M/s
-bench_sha3::sha3_256/512        1441 ns         1427 ns       483259 bytes_per_second=342.092M/s
-bench_sha3::sha3_256/1024       2956 ns         2912 ns       243254 bytes_per_second=335.371M/s
-bench_sha3::sha3_256/2048       5815 ns         5743 ns       114568 bytes_per_second=340.058M/s
-bench_sha3::sha3_256/4096      11226 ns        11102 ns        61903 bytes_per_second=351.855M/s
-bench_sha3::sha3_384/32          374 ns          370 ns      1892613 bytes_per_second=82.5433M/s
-bench_sha3::sha3_384/64          375 ns          371 ns      1886213 bytes_per_second=164.679M/s
-bench_sha3::sha3_384/128         756 ns          746 ns       930109 bytes_per_second=163.722M/s
-bench_sha3::sha3_384/256        1090 ns         1080 ns       643548 bytes_per_second=226.109M/s
-bench_sha3::sha3_384/512        1809 ns         1792 ns       389976 bytes_per_second=272.507M/s
-bench_sha3::sha3_384/1024       3648 ns         3574 ns       195394 bytes_per_second=273.218M/s
-bench_sha3::sha3_384/2048       7186 ns         7112 ns        95378 bytes_per_second=274.634M/s
-bench_sha3::sha3_384/4096      14419 ns        14256 ns        48957 bytes_per_second=274.013M/s
-bench_sha3::sha3_512/32          374 ns          370 ns      1894534 bytes_per_second=82.4267M/s
-bench_sha3::sha3_512/64          367 ns          363 ns      1912093 bytes_per_second=168.115M/s
-bench_sha3::sha3_512/128         726 ns          718 ns       949784 bytes_per_second=169.906M/s
-bench_sha3::sha3_512/256        1442 ns         1428 ns       484054 bytes_per_second=170.988M/s
-bench_sha3::sha3_512/512        2870 ns         2841 ns       245592 bytes_per_second=171.845M/s
-bench_sha3::sha3_512/1024       5398 ns         5347 ns       125628 bytes_per_second=182.64M/s
-bench_sha3::sha3_512/2048      10405 ns        10299 ns        66911 bytes_per_second=189.645M/s
-bench_sha3::sha3_512/4096      21003 ns        20646 ns        34207 bytes_per_second=189.198M/s
-bench_sha3::shake128/32/32           489 ns          489 ns      1395590 bytes_per_second=124.784M/s
-bench_sha3::shake128/32/64           621 ns          620 ns      1113905 bytes_per_second=147.713M/s
-bench_sha3::shake128/32/128          871 ns          871 ns       789774 bytes_per_second=175.215M/s
-bench_sha3::shake128/64/32           490 ns          490 ns      1393312 bytes_per_second=186.923M/s
-bench_sha3::shake128/64/64           615 ns          615 ns      1105793 bytes_per_second=198.607M/s
-bench_sha3::shake128/64/128          876 ns          875 ns       789649 bytes_per_second=209.188M/s
-bench_sha3::shake128/128/32          487 ns          486 ns      1389523 bytes_per_second=313.768M/s
-bench_sha3::shake128/128/64          620 ns          619 ns      1108507 bytes_per_second=295.716M/s
-bench_sha3::shake128/128/128         867 ns          867 ns       787384 bytes_per_second=281.592M/s
-bench_sha3::shake128/256/32          819 ns          819 ns       820999 bytes_per_second=335.524M/s
-bench_sha3::shake128/256/64          946 ns          945 ns       717735 bytes_per_second=322.926M/s
-bench_sha3::shake128/256/128        1206 ns         1205 ns       571611 bytes_per_second=303.905M/s
-bench_sha3::shake128/512/32         1529 ns         1506 ns       465435 bytes_per_second=344.515M/s
-bench_sha3::shake128/512/64         1624 ns         1623 ns       425149 bytes_per_second=338.487M/s
-bench_sha3::shake128/512/128        1870 ns         1869 ns       370945 bytes_per_second=326.581M/s
-bench_sha3::shake128/1024/32        2501 ns         2499 ns       279109 bytes_per_second=403.008M/s
-bench_sha3::shake128/1024/64        2625 ns         2622 ns       265885 bytes_per_second=395.671M/s
-bench_sha3::shake128/1024/128       2885 ns         2883 ns       242030 bytes_per_second=381.109M/s
-bench_sha3::shake128/2048/32        4532 ns         4528 ns       155489 bytes_per_second=438.057M/s
-bench_sha3::shake128/2048/64        4658 ns         4652 ns       150547 bytes_per_second=432.93M/s
-bench_sha3::shake128/2048/128       4919 ns         4914 ns       137554 bytes_per_second=422.267M/s
-bench_sha3::shake128/4096/32        8524 ns         8520 ns        79844 bytes_per_second=462.05M/s
-bench_sha3::shake128/4096/64        8703 ns         8697 ns        77844 bytes_per_second=456.188M/s
-bench_sha3::shake128/4096/128       8931 ns         8926 ns        76237 bytes_per_second=451.315M/s
-bench_sha3::shake256/32/32           515 ns          514 ns      1302932 bytes_per_second=118.68M/s
-bench_sha3::shake256/32/64           671 ns          671 ns      1014081 bytes_per_second=136.444M/s
-bench_sha3::shake256/32/128          991 ns          991 ns       692562 bytes_per_second=154.026M/s
-bench_sha3::shake256/64/32           521 ns          520 ns      1324604 bytes_per_second=176.054M/s
-bench_sha3::shake256/64/64           699 ns          696 ns      1002549 bytes_per_second=175.355M/s
-bench_sha3::shake256/64/128         1008 ns         1007 ns       698533 bytes_per_second=181.89M/s
-bench_sha3::shake256/128/32          513 ns          513 ns      1324253 bytes_per_second=297.412M/s
-bench_sha3::shake256/128/64          674 ns          674 ns      1014390 bytes_per_second=271.75M/s
-bench_sha3::shake256/128/128         985 ns          985 ns       689383 bytes_per_second=247.92M/s
-bench_sha3::shake256/256/32          851 ns          850 ns       812442 bytes_per_second=323.236M/s
-bench_sha3::shake256/256/64         1004 ns         1003 ns       686530 bytes_per_second=304.285M/s
-bench_sha3::shake256/256/128        1326 ns         1325 ns       516239 bytes_per_second=276.459M/s
-bench_sha3::shake256/512/32         1517 ns         1515 ns       448652 bytes_per_second=342.41M/s
-bench_sha3::shake256/512/64         1685 ns         1683 ns       414248 bytes_per_second=326.374M/s
-bench_sha3::shake256/512/128        1992 ns         1991 ns       343371 bytes_per_second=306.581M/s
-bench_sha3::shake256/1024/32        2858 ns         2855 ns       245762 bytes_per_second=352.716M/s
-bench_sha3::shake256/1024/64        3039 ns         3037 ns       231338 bytes_per_second=341.652M/s
-bench_sha3::shake256/1024/128       3349 ns         3344 ns       210160 bytes_per_second=328.5M/s
-bench_sha3::shake256/2048/32        5541 ns         5538 ns       120996 bytes_per_second=358.186M/s
-bench_sha3::shake256/2048/64        5709 ns         5705 ns       119503 bytes_per_second=353.081M/s
-bench_sha3::shake256/2048/128       5999 ns         5994 ns       113721 bytes_per_second=346.222M/s
-bench_sha3::shake256/4096/32       10528 ns        10518 ns        64769 bytes_per_second=374.271M/s
-bench_sha3::shake256/4096/64       10791 ns        10780 ns        64059 bytes_per_second=368.023M/s
-bench_sha3::shake256/4096/128      11128 ns        11116 ns        62334 bytes_per_second=362.397M/s
+Load Average: 1.21, 1.91, 1.86
+------------------------------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations average_cpu_cycles bytes_per_second
+------------------------------------------------------------------------------------------------------------
+bench_sha3::keccakf1600              337 ns          337 ns      2078409                790       566.717M/s
+bench_sha3::sha3_224/32              350 ns          350 ns      1984532                821       87.1679M/s
+bench_sha3::sha3_224/64              350 ns          349 ns      2006892                822       174.645M/s
+bench_sha3::sha3_224/128             350 ns          350 ns      1985782                819       349.211M/s
+bench_sha3::sha3_224/256             685 ns          685 ns      1007484             1.625k       356.593M/s
+bench_sha3::sha3_224/512            1360 ns         1358 ns       504432             3.244k       359.445M/s
+bench_sha3::sha3_224/1024           2710 ns         2708 ns       259816             6.486k       360.621M/s
+bench_sha3::sha3_224/2048           5079 ns         5073 ns       136791            12.173k        384.99M/s
+bench_sha3::sha3_224/4096           9758 ns         9754 ns        70876            23.403k       400.486M/s
+bench_sha3::sha3_256/32              351 ns          351 ns      1995393                824       86.9105M/s
+bench_sha3::sha3_256/64              351 ns          350 ns      1978446                822       174.229M/s
+bench_sha3::sha3_256/128             348 ns          347 ns      2006806                816       351.317M/s
+bench_sha3::sha3_256/256             683 ns          683 ns      1011561             1.619k        357.71M/s
+bench_sha3::sha3_256/512            1359 ns         1359 ns       502531             3.243k       359.406M/s
+bench_sha3::sha3_256/1024           2853 ns         2828 ns       257639             6.828k       345.368M/s
+bench_sha3::sha3_256/2048           7075 ns         6474 ns       124365            16.958k       301.689M/s
+bench_sha3::sha3_256/4096          13544 ns        12217 ns        59434             32.48k       319.741M/s
+bench_sha3::sha3_384/32              610 ns          520 ns      1000000             1.441k       58.7114M/s
+bench_sha3::sha3_384/64              390 ns          385 ns      1699902                912       158.718M/s
+bench_sha3::sha3_384/128            1310 ns         1144 ns       953717             3.122k       106.745M/s
+bench_sha3::sha3_384/256            1105 ns         1091 ns       645031              2.63k       223.697M/s
+bench_sha3::sha3_384/512            1963 ns         1826 ns       350233              4.69k       267.442M/s
+bench_sha3::sha3_384/1024           3685 ns         3667 ns       192632             8.823k       266.275M/s
+bench_sha3::sha3_384/2048           7286 ns         7247 ns        95961            17.463k        269.52M/s
+bench_sha3::sha3_384/4096          14435 ns        14325 ns        45709             34.62k        272.69M/s
+bench_sha3::sha3_512/32              399 ns          394 ns      1889497                934       77.5442M/s
+bench_sha3::sha3_512/64              376 ns          374 ns      1786106                880       163.356M/s
+bench_sha3::sha3_512/128             784 ns          776 ns       939787             1.858k       157.314M/s
+bench_sha3::sha3_512/256            1432 ns         1430 ns       446081             3.415k       170.727M/s
+bench_sha3::sha3_512/512            2861 ns         2857 ns       242524             6.844k       170.924M/s
+bench_sha3::sha3_512/1024           5296 ns         5287 ns       127667            12.689k       184.702M/s
+bench_sha3::sha3_512/2048          10303 ns        10288 ns        67643             24.71k       189.846M/s
+bench_sha3::sha3_512/4096          20287 ns        20246 ns        35088            48.669k       192.938M/s
+bench_sha3::shake128/32/32           528 ns          527 ns      1317449              1.25k       115.717M/s
+bench_sha3::shake128/32/64           679 ns          677 ns      1036484             1.612k       135.244M/s
+bench_sha3::shake128/32/128          961 ns          960 ns       721687             2.288k       158.964M/s
+bench_sha3::shake128/64/32           532 ns          532 ns      1319037             1.261k       172.238M/s
+bench_sha3::shake128/64/64           680 ns          678 ns      1014478             1.614k        179.96M/s
+bench_sha3::shake128/64/128          957 ns          955 ns       734469              2.28k       191.673M/s
+bench_sha3::shake128/128/32          535 ns          534 ns      1314727             1.267k       285.559M/s
+bench_sha3::shake128/128/64          678 ns          677 ns      1038345              1.61k       270.567M/s
+bench_sha3::shake128/128/128         962 ns          960 ns       728977             2.292k       254.251M/s
+bench_sha3::shake128/256/32          893 ns          892 ns       796613             2.126k       307.952M/s
+bench_sha3::shake128/256/64         1037 ns         1035 ns       681458             2.472k       294.804M/s
+bench_sha3::shake128/256/128        1321 ns         1319 ns       532583             3.152k       277.748M/s
+bench_sha3::shake128/512/32         1617 ns         1615 ns       432029             3.863k       321.218M/s
+bench_sha3::shake128/512/64         1801 ns         1790 ns       391913             4.305k       306.923M/s
+bench_sha3::shake128/512/128        2077 ns         2065 ns       341038             4.968k       295.579M/s
+bench_sha3::shake128/1024/32        2727 ns         2722 ns       259685             6.527k       369.987M/s
+bench_sha3::shake128/1024/64        2845 ns         2841 ns       246746             6.811k       365.182M/s
+bench_sha3::shake128/1024/128       3167 ns         3156 ns       221853             7.582k        348.11M/s
+bench_sha3::shake128/2048/32        4923 ns         4917 ns       142239            11.798k       403.437M/s
+bench_sha3::shake128/2048/64        5022 ns         5016 ns       139137            12.035k       401.571M/s
+bench_sha3::shake128/2048/128       5334 ns         5322 ns       131797            12.783k       389.914M/s
+bench_sha3::shake128/4096/32        9205 ns         9195 ns        76225            22.075k       428.135M/s
+bench_sha3::shake128/4096/64        9443 ns         9431 ns        74378            22.645k       420.668M/s
+bench_sha3::shake128/4096/128       9889 ns         9879 ns        74104            23.715k       407.778M/s
+bench_sha3::shake256/32/32           532 ns          531 ns      1323902             1.259k       114.949M/s
+bench_sha3::shake256/32/64           658 ns          657 ns      1061362             1.561k       139.402M/s
+bench_sha3::shake256/32/128          927 ns          926 ns       745943             2.207k       164.864M/s
+bench_sha3::shake256/64/32           530 ns          529 ns      1359910             1.255k       173.069M/s
+bench_sha3::shake256/64/64           661 ns          660 ns      1052885              1.57k        185.02M/s
+bench_sha3::shake256/64/128          923 ns          920 ns       768184             2.198k       198.976M/s
+bench_sha3::shake256/128/32          525 ns          524 ns      1324754             1.242k       291.207M/s
+bench_sha3::shake256/128/64          662 ns          660 ns      1074048             1.571k       277.423M/s
+bench_sha3::shake256/128/128         915 ns          914 ns       771613             2.179k       267.171M/s
+bench_sha3::shake256/256/32          916 ns          912 ns       782709             2.179k       301.158M/s
+bench_sha3::shake256/256/64         1029 ns         1027 ns       609278             2.452k       297.235M/s
+bench_sha3::shake256/256/128        1324 ns         1313 ns       538386             3.158k        278.88M/s
+bench_sha3::shake256/512/32         1743 ns         1711 ns       412378             4.163k       303.294M/s
+bench_sha3::shake256/512/64         1841 ns         1814 ns       309400               4.4k       302.778M/s
+bench_sha3::shake256/512/128        2040 ns         2022 ns       349883             4.878k       301.866M/s
+bench_sha3::shake256/1024/32        3076 ns         3041 ns       229573             7.366k       331.181M/s
+bench_sha3::shake256/1024/64        3163 ns         3148 ns       221016             7.574k       329.635M/s
+bench_sha3::shake256/1024/128       3374 ns         3366 ns       205599              8.08k       326.379M/s
+bench_sha3::shake256/2048/32        5832 ns         5824 ns       121143            13.979k       340.625M/s
+bench_sha3::shake256/2048/64        5846 ns         5840 ns       119806            14.013k       344.886M/s
+bench_sha3::shake256/2048/128       6077 ns         6073 ns       113710            14.569k       341.734M/s
+bench_sha3::shake256/4096/32       10894 ns        10883 ns        63854            26.128k       361.735M/s
+bench_sha3::shake256/4096/64       11004 ns        10993 ns        63002            26.393k       360.876M/s
+bench_sha3::shake256/4096/128      11268 ns        11257 ns        62091            27.025k       357.843M/s
 ```
 
 ### On AWS Graviton2 ( using `g++` )
 
 ```fish
-2022-09-15T09:27:46+00:00
+2022-12-04T08:25:39+00:00
 Running ./bench/a.out
 Run on (16 X 166.66 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x16)
   L1 Instruction 48 KiB (x16)
   L2 Unified 2048 KiB (x4)
-Load Average: 1.17, 0.30, 0.09
-------------------------------------------------------------------------------------
-Benchmark                          Time             CPU   Iterations UserCounters...
-------------------------------------------------------------------------------------
-bench_sha3::keccakf1600         2054 ns         2054 ns       340847 bytes_per_second=92.8762M/s
-bench_sha3::sha3_224/32         2058 ns         2058 ns       340252 bytes_per_second=14.8261M/s
-bench_sha3::sha3_224/64         2062 ns         2062 ns       339524 bytes_per_second=29.606M/s
-bench_sha3::sha3_224/128        2050 ns         2050 ns       341396 bytes_per_second=59.5378M/s
-bench_sha3::sha3_224/256        4066 ns         4066 ns       172121 bytes_per_second=60.0407M/s
-bench_sha3::sha3_224/512        8087 ns         8087 ns        86547 bytes_per_second=60.3753M/s
-bench_sha3::sha3_224/1024      16128 ns        16128 ns        43403 bytes_per_second=60.5507M/s
-bench_sha3::sha3_224/2048      30176 ns        30176 ns        23197 bytes_per_second=64.725M/s
-bench_sha3::sha3_224/4096      58271 ns        58269 ns        12013 bytes_per_second=67.0385M/s
-bench_sha3::sha3_256/32         2152 ns         2152 ns       325293 bytes_per_second=14.1818M/s
-bench_sha3::sha3_256/64         2154 ns         2154 ns       324964 bytes_per_second=28.334M/s
-bench_sha3::sha3_256/128        2142 ns         2142 ns       326814 bytes_per_second=56.9918M/s
-bench_sha3::sha3_256/256        4260 ns         4260 ns       164288 bytes_per_second=57.3103M/s
-bench_sha3::sha3_256/512        8465 ns         8465 ns        82686 bytes_per_second=57.6825M/s
-bench_sha3::sha3_256/1024      16869 ns        16869 ns        41497 bytes_per_second=57.8921M/s
-bench_sha3::sha3_256/2048      33683 ns        33682 ns        20783 bytes_per_second=57.987M/s
-bench_sha3::sha3_256/4096      65214 ns        65213 ns        10737 bytes_per_second=59.9M/s
-bench_sha3::sha3_384/32         2786 ns         2786 ns       251208 bytes_per_second=10.9524M/s
-bench_sha3::sha3_384/64         2783 ns         2783 ns       251511 bytes_per_second=21.9303M/s
-bench_sha3::sha3_384/128        5527 ns         5526 ns       126752 bytes_per_second=22.0883M/s
-bench_sha3::sha3_384/256        8262 ns         8262 ns        84740 bytes_per_second=29.5504M/s
-bench_sha3::sha3_384/512       13723 ns        13723 ns        51013 bytes_per_second=35.5819M/s
-bench_sha3::sha3_384/1024      27382 ns        27382 ns        25563 bytes_per_second=35.6649M/s
-bench_sha3::sha3_384/2048      54705 ns        54703 ns        12796 bytes_per_second=35.704M/s
-bench_sha3::sha3_384/4096     109337 ns       109334 ns         6402 bytes_per_second=35.7276M/s
-bench_sha3::sha3_512/32         2820 ns         2820 ns       248212 bytes_per_second=10.8212M/s
-bench_sha3::sha3_512/64         2817 ns         2817 ns       248500 bytes_per_second=21.6689M/s
-bench_sha3::sha3_512/128        5594 ns         5594 ns       125121 bytes_per_second=21.82M/s
-bench_sha3::sha3_512/256       11133 ns        11132 ns        62878 bytes_per_second=21.9307M/s
-bench_sha3::sha3_512/512       22195 ns        22195 ns        31538 bytes_per_second=21.9997M/s
-bench_sha3::sha3_512/1024      41550 ns        41550 ns        16847 bytes_per_second=23.5036M/s
-bench_sha3::sha3_512/2048      80262 ns        80262 ns         8720 bytes_per_second=24.3344M/s
-bench_sha3::sha3_512/4096     157686 ns       157683 ns         4439 bytes_per_second=24.7729M/s
-bench_sha3::shake128/32/32          2408 ns         2408 ns       290667 bytes_per_second=25.3444M/s
-bench_sha3::shake128/32/64          2617 ns         2617 ns       267468 bytes_per_second=34.9832M/s
-bench_sha3::shake128/32/128         3035 ns         3035 ns       230667 bytes_per_second=50.2818M/s
-bench_sha3::shake128/64/32          2409 ns         2409 ns       290556 bytes_per_second=38.0037M/s
-bench_sha3::shake128/64/64          2618 ns         2618 ns       267388 bytes_per_second=46.6297M/s
-bench_sha3::shake128/64/128         3036 ns         3036 ns       230588 bytes_per_second=60.3204M/s
-bench_sha3::shake128/128/32         2410 ns         2410 ns       290412 bytes_per_second=63.3059M/s
-bench_sha3::shake128/128/64         2614 ns         2614 ns       267783 bytes_per_second=70.0493M/s
-bench_sha3::shake128/128/128        3037 ns         3037 ns       230503 bytes_per_second=80.3927M/s
-bench_sha3::shake128/256/32         4568 ns         4568 ns       153246 bytes_per_second=60.1239M/s
-bench_sha3::shake128/256/64         4776 ns         4776 ns       146471 bytes_per_second=63.8986M/s
-bench_sha3::shake128/256/128        5197 ns         5197 ns       134778 bytes_per_second=70.4695M/s
-bench_sha3::shake128/512/32         8864 ns         8864 ns        78966 bytes_per_second=58.5301M/s
-bench_sha3::shake128/512/64         9071 ns         9071 ns        77165 bytes_per_second=60.5594M/s
-bench_sha3::shake128/512/128        9489 ns         9489 ns        73768 bytes_per_second=64.3247M/s
-bench_sha3::shake128/1024/32       15285 ns        15285 ns        45797 bytes_per_second=65.8883M/s
-bench_sha3::shake128/1024/64       15493 ns        15493 ns        45180 bytes_per_second=66.9714M/s
-bench_sha3::shake128/1024/128      15911 ns        15911 ns        43993 bytes_per_second=69.0488M/s
-bench_sha3::shake128/2048/32       28122 ns        28122 ns        24891 bytes_per_second=70.5378M/s
-bench_sha3::shake128/2048/64       28332 ns        28331 ns        24708 bytes_per_second=71.0931M/s
-bench_sha3::shake128/2048/128      28748 ns        28748 ns        24347 bytes_per_second=72.1851M/s
-bench_sha3::shake128/4096/32       53819 ns        53817 ns        13005 bytes_per_second=73.1512M/s
-bench_sha3::shake128/4096/64       54033 ns        54029 ns        12956 bytes_per_second=73.4293M/s
-bench_sha3::shake128/4096/128      54442 ns        54442 ns        12857 bytes_per_second=73.9928M/s
-bench_sha3::shake256/32/32          2261 ns         2261 ns       309645 bytes_per_second=26.9978M/s
-bench_sha3::shake256/32/64          2470 ns         2470 ns       283439 bytes_per_second=37.073M/s
-bench_sha3::shake256/32/128         2887 ns         2887 ns       242447 bytes_per_second=52.8482M/s
-bench_sha3::shake256/64/32          2263 ns         2263 ns       309331 bytes_per_second=40.4584M/s
-bench_sha3::shake256/64/64          2472 ns         2472 ns       283194 bytes_per_second=49.3851M/s
-bench_sha3::shake256/64/128         2889 ns         2889 ns       242269 bytes_per_second=63.373M/s
-bench_sha3::shake256/128/32         2250 ns         2249 ns       311185 bytes_per_second=67.8322M/s
-bench_sha3::shake256/128/64         2458 ns         2458 ns       284753 bytes_per_second=74.4858M/s
-bench_sha3::shake256/128/128        2876 ns         2876 ns       243397 bytes_per_second=84.8878M/s
-bench_sha3::shake256/256/32         4255 ns         4255 ns       164492 bytes_per_second=64.548M/s
-bench_sha3::shake256/256/64         4465 ns         4465 ns       156876 bytes_per_second=68.356M/s
-bench_sha3::shake256/256/128        4885 ns         4885 ns       143272 bytes_per_second=74.9691M/s
-bench_sha3::shake256/512/32         8247 ns         8247 ns        84882 bytes_per_second=62.9057M/s
-bench_sha3::shake256/512/64         8464 ns         8464 ns        82708 bytes_per_second=64.9032M/s
-bench_sha3::shake256/512/128        8874 ns         8874 ns        78886 bytes_per_second=68.7784M/s
-bench_sha3::shake256/1024/32       16229 ns        16229 ns        43129 bytes_per_second=62.0553M/s
-bench_sha3::shake256/1024/64       16439 ns        16438 ns        42582 bytes_per_second=63.1211M/s
-bench_sha3::shake256/1024/128      16856 ns        16856 ns        41523 bytes_per_second=65.1778M/s
-bench_sha3::shake256/2048/32       32179 ns        32178 ns        21753 bytes_per_second=61.645M/s
-bench_sha3::shake256/2048/64       32388 ns        32387 ns        21613 bytes_per_second=62.1895M/s
-bench_sha3::shake256/2048/128      32806 ns        32805 ns        21338 bytes_per_second=63.2582M/s
-bench_sha3::shake256/4096/32       62079 ns        62078 ns        11274 bytes_per_second=63.4164M/s
-bench_sha3::shake256/4096/64       62286 ns        62286 ns        11237 bytes_per_second=63.6948M/s
-bench_sha3::shake256/4096/128      62708 ns        62706 ns        11162 bytes_per_second=64.2415M/s
+Load Average: 0.15, 0.03, 0.01
+-----------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations bytes_per_second
+-----------------------------------------------------------------------------------------
+bench_sha3::keccakf1600             1500 ns         1500 ns       466444       127.135M/s
+bench_sha3::sha3_224/32             1635 ns         1635 ns       428101       18.6681M/s
+bench_sha3::sha3_224/64             1628 ns         1628 ns       430004       37.4943M/s
+bench_sha3::sha3_224/128            1626 ns         1626 ns       430405       75.0555M/s
+bench_sha3::sha3_224/256            3216 ns         3216 ns       217680       75.9224M/s
+bench_sha3::sha3_224/512            6407 ns         6407 ns       109224       76.2132M/s
+bench_sha3::sha3_224/1024          12766 ns        12766 ns        54832       76.4976M/s
+bench_sha3::sha3_224/2048          23889 ns        23888 ns        29302       81.7601M/s
+bench_sha3::sha3_224/4096          46132 ns        46131 ns        15175       84.6774M/s
+bench_sha3::sha3_256/32             1805 ns         1805 ns       387825       16.9084M/s
+bench_sha3::sha3_256/64             1800 ns         1800 ns       388855       33.9065M/s
+bench_sha3::sha3_256/128            1796 ns         1796 ns       389810       67.9789M/s
+bench_sha3::sha3_256/256            3553 ns         3553 ns       197000       68.7079M/s
+bench_sha3::sha3_256/512            7078 ns         7078 ns        98871       68.9847M/s
+bench_sha3::sha3_256/1024          14101 ns        14101 ns        49642       69.2559M/s
+bench_sha3::sha3_256/2048          28160 ns        28159 ns        24859       69.3596M/s
+bench_sha3::sha3_256/4096          54503 ns        54502 ns        12843       71.6714M/s
+bench_sha3::sha3_384/32             1591 ns         1591 ns       440055        19.185M/s
+bench_sha3::sha3_384/64             1589 ns         1589 ns       440530       38.4125M/s
+bench_sha3::sha3_384/128            3131 ns         3131 ns       223592       38.9912M/s
+bench_sha3::sha3_384/256            4681 ns         4681 ns       149779       52.1593M/s
+bench_sha3::sha3_384/512            7768 ns         7768 ns        90109       62.8584M/s
+bench_sha3::sha3_384/1024          15468 ns        15468 ns        45255       63.1363M/s
+bench_sha3::sha3_384/2048          30881 ns        30881 ns        22667       63.2475M/s
+bench_sha3::sha3_384/4096          61715 ns        61714 ns        11341       63.2957M/s
+bench_sha3::sha3_512/32             1653 ns         1653 ns       423477       18.4631M/s
+bench_sha3::sha3_512/64             1647 ns         1647 ns       425080       37.0654M/s
+bench_sha3::sha3_512/128            3254 ns         3254 ns       215150       37.5197M/s
+bench_sha3::sha3_512/256            6473 ns         6473 ns       108121       37.7176M/s
+bench_sha3::sha3_512/512           12892 ns        12891 ns        54296       37.8763M/s
+bench_sha3::sha3_512/1024          24128 ns        24127 ns        29013       40.4762M/s
+bench_sha3::sha3_512/2048          46602 ns        46601 ns        15021       41.9117M/s
+bench_sha3::sha3_512/4096          91539 ns        91537 ns         7647        42.674M/s
+bench_sha3::shake128/32/32          1732 ns         1732 ns       404234       35.2481M/s
+bench_sha3::shake128/32/64          1787 ns         1787 ns       391652       51.2245M/s
+bench_sha3::shake128/32/128         1899 ns         1899 ns       368665       80.3652M/s
+bench_sha3::shake128/64/32          1734 ns         1734 ns       403732       52.8043M/s
+bench_sha3::shake128/64/64          1789 ns         1789 ns       391178       68.2173M/s
+bench_sha3::shake128/64/128         1901 ns         1901 ns       368249       96.3289M/s
+bench_sha3::shake128/128/32         1728 ns         1728 ns       405057       88.2951M/s
+bench_sha3::shake128/128/64         1784 ns         1784 ns       392404       102.647M/s
+bench_sha3::shake128/128/128        1895 ns         1895 ns       369362       128.821M/s
+bench_sha3::shake128/256/32         3342 ns         3342 ns       209471       82.1924M/s
+bench_sha3::shake128/256/64         3398 ns         3397 ns       206038       89.8238M/s
+bench_sha3::shake128/256/128        3509 ns         3509 ns       199497       104.371M/s
+bench_sha3::shake128/512/32         6598 ns         6597 ns       106063       78.6369M/s
+bench_sha3::shake128/512/64         6652 ns         6652 ns       105239       82.5816M/s
+bench_sha3::shake128/512/128        6765 ns         6765 ns       103472       90.2215M/s
+bench_sha3::shake128/1024/32       11441 ns        11441 ns        61175       88.0276M/s
+bench_sha3::shake128/1024/64       11496 ns        11496 ns        60891       90.2572M/s
+bench_sha3::shake128/1024/128      11610 ns        11609 ns        60297       94.6325M/s
+bench_sha3::shake128/2048/32       21118 ns        21118 ns        33146        93.932M/s
+bench_sha3::shake128/2048/64       21176 ns        21175 ns        33058       95.1201M/s
+bench_sha3::shake128/2048/128      21286 ns        21285 ns        32884       97.4935M/s
+bench_sha3::shake128/4096/32       40496 ns        40495 ns        17286       97.2153M/s
+bench_sha3::shake128/4096/64       40551 ns        40551 ns        17262       97.8341M/s
+bench_sha3::shake128/4096/128      40664 ns        40662 ns        17214       99.0674M/s
+bench_sha3::shake256/32/32          1629 ns         1629 ns       429762       37.4735M/s
+bench_sha3::shake256/32/64          1685 ns         1685 ns       415546       54.3499M/s
+bench_sha3::shake256/32/128         1796 ns         1796 ns       389788        84.969M/s
+bench_sha3::shake256/64/32          1624 ns         1624 ns       431013       56.3726M/s
+bench_sha3::shake256/64/64          1680 ns         1680 ns       416737       72.6771M/s
+bench_sha3::shake256/64/128         1791 ns         1791 ns       390834       102.235M/s
+bench_sha3::shake256/128/32         1620 ns         1620 ns       432202       94.2104M/s
+bench_sha3::shake256/128/64         1675 ns         1675 ns       417816       109.297M/s
+bench_sha3::shake256/128/128        1787 ns         1787 ns       391714       136.634M/s
+bench_sha3::shake256/256/32         3130 ns         3130 ns       223615       87.7431M/s
+bench_sha3::shake256/256/64         3186 ns         3186 ns       219701       95.7824M/s
+bench_sha3::shake256/256/128        3297 ns         3297 ns       212278       111.059M/s
+bench_sha3::shake256/512/32         6165 ns         6164 ns       113503       84.1613M/s
+bench_sha3::shake256/512/64         6222 ns         6222 ns       112500       88.2927M/s
+bench_sha3::shake256/512/128        6334 ns         6334 ns       110480       96.3609M/s
+bench_sha3::shake256/1024/32       12216 ns        12216 ns        57299       82.4405M/s
+bench_sha3::shake256/1024/64       12272 ns        12271 ns        57040       84.5536M/s
+bench_sha3::shake256/1024/128      12384 ns        12383 ns        56518       88.7196M/s
+bench_sha3::shake256/2048/32       24317 ns        24317 ns        28786       81.5744M/s
+bench_sha3::shake256/2048/64       24373 ns        24373 ns        28721       82.6398M/s
+bench_sha3::shake256/2048/128      24484 ns        24484 ns        28590        84.757M/s
+bench_sha3::shake256/4096/32       46995 ns        46994 ns        14895       83.7723M/s
+bench_sha3::shake256/4096/64       47050 ns        47049 ns        14878       84.3218M/s
+bench_sha3::shake256/4096/128      47160 ns        47160 ns        14842       85.4183M/s
+```
+
+### On AWS Graviton2 ( using `clang++` )
+
+```fish
+2022-12-04T08:29:25+00:00
+Running ./bench/a.out
+Run on (16 X 166.66 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x16)
+  L1 Instruction 48 KiB (x16)
+  L2 Unified 2048 KiB (x4)
+Load Average: 0.14, 0.16, 0.08
+-----------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations bytes_per_second
+-----------------------------------------------------------------------------------------
+bench_sha3::keccakf1600             1399 ns         1399 ns       500352       136.378M/s
+bench_sha3::sha3_224/32             1467 ns         1467 ns       476901       20.7973M/s
+bench_sha3::sha3_224/64             1463 ns         1463 ns       478473       41.7203M/s
+bench_sha3::sha3_224/128            1455 ns         1455 ns       481031       83.8845M/s
+bench_sha3::sha3_224/256            2875 ns         2875 ns       243562       84.9254M/s
+bench_sha3::sha3_224/512            5729 ns         5729 ns       122145       85.2279M/s
+bench_sha3::sha3_224/1024          11413 ns        11412 ns        61340       85.5705M/s
+bench_sha3::sha3_224/2048          21349 ns        21348 ns        32793        91.488M/s
+bench_sha3::sha3_224/4096          41216 ns        41216 ns        16984       94.7758M/s
+bench_sha3::sha3_256/32             1466 ns         1466 ns       477362       20.8112M/s
+bench_sha3::sha3_256/64             1461 ns         1461 ns       479153       41.7786M/s
+bench_sha3::sha3_256/128            1453 ns         1453 ns       481630        83.991M/s
+bench_sha3::sha3_256/256            2871 ns         2871 ns       243809       85.0324M/s
+bench_sha3::sha3_256/512            5720 ns         5720 ns       122249       85.3693M/s
+bench_sha3::sha3_256/1024          11400 ns        11400 ns        61404       85.6666M/s
+bench_sha3::sha3_256/2048          22757 ns        22757 ns        30760       85.8263M/s
+bench_sha3::sha3_256/4096          44037 ns        44037 ns        15893       88.7033M/s
+bench_sha3::sha3_384/32             1454 ns         1454 ns       481433       20.9893M/s
+bench_sha3::sha3_384/64             1450 ns         1450 ns       482857       42.1036M/s
+bench_sha3::sha3_384/128            2871 ns         2871 ns       243832       42.5207M/s
+bench_sha3::sha3_384/256            4281 ns         4281 ns       163524        57.034M/s
+bench_sha3::sha3_384/512            7120 ns         7120 ns        98312       68.5776M/s
+bench_sha3::sha3_384/1024          14191 ns        14191 ns        49326       68.8145M/s
+bench_sha3::sha3_384/2048          28341 ns        28340 ns        24700       68.9176M/s
+bench_sha3::sha3_384/4096          56642 ns        56641 ns        12358       68.9649M/s
+bench_sha3::sha3_512/32             1445 ns         1445 ns       484534       21.1241M/s
+bench_sha3::sha3_512/64             1440 ns         1440 ns       486259       42.3996M/s
+bench_sha3::sha3_512/128            2853 ns         2853 ns       245325       42.7822M/s
+bench_sha3::sha3_512/256            5689 ns         5689 ns       122993       42.9125M/s
+bench_sha3::sha3_512/512           11336 ns        11336 ns        61747       43.0732M/s
+bench_sha3::sha3_512/1024          21217 ns        21216 ns        32995       46.0291M/s
+bench_sha3::sha3_512/2048          40972 ns        40972 ns        17084       47.6698M/s
+bench_sha3::sha3_512/4096          80487 ns        80486 ns         8697       48.5331M/s
+bench_sha3::shake128/32/32          1850 ns         1850 ns       378416       32.9956M/s
+bench_sha3::shake128/32/64          2212 ns         2212 ns       316465       41.3904M/s
+bench_sha3::shake128/32/128         2936 ns         2936 ns       238428       51.9732M/s
+bench_sha3::shake128/64/32          1852 ns         1852 ns       378117       49.4368M/s
+bench_sha3::shake128/64/64          2214 ns         2214 ns       316325       55.1377M/s
+bench_sha3::shake128/64/128         2938 ns         2938 ns       238261        62.324M/s
+bench_sha3::shake128/128/32         1846 ns         1846 ns       379108       82.6389M/s
+bench_sha3::shake128/128/64         2208 ns         2208 ns       316967       82.9158M/s
+bench_sha3::shake128/128/128        2933 ns         2933 ns       238703       83.2525M/s
+bench_sha3::shake128/256/32         3268 ns         3268 ns       214229       84.0575M/s
+bench_sha3::shake128/256/64         3630 ns         3630 ns       192891       84.0811M/s
+bench_sha3::shake128/256/128        4354 ns         4354 ns       160788       84.1146M/s
+bench_sha3::shake128/512/32         6136 ns         6136 ns       114136       84.5556M/s
+bench_sha3::shake128/512/64         6497 ns         6497 ns       107717       84.5502M/s
+bench_sha3::shake128/512/128        7221 ns         7221 ns        96938       84.5275M/s
+bench_sha3::shake128/1024/32       10400 ns        10400 ns        67304       96.8346M/s
+bench_sha3::shake128/1024/64       10762 ns        10762 ns        65052       96.4102M/s
+bench_sha3::shake128/1024/128      11487 ns        11487 ns        60960        95.645M/s
+bench_sha3::shake128/2048/32       18927 ns        18927 ns        36985       104.807M/s
+bench_sha3::shake128/2048/64       19288 ns        19288 ns        36291       104.425M/s
+bench_sha3::shake128/2048/128      20014 ns        20014 ns        34976       103.689M/s
+bench_sha3::shake128/4096/32       35993 ns        35993 ns        19448       109.377M/s
+bench_sha3::shake128/4096/64       36354 ns        36354 ns        19255        109.13M/s
+bench_sha3::shake128/4096/128      37079 ns        37078 ns        18880       108.643M/s
+bench_sha3::shake256/32/32          1846 ns         1846 ns       379422       33.0721M/s
+bench_sha3::shake256/32/64          2208 ns         2208 ns       317243       41.4731M/s
+bench_sha3::shake256/32/128         2932 ns         2932 ns       238780       52.0511M/s
+bench_sha3::shake256/64/32          1839 ns         1839 ns       380566       49.7753M/s
+bench_sha3::shake256/64/64          2202 ns         2202 ns       317950       55.4479M/s
+bench_sha3::shake256/64/128         2926 ns         2926 ns       239268       62.5877M/s
+bench_sha3::shake256/128/32         1829 ns         1829 ns       382760       83.4085M/s
+bench_sha3::shake256/128/64         2192 ns         2192 ns       319558       83.5512M/s
+bench_sha3::shake256/128/128        2916 ns         2916 ns       240085       83.7388M/s
+bench_sha3::shake256/256/32         3252 ns         3251 ns       215593       84.4725M/s
+bench_sha3::shake256/256/64         3622 ns         3622 ns       193242       84.2555M/s
+bench_sha3::shake256/256/128        4333 ns         4333 ns       161443       84.5103M/s
+bench_sha3::shake256/512/32         6096 ns         6096 ns       114871       85.1034M/s
+bench_sha3::shake256/512/64         6457 ns         6457 ns       108388       85.0709M/s
+bench_sha3::shake256/512/128        7183 ns         7183 ns        97472       84.9694M/s
+bench_sha3::shake256/1024/32       11776 ns        11776 ns        59442       85.5199M/s
+bench_sha3::shake256/1024/64       12137 ns        12137 ns        57673       85.4906M/s
+bench_sha3::shake256/1024/128      12861 ns        12860 ns        54426       85.4272M/s
+bench_sha3::shake256/2048/32       23134 ns        23134 ns        30258       85.7459M/s
+bench_sha3::shake256/2048/64       23495 ns        23494 ns        29795       85.7297M/s
+bench_sha3::shake256/2048/128      24221 ns        24221 ns        28900       85.6789M/s
+bench_sha3::shake256/4096/32       44419 ns        44418 ns        15759       88.6293M/s
+bench_sha3::shake256/4096/64       44785 ns        44782 ns        15632       88.5902M/s
+bench_sha3::shake256/4096/128      45503 ns        45503 ns        15384       88.5295M/s
 ```
 
 ### On AWS Graviton3 ( using `g++` )
 
 ```fish
-2022-09-15T09:31:49+00:00
+2022-12-04T08:32:30+00:00
 Running ./bench/a.out
 Run on (64 X 2100 MHz CPU s)
 CPU Caches:
@@ -313,189 +410,385 @@ CPU Caches:
   L1 Instruction 64 KiB (x64)
   L2 Unified 1024 KiB (x64)
   L3 Unified 32768 KiB (x1)
-Load Average: 0.18, 0.05, 0.01
-------------------------------------------------------------------------------------
-Benchmark                          Time             CPU   Iterations UserCounters...
-------------------------------------------------------------------------------------
-bench_sha3::keccakf1600          737 ns          737 ns       949302 bytes_per_second=258.684M/s
-bench_sha3::sha3_224/32          752 ns          752 ns       932225 bytes_per_second=40.5813M/s
-bench_sha3::sha3_224/64          749 ns          749 ns       935098 bytes_per_second=81.5337M/s
-bench_sha3::sha3_224/128         746 ns          746 ns       938969 bytes_per_second=163.689M/s
-bench_sha3::sha3_224/256        1473 ns         1473 ns       475248 bytes_per_second=165.775M/s
-bench_sha3::sha3_224/512        2944 ns         2944 ns       237821 bytes_per_second=165.879M/s
-bench_sha3::sha3_224/1024       5862 ns         5862 ns       119379 bytes_per_second=166.59M/s
-bench_sha3::sha3_224/2048      10963 ns        10963 ns        63850 bytes_per_second=178.154M/s
-bench_sha3::sha3_224/4096      21156 ns        21155 ns        33092 bytes_per_second=184.647M/s
-bench_sha3::sha3_256/32          740 ns          740 ns       946017 bytes_per_second=41.2476M/s
-bench_sha3::sha3_256/64          735 ns          735 ns       951802 bytes_per_second=82.9915M/s
-bench_sha3::sha3_256/128         733 ns          733 ns       955658 bytes_per_second=166.645M/s
-bench_sha3::sha3_256/256        1462 ns         1462 ns       477833 bytes_per_second=167.014M/s
-bench_sha3::sha3_256/512        2919 ns         2919 ns       239211 bytes_per_second=167.252M/s
-bench_sha3::sha3_256/1024       5835 ns         5835 ns       120027 bytes_per_second=167.36M/s
-bench_sha3::sha3_256/2048      11582 ns        11582 ns        60409 bytes_per_second=168.641M/s
-bench_sha3::sha3_256/4096      22297 ns        22296 ns        31229 bytes_per_second=175.202M/s
-bench_sha3::sha3_384/32          741 ns          741 ns       946813 bytes_per_second=41.2061M/s
-bench_sha3::sha3_384/64          737 ns          737 ns       950086 bytes_per_second=82.8337M/s
-bench_sha3::sha3_384/128        1465 ns         1465 ns       477611 bytes_per_second=83.3197M/s
-bench_sha3::sha3_384/256        2179 ns         2179 ns       321873 bytes_per_second=112.033M/s
-bench_sha3::sha3_384/512        3613 ns         3613 ns       193661 bytes_per_second=135.136M/s
-bench_sha3::sha3_384/1024       7198 ns         7197 ns        97029 bytes_per_second=135.683M/s
-bench_sha3::sha3_384/2048      14362 ns        14362 ns        48810 bytes_per_second=135.994M/s
-bench_sha3::sha3_384/4096      28649 ns        28649 ns        24466 bytes_per_second=136.351M/s
-bench_sha3::sha3_512/32          714 ns          714 ns       983281 bytes_per_second=42.7417M/s
-bench_sha3::sha3_512/64          712 ns          712 ns       980398 bytes_per_second=85.7099M/s
-bench_sha3::sha3_512/128        1408 ns         1408 ns       498309 bytes_per_second=86.7256M/s
-bench_sha3::sha3_512/256        2815 ns         2815 ns       248564 bytes_per_second=86.7227M/s
-bench_sha3::sha3_512/512        5605 ns         5605 ns       124932 bytes_per_second=87.1155M/s
-bench_sha3::sha3_512/1024      10506 ns        10506 ns        66340 bytes_per_second=92.9542M/s
-bench_sha3::sha3_512/2048      20269 ns        20268 ns        34435 bytes_per_second=96.3637M/s
-bench_sha3::sha3_512/4096      40012 ns        40011 ns        17465 bytes_per_second=97.6297M/s
-bench_sha3::shake128/32/32           818 ns          818 ns       857216 bytes_per_second=74.643M/s
-bench_sha3::shake128/32/64           883 ns          883 ns       792880 bytes_per_second=103.714M/s
-bench_sha3::shake128/32/128         1012 ns         1012 ns       691865 bytes_per_second=150.792M/s
-bench_sha3::shake128/64/32           820 ns          820 ns       852673 bytes_per_second=111.595M/s
-bench_sha3::shake128/64/64           885 ns          885 ns       791779 bytes_per_second=137.951M/s
-bench_sha3::shake128/64/128         1013 ns         1013 ns       690520 bytes_per_second=180.732M/s
-bench_sha3::shake128/128/32          820 ns          820 ns       850859 bytes_per_second=186.149M/s
-bench_sha3::shake128/128/64          888 ns          888 ns       788852 bytes_per_second=206.295M/s
-bench_sha3::shake128/128/128        1014 ns         1014 ns       692374 bytes_per_second=240.838M/s
-bench_sha3::shake128/256/32         1568 ns         1568 ns       445766 bytes_per_second=175.133M/s
-bench_sha3::shake128/256/64         1637 ns         1637 ns       429281 bytes_per_second=186.474M/s
-bench_sha3::shake128/256/128        1765 ns         1765 ns       397306 bytes_per_second=207.47M/s
-bench_sha3::shake128/512/32         3054 ns         3054 ns       229153 bytes_per_second=169.858M/s
-bench_sha3::shake128/512/64         3120 ns         3120 ns       224406 bytes_per_second=176.085M/s
-bench_sha3::shake128/512/128        3250 ns         3250 ns       215283 bytes_per_second=187.816M/s
-bench_sha3::shake128/1024/32        5269 ns         5269 ns       132817 bytes_per_second=191.122M/s
-bench_sha3::shake128/1024/64        5334 ns         5334 ns       130948 bytes_per_second=194.531M/s
-bench_sha3::shake128/1024/128       5469 ns         5469 ns       128184 bytes_per_second=200.898M/s
-bench_sha3::shake128/2048/32        9693 ns         9693 ns        72260 bytes_per_second=204.65M/s
-bench_sha3::shake128/2048/64        9758 ns         9758 ns        71842 bytes_per_second=206.415M/s
-bench_sha3::shake128/2048/128       9884 ns         9883 ns        70758 bytes_per_second=209.969M/s
-bench_sha3::shake128/4096/32       18531 ns        18530 ns        37745 bytes_per_second=212.454M/s
-bench_sha3::shake128/4096/64       18607 ns        18607 ns        37448 bytes_per_second=213.215M/s
-bench_sha3::shake128/4096/128      18738 ns        18738 ns        37402 bytes_per_second=214.982M/s
-bench_sha3::shake256/32/32           808 ns          808 ns       865934 bytes_per_second=75.5768M/s
-bench_sha3::shake256/32/64           892 ns          892 ns       784831 bytes_per_second=102.617M/s
-bench_sha3::shake256/32/128         1049 ns         1049 ns       667791 bytes_per_second=145.497M/s
-bench_sha3::shake256/64/32           802 ns          802 ns       874175 bytes_per_second=114.148M/s
-bench_sha3::shake256/64/64           879 ns          879 ns       797421 bytes_per_second=138.904M/s
-bench_sha3::shake256/64/128         1041 ns         1041 ns       675595 bytes_per_second=175.857M/s
-bench_sha3::shake256/128/32          796 ns          796 ns       879107 bytes_per_second=191.71M/s
-bench_sha3::shake256/128/64          866 ns          866 ns       806747 bytes_per_second=211.339M/s
-bench_sha3::shake256/128/128        1026 ns         1026 ns       687834 bytes_per_second=238.046M/s
-bench_sha3::shake256/256/32         1518 ns         1518 ns       460664 bytes_per_second=180.882M/s
-bench_sha3::shake256/256/64         1597 ns         1597 ns       438829 bytes_per_second=191.111M/s
-bench_sha3::shake256/256/128        1754 ns         1754 ns       399220 bytes_per_second=208.757M/s
-bench_sha3::shake256/512/32         2963 ns         2963 ns       236254 bytes_per_second=175.101M/s
-bench_sha3::shake256/512/64         3042 ns         3042 ns       230110 bytes_per_second=180.555M/s
-bench_sha3::shake256/512/128        3204 ns         3204 ns       218371 bytes_per_second=190.489M/s
-bench_sha3::shake256/1024/32        5785 ns         5785 ns       121035 bytes_per_second=174.08M/s
-bench_sha3::shake256/1024/64        5865 ns         5865 ns       119301 bytes_per_second=176.919M/s
-bench_sha3::shake256/1024/128       6024 ns         6024 ns       116197 bytes_per_second=182.368M/s
-bench_sha3::shake256/2048/32       11436 ns        11436 ns        61204 bytes_per_second=173.46M/s
-bench_sha3::shake256/2048/64       11511 ns        11511 ns        60804 bytes_per_second=174.975M/s
-bench_sha3::shake256/2048/128      11663 ns        11662 ns        60026 bytes_per_second=177.938M/s
-bench_sha3::shake256/4096/32       22028 ns        22027 ns        31775 bytes_per_second=178.722M/s
-bench_sha3::shake256/4096/64       22103 ns        22102 ns        31677 bytes_per_second=179.497M/s
-bench_sha3::shake256/4096/128      22250 ns        22250 ns        31452 bytes_per_second=181.048M/s
+Load Average: 0.00, 0.00, 0.00
+-----------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations bytes_per_second
+-----------------------------------------------------------------------------------------
+bench_sha3::keccakf1600              629 ns          629 ns      1111085        303.01M/s
+bench_sha3::sha3_224/32              725 ns          725 ns       965070       42.0704M/s
+bench_sha3::sha3_224/64              722 ns          722 ns       969306       84.5744M/s
+bench_sha3::sha3_224/128             718 ns          718 ns       975150       170.003M/s
+bench_sha3::sha3_224/256            1426 ns         1426 ns       491069        171.21M/s
+bench_sha3::sha3_224/512            2843 ns         2843 ns       245956       171.739M/s
+bench_sha3::sha3_224/1024           5671 ns         5671 ns       123491       172.192M/s
+bench_sha3::sha3_224/2048          10607 ns        10607 ns        65995       184.143M/s
+bench_sha3::sha3_224/4096          20472 ns        20472 ns        34168       190.814M/s
+bench_sha3::sha3_256/32              699 ns          699 ns      1005574       43.6589M/s
+bench_sha3::sha3_256/64              691 ns          691 ns      1008578       88.2664M/s
+bench_sha3::sha3_256/128             691 ns          691 ns      1011001       176.649M/s
+bench_sha3::sha3_256/256            1373 ns         1373 ns       511324       177.772M/s
+bench_sha3::sha3_256/512            2745 ns         2744 ns       254866       177.913M/s
+bench_sha3::sha3_256/1024           5472 ns         5472 ns       127864       178.478M/s
+bench_sha3::sha3_256/2048          10957 ns        10957 ns        63806       178.253M/s
+bench_sha3::sha3_256/4096          21229 ns        21228 ns        33011       184.013M/s
+bench_sha3::sha3_384/32              754 ns          754 ns       930264       40.4719M/s
+bench_sha3::sha3_384/64              747 ns          747 ns       936660       81.6634M/s
+bench_sha3::sha3_384/128            1480 ns         1480 ns       472378       82.4587M/s
+bench_sha3::sha3_384/256            2232 ns         2232 ns       313351       109.363M/s
+bench_sha3::sha3_384/512            3689 ns         3689 ns       189499       132.356M/s
+bench_sha3::sha3_384/1024           7363 ns         7363 ns        95177       132.639M/s
+bench_sha3::sha3_384/2048          14690 ns        14689 ns        47575       132.961M/s
+bench_sha3::sha3_384/4096          29361 ns        29360 ns        23854       133.047M/s
+bench_sha3::sha3_512/32              726 ns          726 ns       965443       42.0351M/s
+bench_sha3::sha3_512/64              717 ns          717 ns       980229       85.1595M/s
+bench_sha3::sha3_512/128            1434 ns         1434 ns       488722       85.1051M/s
+bench_sha3::sha3_512/256            2851 ns         2851 ns       246483       85.6222M/s
+bench_sha3::sha3_512/512            5666 ns         5666 ns       123546       86.1784M/s
+bench_sha3::sha3_512/1024          10588 ns        10588 ns        66126       92.2365M/s
+bench_sha3::sha3_512/2048          20433 ns        20433 ns        34251       95.5874M/s
+bench_sha3::sha3_512/4096          40147 ns        40146 ns        17442       97.3012M/s
+bench_sha3::shake128/32/32           761 ns          761 ns       921827       80.2175M/s
+bench_sha3::shake128/32/64           787 ns          787 ns       890315       116.393M/s
+bench_sha3::shake128/32/128          836 ns          836 ns       837504       182.491M/s
+bench_sha3::shake128/64/32           767 ns          767 ns       911940       119.369M/s
+bench_sha3::shake128/64/64           793 ns          793 ns       885345       154.017M/s
+bench_sha3::shake128/64/128          841 ns          841 ns       832707       217.823M/s
+bench_sha3::shake128/128/32          764 ns          764 ns       915741       199.623M/s
+bench_sha3::shake128/128/64          786 ns          786 ns       886538       232.971M/s
+bench_sha3::shake128/128/128         836 ns          836 ns       839830       292.203M/s
+bench_sha3::shake128/256/32         1482 ns         1482 ns       472423       185.376M/s
+bench_sha3::shake128/256/64         1505 ns         1505 ns       464821       202.751M/s
+bench_sha3::shake128/256/128        1555 ns         1555 ns       450119       235.507M/s
+bench_sha3::shake128/512/32         2941 ns         2941 ns       238061       176.376M/s
+bench_sha3::shake128/512/64         2965 ns         2965 ns       236211       185.297M/s
+bench_sha3::shake128/512/128        3014 ns         3014 ns       232261       202.497M/s
+bench_sha3::shake128/1024/32        5110 ns         5110 ns       136957       197.077M/s
+bench_sha3::shake128/1024/64        5138 ns         5138 ns       136120       201.933M/s
+bench_sha3::shake128/1024/128       5200 ns         5200 ns       135071       211.283M/s
+bench_sha3::shake128/2048/32        9453 ns         9452 ns        74035       209.857M/s
+bench_sha3::shake128/2048/64        9476 ns         9476 ns        73829        212.55M/s
+bench_sha3::shake128/2048/128       9527 ns         9527 ns        73492       217.821M/s
+bench_sha3::shake128/4096/32       18129 ns        18129 ns        38613       217.156M/s
+bench_sha3::shake128/4096/64       18149 ns        18148 ns        38563       218.602M/s
+bench_sha3::shake128/4096/128      18200 ns        18199 ns        38465       221.347M/s
+bench_sha3::shake256/32/32           758 ns          758 ns       923834        80.552M/s
+bench_sha3::shake256/32/64           782 ns          782 ns       895611        117.12M/s
+bench_sha3::shake256/32/128          831 ns          831 ns       842526       183.647M/s
+bench_sha3::shake256/64/32           755 ns          755 ns       926962       121.234M/s
+bench_sha3::shake256/64/64           780 ns          780 ns       897175       156.527M/s
+bench_sha3::shake256/64/128          830 ns          830 ns       843818       220.724M/s
+bench_sha3::shake256/128/32          751 ns          751 ns       931685       203.091M/s
+bench_sha3::shake256/128/64          779 ns          779 ns       898261       234.963M/s
+bench_sha3::shake256/128/128         829 ns          829 ns       844759       294.542M/s
+bench_sha3::shake256/256/32         1473 ns         1473 ns       475036       186.438M/s
+bench_sha3::shake256/256/64         1498 ns         1498 ns       467360       203.758M/s
+bench_sha3::shake256/256/128        1547 ns         1547 ns       452450       236.666M/s
+bench_sha3::shake256/512/32         2913 ns         2913 ns       240267       178.076M/s
+bench_sha3::shake256/512/64         2938 ns         2938 ns       238258       186.968M/s
+bench_sha3::shake256/512/128        2988 ns         2987 ns       234230       204.306M/s
+bench_sha3::shake256/1024/32        5788 ns         5788 ns       120922       173.997M/s
+bench_sha3::shake256/1024/64        5813 ns         5813 ns       120399       178.488M/s
+bench_sha3::shake256/1024/128       5862 ns         5862 ns       119386       187.413M/s
+bench_sha3::shake256/2048/32       11519 ns        11518 ns        60778       172.214M/s
+bench_sha3::shake256/2048/64       11544 ns        11544 ns        60638       174.476M/s
+bench_sha3::shake256/2048/128      11595 ns        11595 ns        60371        178.98M/s
+bench_sha3::shake256/4096/32       22261 ns        22261 ns        31445       176.847M/s
+bench_sha3::shake256/4096/64       22290 ns        22290 ns        31403       177.989M/s
+bench_sha3::shake256/4096/128      22339 ns        22339 ns        31334       180.328M/s
+```
+
+### On AWS Graviton3 ( using `clang++` )
+
+```fish
+2022-12-04T08:34:57+00:00
+Running ./bench/a.out
+Run on (64 X 2100 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x64)
+  L1 Instruction 64 KiB (x64)
+  L2 Unified 1024 KiB (x64)
+  L3 Unified 32768 KiB (x1)
+Load Average: 0.26, 0.18, 0.07
+-----------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations bytes_per_second
+-----------------------------------------------------------------------------------------
+bench_sha3::keccakf1600              459 ns          459 ns      1525865       415.789M/s
+bench_sha3::sha3_224/32              474 ns          474 ns      1477756       64.4352M/s
+bench_sha3::sha3_224/64              470 ns          470 ns      1489834        129.92M/s
+bench_sha3::sha3_224/128             466 ns          466 ns      1503524       262.215M/s
+bench_sha3::sha3_224/256             924 ns          924 ns       757322       264.152M/s
+bench_sha3::sha3_224/512            1843 ns         1843 ns       379801       264.898M/s
+bench_sha3::sha3_224/1024           3689 ns         3688 ns       189787       264.761M/s
+bench_sha3::sha3_224/2048           6899 ns         6899 ns       101456       283.097M/s
+bench_sha3::sha3_224/4096          13315 ns        13315 ns        52575       293.375M/s
+bench_sha3::sha3_256/32              475 ns          475 ns      1474436       64.2738M/s
+bench_sha3::sha3_256/64              471 ns          471 ns      1486340       129.582M/s
+bench_sha3::sha3_256/128             465 ns          465 ns      1503830       262.243M/s
+bench_sha3::sha3_256/256             925 ns          925 ns       756859       264.026M/s
+bench_sha3::sha3_256/512            1842 ns         1842 ns       379990       265.056M/s
+bench_sha3::sha3_256/1024           3688 ns         3688 ns       189823       264.785M/s
+bench_sha3::sha3_256/2048           7362 ns         7362 ns        95081       265.309M/s
+bench_sha3::sha3_256/4096          14240 ns        14240 ns        49158       274.313M/s
+bench_sha3::sha3_384/32              472 ns          472 ns      1482101        64.606M/s
+bench_sha3::sha3_384/64              470 ns          470 ns      1489406        129.87M/s
+bench_sha3::sha3_384/128             927 ns          927 ns       754747       131.638M/s
+bench_sha3::sha3_384/256            1384 ns         1384 ns       505991       176.453M/s
+bench_sha3::sha3_384/512            2298 ns         2298 ns       304661       212.523M/s
+bench_sha3::sha3_384/1024           4601 ns         4601 ns       152147       212.243M/s
+bench_sha3::sha3_384/2048           9191 ns         9191 ns        76168       212.511M/s
+bench_sha3::sha3_384/4096          18354 ns        18354 ns        38140       212.829M/s
+bench_sha3::sha3_512/32              471 ns          471 ns      1486521       64.8079M/s
+bench_sha3::sha3_512/64              466 ns          466 ns      1506053       130.896M/s
+bench_sha3::sha3_512/128             923 ns          923 ns       758492       132.279M/s
+bench_sha3::sha3_512/256            1836 ns         1836 ns       381251       132.974M/s
+bench_sha3::sha3_512/512            3677 ns         3677 ns       190378       132.804M/s
+bench_sha3::sha3_512/1024           6878 ns         6878 ns       101765       141.981M/s
+bench_sha3::sha3_512/2048          13279 ns        13278 ns        52716       147.091M/s
+bench_sha3::sha3_512/4096          26090 ns        26090 ns        26829       149.724M/s
+bench_sha3::shake128/32/32           585 ns          585 ns      1195968       104.309M/s
+bench_sha3::shake128/32/64           694 ns          694 ns      1008351       131.876M/s
+bench_sha3::shake128/32/128          909 ns          909 ns       769753       167.797M/s
+bench_sha3::shake128/64/32           586 ns          586 ns      1194395        156.21M/s
+bench_sha3::shake128/64/64           694 ns          694 ns      1007178       175.779M/s
+bench_sha3::shake128/64/128          911 ns          911 ns       768116       200.977M/s
+bench_sha3::shake128/128/32          582 ns          582 ns      1203460       262.267M/s
+bench_sha3::shake128/128/64          690 ns          690 ns      1014076       265.298M/s
+bench_sha3::shake128/128/128         907 ns          907 ns       771572       269.138M/s
+bench_sha3::shake128/256/32         1040 ns         1040 ns       673404       264.206M/s
+bench_sha3::shake128/256/64         1150 ns         1150 ns       609600       265.466M/s
+bench_sha3::shake128/256/128        1372 ns         1372 ns       510024       266.851M/s
+bench_sha3::shake128/512/32         1966 ns         1966 ns       355943       263.835M/s
+bench_sha3::shake128/512/64         2077 ns         2077 ns       336976       264.465M/s
+bench_sha3::shake128/512/128        2297 ns         2297 ns       304739       265.677M/s
+bench_sha3::shake128/1024/32        3343 ns         3342 ns       209432       301.305M/s
+bench_sha3::shake128/1024/64        3453 ns         3453 ns       202721         300.5M/s
+bench_sha3::shake128/1024/128       3673 ns         3673 ns       190580        299.11M/s
+bench_sha3::shake128/2048/32        6103 ns         6103 ns       114711       325.052M/s
+bench_sha3::shake128/2048/64        6211 ns         6211 ns       112707       324.294M/s
+bench_sha3::shake128/2048/128       6428 ns         6427 ns       108911       322.866M/s
+bench_sha3::shake128/4096/32       11612 ns        11611 ns        60281       339.046M/s
+bench_sha3::shake128/4096/64       11721 ns        11721 ns        59724       338.486M/s
+bench_sha3::shake128/4096/128      11937 ns        11936 ns        58641       337.484M/s
+bench_sha3::shake256/32/32           589 ns          589 ns      1187791       103.588M/s
+bench_sha3::shake256/32/64           698 ns          698 ns      1003403       131.244M/s
+bench_sha3::shake256/32/128          914 ns          914 ns       766112       167.002M/s
+bench_sha3::shake256/64/32           584 ns          584 ns      1198856       156.801M/s
+bench_sha3::shake256/64/64           693 ns          693 ns      1011252       176.192M/s
+bench_sha3::shake256/64/128          908 ns          908 ns       770610       201.562M/s
+bench_sha3::shake256/128/32          579 ns          579 ns      1209134       263.564M/s
+bench_sha3::shake256/128/64          688 ns          688 ns      1018046       266.262M/s
+bench_sha3::shake256/128/128         904 ns          904 ns       774426       270.117M/s
+bench_sha3::shake256/256/32         1038 ns         1038 ns       674437       264.577M/s
+bench_sha3::shake256/256/64         1147 ns         1147 ns       610512       266.168M/s
+bench_sha3::shake256/256/128        1362 ns         1362 ns       513831       268.802M/s
+bench_sha3::shake256/512/32         1955 ns         1955 ns       358076       265.388M/s
+bench_sha3::shake256/512/64         2063 ns         2063 ns       339251       266.239M/s
+bench_sha3::shake256/512/128        2279 ns         2279 ns       307130       267.789M/s
+bench_sha3::shake256/1024/32        3798 ns         3798 ns       184282       265.159M/s
+bench_sha3::shake256/1024/64        3907 ns         3907 ns       179223       265.583M/s
+bench_sha3::shake256/1024/128       4121 ns         4121 ns       169847        266.57M/s
+bench_sha3::shake256/2048/32        7471 ns         7471 ns        93699       265.521M/s
+bench_sha3::shake256/2048/64        7579 ns         7579 ns        92356       265.751M/s
+bench_sha3::shake256/2048/128       7795 ns         7795 ns        89782       266.235M/s
+bench_sha3::shake256/4096/32       14343 ns        14342 ns        48816       274.485M/s
+bench_sha3::shake256/4096/64       14450 ns        14450 ns        48441       274.557M/s
+bench_sha3::shake256/4096/128      14664 ns        14664 ns        47736       274.707M/s
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( using `g++` )
 
 ```fish
-2022-09-15T09:34:43+00:00
+2022-12-04T08:37:09+00:00
 Running ./bench/a.out
-Run on (4 X 2300.22 MHz CPU s)
+Run on (4 X 2300.25 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x2)
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.22, 0.07, 0.02
-------------------------------------------------------------------------------------
-Benchmark                          Time             CPU   Iterations UserCounters...
-------------------------------------------------------------------------------------
-bench_sha3::keccakf1600         1113 ns         1113 ns       633006 bytes_per_second=171.34M/s
-bench_sha3::sha3_224/32         1202 ns         1202 ns       581497 bytes_per_second=25.3981M/s
-bench_sha3::sha3_224/64         1205 ns         1205 ns       582634 bytes_per_second=50.665M/s
-bench_sha3::sha3_224/128        1203 ns         1203 ns       582177 bytes_per_second=101.49M/s
-bench_sha3::sha3_224/256        2390 ns         2390 ns       293398 bytes_per_second=102.152M/s
-bench_sha3::sha3_224/512        4752 ns         4752 ns       147386 bytes_per_second=102.757M/s
-bench_sha3::sha3_224/1024       9477 ns         9477 ns        73809 bytes_per_second=103.047M/s
-bench_sha3::sha3_224/2048      17724 ns        17722 ns        39459 bytes_per_second=110.209M/s
-bench_sha3::sha3_224/4096      34284 ns        34283 ns        20451 bytes_per_second=113.942M/s
-bench_sha3::sha3_256/32         1150 ns         1150 ns       606285 bytes_per_second=26.5364M/s
-bench_sha3::sha3_256/64         1148 ns         1148 ns       610131 bytes_per_second=53.1855M/s
-bench_sha3::sha3_256/128        1139 ns         1139 ns       613665 bytes_per_second=107.16M/s
-bench_sha3::sha3_256/256        2265 ns         2264 ns       309528 bytes_per_second=107.812M/s
-bench_sha3::sha3_256/512        4499 ns         4499 ns       155393 bytes_per_second=108.531M/s
-bench_sha3::sha3_256/1024       8984 ns         8983 ns        77843 bytes_per_second=108.715M/s
-bench_sha3::sha3_256/2048      17960 ns        17957 ns        38994 bytes_per_second=108.767M/s
-bench_sha3::sha3_256/4096      34760 ns        34757 ns        20115 bytes_per_second=112.388M/s
-bench_sha3::sha3_384/32         1096 ns         1095 ns       637855 bytes_per_second=27.8592M/s
-bench_sha3::sha3_384/64         1096 ns         1095 ns       638035 bytes_per_second=55.7159M/s
-bench_sha3::sha3_384/128        2175 ns         2175 ns       322616 bytes_per_second=56.1213M/s
-bench_sha3::sha3_384/256        3253 ns         3252 ns       215101 bytes_per_second=75.0625M/s
-bench_sha3::sha3_384/512        5383 ns         5382 ns       129482 bytes_per_second=90.7186M/s
-bench_sha3::sha3_384/1024      10709 ns        10708 ns        65363 bytes_per_second=91.1985M/s
-bench_sha3::sha3_384/2048      21444 ns        21444 ns        32735 bytes_per_second=91.0814M/s
-bench_sha3::sha3_384/4096      42666 ns        42664 ns        16398 bytes_per_second=91.559M/s
-bench_sha3::sha3_512/32         1071 ns         1071 ns       654337 bytes_per_second=28.4828M/s
-bench_sha3::sha3_512/64         1065 ns         1065 ns       656514 bytes_per_second=57.3062M/s
-bench_sha3::sha3_512/128        2122 ns         2122 ns       330484 bytes_per_second=57.5395M/s
-bench_sha3::sha3_512/256        4221 ns         4220 ns       165966 bytes_per_second=57.8543M/s
-bench_sha3::sha3_512/512        8416 ns         8415 ns        83210 bytes_per_second=58.0239M/s
-bench_sha3::sha3_512/1024      15748 ns        15747 ns        44481 bytes_per_second=62.0153M/s
-bench_sha3::sha3_512/2048      30539 ns        30537 ns        22973 bytes_per_second=63.9597M/s
-bench_sha3::sha3_512/4096      59782 ns        59779 ns        11710 bytes_per_second=65.3451M/s
-bench_sha3::shake128/32/32          1267 ns         1267 ns       552088 bytes_per_second=48.1849M/s
-bench_sha3::shake128/32/64          1340 ns         1340 ns       522935 bytes_per_second=68.3447M/s
-bench_sha3::shake128/32/128         1485 ns         1485 ns       471090 bytes_per_second=102.733M/s
-bench_sha3::shake128/64/32          1259 ns         1259 ns       556037 bytes_per_second=72.735M/s
-bench_sha3::shake128/64/64          1330 ns         1330 ns       526904 bytes_per_second=91.78M/s
-bench_sha3::shake128/64/128         1473 ns         1473 ns       475675 bytes_per_second=124.349M/s
-bench_sha3::shake128/128/32         1257 ns         1257 ns       556183 bytes_per_second=121.37M/s
-bench_sha3::shake128/128/64         1331 ns         1331 ns       525757 bytes_per_second=137.601M/s
-bench_sha3::shake128/128/128        1472 ns         1472 ns       476248 bytes_per_second=165.835M/s
-bench_sha3::shake128/256/32         2397 ns         2397 ns       291503 bytes_per_second=114.601M/s
-bench_sha3::shake128/256/64         2472 ns         2472 ns       283291 bytes_per_second=123.455M/s
-bench_sha3::shake128/256/128        2612 ns         2611 ns       267549 bytes_per_second=140.239M/s
-bench_sha3::shake128/512/32         4668 ns         4668 ns       150141 bytes_per_second=111.147M/s
-bench_sha3::shake128/512/64         4744 ns         4744 ns       147200 bytes_per_second=115.798M/s
-bench_sha3::shake128/512/128        4888 ns         4888 ns       143015 bytes_per_second=124.88M/s
-bench_sha3::shake128/1024/32        8131 ns         8130 ns        86073 bytes_per_second=123.872M/s
-bench_sha3::shake128/1024/64        8192 ns         8192 ns        85526 bytes_per_second=126.662M/s
-bench_sha3::shake128/1024/128       8328 ns         8327 ns        84066 bytes_per_second=131.935M/s
-bench_sha3::shake128/2048/32       14983 ns        14982 ns        46782 bytes_per_second=132.401M/s
-bench_sha3::shake128/2048/64       15045 ns        15043 ns        46516 bytes_per_second=133.889M/s
-bench_sha3::shake128/2048/128      15203 ns        15202 ns        46084 bytes_per_second=136.508M/s
-bench_sha3::shake128/4096/32       28671 ns        28669 ns        24430 bytes_per_second=137.318M/s
-bench_sha3::shake128/4096/64       28765 ns        28763 ns        24361 bytes_per_second=137.929M/s
-bench_sha3::shake128/4096/128      28933 ns        28930 ns        24212 bytes_per_second=139.245M/s
-bench_sha3::shake256/32/32          1264 ns         1263 ns       555064 bytes_per_second=48.3067M/s
-bench_sha3::shake256/32/64          1333 ns         1333 ns       525793 bytes_per_second=68.7059M/s
-bench_sha3::shake256/32/128         1475 ns         1475 ns       474031 bytes_per_second=103.463M/s
-bench_sha3::shake256/64/32          1265 ns         1265 ns       553966 bytes_per_second=72.3586M/s
-bench_sha3::shake256/64/64          1334 ns         1334 ns       524205 bytes_per_second=91.5084M/s
-bench_sha3::shake256/64/128         1477 ns         1477 ns       474673 bytes_per_second=123.993M/s
-bench_sha3::shake256/128/32         1256 ns         1256 ns       556132 bytes_per_second=121.535M/s
-bench_sha3::shake256/128/64         1328 ns         1328 ns       528184 bytes_per_second=137.929M/s
-bench_sha3::shake256/128/128        1470 ns         1470 ns       474788 bytes_per_second=166.033M/s
-bench_sha3::shake256/256/32         2407 ns         2407 ns       290654 bytes_per_second=114.127M/s
-bench_sha3::shake256/256/64         2479 ns         2479 ns       282172 bytes_per_second=123.111M/s
-bench_sha3::shake256/256/128        2624 ns         2624 ns       266861 bytes_per_second=139.564M/s
-bench_sha3::shake256/512/32         4701 ns         4700 ns       148933 bytes_per_second=110.371M/s
-bench_sha3::shake256/512/64         4774 ns         4774 ns       146804 bytes_per_second=115.058M/s
-bench_sha3::shake256/512/128        4913 ns         4913 ns       142415 bytes_per_second=124.227M/s
-bench_sha3::shake256/1024/32        9323 ns         9322 ns        75039 bytes_per_second=108.031M/s
-bench_sha3::shake256/1024/64        9401 ns         9401 ns        74520 bytes_per_second=110.374M/s
-bench_sha3::shake256/1024/128       9546 ns         9546 ns        73385 bytes_per_second=115.094M/s
-bench_sha3::shake256/2048/32       18526 ns        18526 ns        37790 bytes_per_second=107.074M/s
-bench_sha3::shake256/2048/64       18596 ns        18595 ns        37675 bytes_per_second=108.317M/s
-bench_sha3::shake256/2048/128      18740 ns        18740 ns        37398 bytes_per_second=110.739M/s
-bench_sha3::shake256/4096/32       35752 ns        35751 ns        19570 bytes_per_second=110.116M/s
-bench_sha3::shake256/4096/64       35834 ns        35834 ns        19492 bytes_per_second=110.714M/s
-bench_sha3::shake256/4096/128      36020 ns        36018 ns        19468 bytes_per_second=111.842M/s
+Load Average: 0.13, 0.03, 0.01
+------------------------------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations average_cpu_cycles bytes_per_second
+------------------------------------------------------------------------------------------------------------
+bench_sha3::keccakf1600             1336 ns         1336 ns       524560             3.047k       142.794M/s
+bench_sha3::sha3_224/32             1109 ns         1109 ns       628047             2.513k       27.5214M/s
+bench_sha3::sha3_224/64             1109 ns         1109 ns       631883             2.513k       55.0437M/s
+bench_sha3::sha3_224/128            1106 ns         1106 ns       633912             2.505k       110.408M/s
+bench_sha3::sha3_224/256            2175 ns         2175 ns       321854             4.965k       112.245M/s
+bench_sha3::sha3_224/512            4320 ns         4319 ns       162196             9.897k       113.042M/s
+bench_sha3::sha3_224/1024           8573 ns         8573 ns        81642            19.682k        113.91M/s
+bench_sha3::sha3_224/2048          16068 ns        16068 ns        43450             36.92k       121.557M/s
+bench_sha3::sha3_224/4096          31017 ns        31017 ns        22534            71.304k        125.94M/s
+bench_sha3::sha3_256/32             1155 ns         1155 ns       606164             2.618k         26.42M/s
+bench_sha3::sha3_256/64             1156 ns         1156 ns       605897             2.619k       52.8112M/s
+bench_sha3::sha3_256/128            1162 ns         1162 ns       602718             2.633k       105.071M/s
+bench_sha3::sha3_256/256            2275 ns         2274 ns       307624             5.192k       107.339M/s
+bench_sha3::sha3_256/512            4573 ns         4573 ns       153275            10.479k       106.772M/s
+bench_sha3::sha3_256/1024           9125 ns         9125 ns        76748             20.95k       107.024M/s
+bench_sha3::sha3_256/2048          18241 ns        18241 ns        38394            41.915k       107.074M/s
+bench_sha3::sha3_256/4096          35275 ns        35273 ns        19833            81.087k       110.742M/s
+bench_sha3::sha3_384/32             1102 ns         1102 ns       635856             2.496k       27.6952M/s
+bench_sha3::sha3_384/64             1102 ns         1102 ns       635710             2.494k       55.4066M/s
+bench_sha3::sha3_384/128            2157 ns         2157 ns       324392             4.924k       56.5833M/s
+bench_sha3::sha3_384/256            3202 ns         3202 ns       218457             7.327k        76.254M/s
+bench_sha3::sha3_384/512            5311 ns         5310 ns       131496            12.176k       91.9464M/s
+bench_sha3::sha3_384/1024          10579 ns        10579 ns        66243            24.293k        92.315M/s
+bench_sha3::sha3_384/2048          21119 ns        21116 ns        33175            48.523k        92.495M/s
+bench_sha3::sha3_384/4096          42108 ns        42106 ns        16634            96.799k       92.7719M/s
+bench_sha3::sha3_512/32             1105 ns         1105 ns       633035             2.502k       27.6183M/s
+bench_sha3::sha3_512/64             1101 ns         1101 ns       635885             2.492k       55.4409M/s
+bench_sha3::sha3_512/128            2176 ns         2176 ns       321695             4.967k       56.0924M/s
+bench_sha3::sha3_512/256            4313 ns         4313 ns       162701              9.88k       56.6082M/s
+bench_sha3::sha3_512/512            8569 ns         8568 ns        81722            19.668k       56.9878M/s
+bench_sha3::sha3_512/1024          15992 ns        15992 ns        43767            36.738k       61.0639M/s
+bench_sha3::sha3_512/2048          30862 ns        30859 ns        22666            70.931k       63.2918M/s
+bench_sha3::sha3_512/4096          60556 ns        60555 ns        11559           139.236k       64.5078M/s
+bench_sha3::shake128/32/32          1478 ns         1478 ns       472524             3.373k       41.2972M/s
+bench_sha3::shake128/32/64          1513 ns         1513 ns       462952             3.458k       60.5157M/s
+bench_sha3::shake128/32/128         1568 ns         1568 ns       446404             3.585k       97.3034M/s
+bench_sha3::shake128/64/32          1478 ns         1478 ns       472079             3.372k       61.9487M/s
+bench_sha3::shake128/64/64          1507 ns         1506 ns       464019             3.443k       81.0328M/s
+bench_sha3::shake128/64/128         1562 ns         1562 ns       448113             3.572k       117.198M/s
+bench_sha3::shake128/128/32         1472 ns         1472 ns       475581             3.359k       103.679M/s
+bench_sha3::shake128/128/64         1512 ns         1512 ns       462651             3.456k       121.092M/s
+bench_sha3::shake128/128/128        1559 ns         1559 ns       448800             3.564k       156.593M/s
+bench_sha3::shake128/256/32         2866 ns         2866 ns       244420             6.565k       95.8469M/s
+bench_sha3::shake128/256/64         2908 ns         2908 ns       238361             6.668k        104.93M/s
+bench_sha3::shake128/256/128        2961 ns         2961 ns       236320             6.788k       123.694M/s
+bench_sha3::shake128/512/32         5742 ns         5742 ns       121997             13.18k       90.3489M/s
+bench_sha3::shake128/512/64         5771 ns         5771 ns       121140            13.252k       95.1813M/s
+bench_sha3::shake128/512/128        5821 ns         5821 ns       120349            13.366k       104.861M/s
+bench_sha3::shake128/1024/32        9974 ns         9974 ns        69978            22.914k       100.975M/s
+bench_sha3::shake128/1024/64       10031 ns        10031 ns        69813            23.048k       103.444M/s
+bench_sha3::shake128/1024/128      10061 ns        10061 ns        69496            23.119k       109.196M/s
+bench_sha3::shake128/2048/32       18525 ns        18524 ns        37774             42.58k       107.084M/s
+bench_sha3::shake128/2048/64       18538 ns        18537 ns        37747            42.613k       108.656M/s
+bench_sha3::shake128/2048/128      18594 ns        18594 ns        37591            42.742k       111.608M/s
+bench_sha3::shake128/4096/32       35530 ns        35529 ns        19690            81.693k       110.806M/s
+bench_sha3::shake128/4096/64       35559 ns        35558 ns        19664            81.759k       111.574M/s
+bench_sha3::shake128/4096/128      35594 ns        35593 ns        19625             81.84k       113.177M/s
+bench_sha3::shake256/32/32          1330 ns         1330 ns       526433             3.037k       45.8975M/s
+bench_sha3::shake256/32/64          1371 ns         1370 ns       510515              3.13k       66.8034M/s
+bench_sha3::shake256/32/128         1427 ns         1427 ns       490794              3.26k       106.941M/s
+bench_sha3::shake256/64/32          1334 ns         1334 ns       525015             3.046k       68.6385M/s
+bench_sha3::shake256/64/64          1368 ns         1368 ns       510377             3.125k       89.2164M/s
+bench_sha3::shake256/64/128         1424 ns         1424 ns       491717             3.253k        128.59M/s
+bench_sha3::shake256/128/32         1325 ns         1325 ns       528523             3.025k       115.171M/s
+bench_sha3::shake256/128/64         1359 ns         1359 ns       515073             3.103k       134.763M/s
+bench_sha3::shake256/128/128        1415 ns         1415 ns       494772             3.234k       172.502M/s
+bench_sha3::shake256/256/32         2592 ns         2592 ns       269991             5.939k       105.979M/s
+bench_sha3::shake256/256/64         2630 ns         2630 ns       266230             6.026k       116.053M/s
+bench_sha3::shake256/256/128        2676 ns         2676 ns       261593             6.134k       136.829M/s
+bench_sha3::shake256/512/32         5133 ns         5132 ns       136469            11.784k       101.086M/s
+bench_sha3::shake256/512/64         5174 ns         5174 ns       135408            11.878k       106.174M/s
+bench_sha3::shake256/512/128        5226 ns         5226 ns       133896            11.999k       116.784M/s
+bench_sha3::shake256/1024/32       10257 ns        10256 ns        68298            23.569k       98.1905M/s
+bench_sha3::shake256/1024/64       10280 ns        10280 ns        68108            23.622k       100.932M/s
+bench_sha3::shake256/1024/128      10342 ns        10341 ns        67692            23.766k       106.237M/s
+bench_sha3::shake256/2048/32       20472 ns        20472 ns        34182            47.064k        96.895M/s
+bench_sha3::shake256/2048/64       20502 ns        20501 ns        34136            47.133k       98.2454M/s
+bench_sha3::shake256/2048/128      20571 ns        20571 ns        34031            47.288k        100.88M/s
+bench_sha3::shake256/4096/32       39638 ns        39637 ns        17654            91.144k       99.3214M/s
+bench_sha3::shake256/4096/64       39660 ns        39659 ns        17647            91.194k       100.035M/s
+bench_sha3::shake256/4096/128      39725 ns        39723 ns        17623             91.34k        101.41M/s
+```
+
+### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( using `clang++` )
+
+```fish
+2022-12-04T08:39:47+00:00
+Running ./bench/a.out
+Run on (4 X 2300.25 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x2)
+  L1 Instruction 32 KiB (x2)
+  L2 Unified 256 KiB (x2)
+  L3 Unified 46080 KiB (x1)
+Load Average: 0.26, 0.20, 0.09
+------------------------------------------------------------------------------------------------------------
+Benchmark                              Time             CPU   Iterations average_cpu_cycles bytes_per_second
+------------------------------------------------------------------------------------------------------------
+bench_sha3::keccakf1600              491 ns          491 ns      1425023             1.101k       388.771M/s
+bench_sha3::sha3_224/32              516 ns          516 ns      1355114             1.159k       59.1475M/s
+bench_sha3::sha3_224/64              515 ns          515 ns      1360671             1.157k       118.477M/s
+bench_sha3::sha3_224/128             511 ns          511 ns      1371388             1.148k       238.938M/s
+bench_sha3::sha3_224/256            1002 ns         1002 ns       696561             2.278k       243.606M/s
+bench_sha3::sha3_224/512            1990 ns         1989 ns       351893             4.549k       245.432M/s
+bench_sha3::sha3_224/1024           3952 ns         3952 ns       177010             9.063k       247.083M/s
+bench_sha3::sha3_224/2048           7365 ns         7365 ns        95139            16.912k       265.196M/s
+bench_sha3::sha3_224/4096          14237 ns        14237 ns        49222            32.718k       274.376M/s
+bench_sha3::sha3_256/32              514 ns          514 ns      1361288             1.152k       59.3709M/s
+bench_sha3::sha3_256/64              516 ns          516 ns      1358727             1.156k       118.313M/s
+bench_sha3::sha3_256/128             513 ns          513 ns      1361566              1.15k       237.843M/s
+bench_sha3::sha3_256/256            1007 ns         1007 ns       695253             2.286k       242.377M/s
+bench_sha3::sha3_256/512            1989 ns         1989 ns       351682             4.545k       245.435M/s
+bench_sha3::sha3_256/1024           3948 ns         3948 ns       177203              9.05k       247.379M/s
+bench_sha3::sha3_256/2048           7856 ns         7856 ns        88918            18.039k       248.618M/s
+bench_sha3::sha3_256/4096          15238 ns        15236 ns        45975            35.019k       256.381M/s
+bench_sha3::sha3_384/32              518 ns          518 ns      1353909             1.159k       58.9091M/s
+bench_sha3::sha3_384/64              518 ns          518 ns      1353049             1.158k       117.908M/s
+bench_sha3::sha3_384/128            1012 ns         1012 ns       690020             2.296k       120.595M/s
+bench_sha3::sha3_384/256            1507 ns         1507 ns       464767             3.433k       162.047M/s
+bench_sha3::sha3_384/512            2472 ns         2472 ns       283207             5.653k       197.538M/s
+bench_sha3::sha3_384/1024           4927 ns         4927 ns       142239              11.3k       198.226M/s
+bench_sha3::sha3_384/2048           9807 ns         9806 ns        71394            22.524k        199.17M/s
+bench_sha3::sha3_384/4096          19624 ns        19624 ns        35677            45.109k       199.057M/s
+bench_sha3::sha3_512/32              513 ns          513 ns      1363676             1.152k       59.4614M/s
+bench_sha3::sha3_512/64              509 ns          509 ns      1374820             1.144k       119.831M/s
+bench_sha3::sha3_512/128            1001 ns         1001 ns       699436             2.274k       122.008M/s
+bench_sha3::sha3_512/256            1988 ns         1987 ns       352385             4.543k       122.845M/s
+bench_sha3::sha3_512/512            3941 ns         3941 ns       177803             9.036k       123.908M/s
+bench_sha3::sha3_512/1024           7359 ns         7359 ns        95078            16.899k         132.7M/s
+bench_sha3::sha3_512/2048          14179 ns        14179 ns        49332            32.584k       137.747M/s
+bench_sha3::sha3_512/4096          27844 ns        27843 ns        25099            64.013k       140.294M/s
+bench_sha3::shake128/32/32           708 ns          708 ns       988364             1.606k       86.2108M/s
+bench_sha3::shake128/32/64           900 ns          900 ns       778236             2.047k       101.766M/s
+bench_sha3::shake128/32/128         1281 ns         1281 ns       545164             2.925k       119.096M/s
+bench_sha3::shake128/64/32           709 ns          709 ns       987615             1.608k        129.16M/s
+bench_sha3::shake128/64/64           899 ns          899 ns       778721             2.046k       135.783M/s
+bench_sha3::shake128/64/128         1278 ns         1278 ns       547808             2.918k       143.271M/s
+bench_sha3::shake128/128/32          706 ns          706 ns       991560             1.602k       216.113M/s
+bench_sha3::shake128/128/64          896 ns          896 ns       781141              2.04k       204.276M/s
+bench_sha3::shake128/128/128        1278 ns         1278 ns       548169             2.917k       191.092M/s
+bench_sha3::shake128/256/32         1199 ns         1199 ns       584046             2.737k       229.008M/s
+bench_sha3::shake128/256/64         1386 ns         1386 ns       504875             3.167k       220.118M/s
+bench_sha3::shake128/256/128        1768 ns         1768 ns       396150             4.045k       207.134M/s
+bench_sha3::shake128/512/32         2190 ns         2190 ns       319939             5.015k       236.898M/s
+bench_sha3::shake128/512/64         2378 ns         2378 ns       294320             5.448k       230.975M/s
+bench_sha3::shake128/512/128        2758 ns         2757 ns       253717              6.32k       221.349M/s
+bench_sha3::shake128/1024/32        3660 ns         3659 ns       191306             8.395k       275.205M/s
+bench_sha3::shake128/1024/64        3851 ns         3851 ns       181728             8.835k       269.458M/s
+bench_sha3::shake128/1024/128       4232 ns         4232 ns       165367             9.712k       259.625M/s
+bench_sha3::shake128/2048/32        6596 ns         6596 ns       106260            15.148k       300.751M/s
+bench_sha3::shake128/2048/64        6786 ns         6786 ns       103065            15.586k       296.821M/s
+bench_sha3::shake128/2048/128       7170 ns         7170 ns        97689            16.469k       289.435M/s
+bench_sha3::shake128/4096/32       12486 ns        12486 ns        56027            28.698k       315.288M/s
+bench_sha3::shake128/4096/64       12684 ns        12683 ns        55229            29.151k       312.798M/s
+bench_sha3::shake128/4096/128      13067 ns        13066 ns        52763            30.031k         308.3M/s
+bench_sha3::shake256/32/32           705 ns          705 ns       994366             1.599k       86.6117M/s
+bench_sha3::shake256/32/64           895 ns          895 ns       782353             2.036k       102.309M/s
+bench_sha3::shake256/32/128         1276 ns         1276 ns       548923             2.912k       119.607M/s
+bench_sha3::shake256/64/32           705 ns          705 ns       994003               1.6k       129.865M/s
+bench_sha3::shake256/64/64           896 ns          896 ns       782167             2.038k       136.313M/s
+bench_sha3::shake256/64/128         1276 ns         1276 ns       548018             2.913k       143.493M/s
+bench_sha3::shake256/128/32          706 ns          706 ns       992663             1.601k       216.221M/s
+bench_sha3::shake256/128/64          894 ns          894 ns       782400             2.035k       204.827M/s
+bench_sha3::shake256/128/128        1274 ns         1274 ns       548811             2.908k       191.659M/s
+bench_sha3::shake256/256/32         1193 ns         1193 ns       586701             2.723k       230.157M/s
+bench_sha3::shake256/256/64         1386 ns         1386 ns       505510             3.165k       220.241M/s
+bench_sha3::shake256/256/128        1764 ns         1764 ns       396874             4.036k       207.585M/s
+bench_sha3::shake256/512/32         2179 ns         2179 ns       321214             4.989k       238.127M/s
+bench_sha3::shake256/512/64         2363 ns         2363 ns       296215             5.414k       232.431M/s
+bench_sha3::shake256/512/128        2752 ns         2752 ns       254621             6.308k       221.768M/s
+bench_sha3::shake256/1024/32        4138 ns         4138 ns       169193             9.496k       243.375M/s
+bench_sha3::shake256/1024/64        4329 ns         4329 ns       161754             9.935k       239.708M/s
+bench_sha3::shake256/1024/128       4707 ns         4707 ns       148728            10.805k       233.402M/s
+bench_sha3::shake256/2048/32        8038 ns         8037 ns        87040            18.463k       246.809M/s
+bench_sha3::shake256/2048/64        8227 ns         8227 ns        85045            18.899k       244.825M/s
+bench_sha3::shake256/2048/128       8607 ns         8606 ns        81401            19.773k       241.125M/s
+bench_sha3::shake256/4096/32       15412 ns        15412 ns        45424            35.425k       255.443M/s
+bench_sha3::shake256/4096/64       15605 ns        15605 ns        44860            35.872k       254.227M/s
+bench_sha3::shake256/4096/128      15990 ns        15990 ns        43768            36.756k       251.931M/s
 ```
 
 ---
