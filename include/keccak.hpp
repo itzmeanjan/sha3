@@ -220,16 +220,16 @@ permute(uint64_t* const state)
   alignas(32) uint64_t rot[28]{};
   std::memcpy(rot, ROT, 25 * sizeof(uint64_t));
 
-  const auto shl0 = _mm256_loadu_si256((__m256i*)(rot + 0));
-  const auto shl4 = _mm256_loadu_si256((__m256i*)(rot + 4));
+  const auto shl0 = _mm256_load_si256((__m256i*)(rot + 0));
+  const auto shl4 = _mm256_load_si256((__m256i*)(rot + 4));
   const auto shl5 = _mm256_loadu_si256((__m256i*)(rot + 5));
   const auto shl9 = _mm256_loadu_si256((__m256i*)(rot + 9));
   const auto shl10 = _mm256_loadu_si256((__m256i*)(rot + 10));
   const auto shl14 = _mm256_loadu_si256((__m256i*)(rot + 14));
   const auto shl15 = _mm256_loadu_si256((__m256i*)(rot + 15));
   const auto shl19 = _mm256_loadu_si256((__m256i*)(rot + 19));
-  const auto shl20 = _mm256_loadu_si256((__m256i*)(rot + 20));
-  const auto shl24 = _mm256_loadu_si256((__m256i*)(rot + 24));
+  const auto shl20 = _mm256_load_si256((__m256i*)(rot + 20));
+  const auto shl24 = _mm256_load_si256((__m256i*)(rot + 24));
 
   const auto shr0 = _mm256_sub_epi64(bw, shl0);
   const auto shr4 = _mm256_sub_epi64(bw, shl4);
@@ -310,6 +310,40 @@ permute(uint64_t* const state)
     const auto s14_ = _mm256_xor_si256(s14, d4);                 // s'[14], _, _, _
     const auto s19_ = _mm256_xor_si256(s19, d4);                 // s'[19], _, _, _
     const auto s24_ = _mm256_xor_si256(s24, d4);                 // s'[24], _, _, _
+
+    // ρ step mapping
+
+    const auto t19 = _mm256_sllv_epi64(s0_, shl0);
+    const auto t20 = _mm256_srlv_epi64(s0_, shr0);
+    const auto s0__ = _mm256_xor_si256(t19, t20); // s'[0], s'[1], s'[2], s'[3]
+    const auto t21 = _mm256_sllv_epi64(s5_, shl5);
+    const auto t22 = _mm256_srlv_epi64(s5_, shr5);
+    const auto s5__ = _mm256_xor_si256(t21, t22); // s'[5], s'[6], s'[7], s'[8]
+    const auto t23 = _mm256_sllv_epi64(s10_, shl10);
+    const auto t24 = _mm256_srlv_epi64(s10_, shr10);
+    const auto s10__ = _mm256_xor_si256(t23, t24); // s'[10], s'[11], s'[12], s'[13]
+    const auto t25 = _mm256_sllv_epi64(s15_, shl15);
+    const auto t26 = _mm256_srlv_epi64(s15_, shr15);
+    const auto s15__ = _mm256_xor_si256(t25, t26); // s'[15], s'[16], s'[17], s'[18]
+    const auto t27 = _mm256_sllv_epi64(s20_, shl20);
+    const auto t28 = _mm256_srlv_epi64(s20_, shr20);
+    const auto s20__ = _mm256_xor_si256(t27, t28); // s'[20], s'[21], s'[22], s'[23]
+
+    const auto t29 = _mm256_sllv_epi64(s4_, shl4);
+    const auto t30 = _mm256_srlv_epi64(s4_, shr4);
+    const auto s4__ = _mm256_xor_si256(t29, t30); // s'[4], _, _, _
+    const auto t31 = _mm256_sllv_epi64(s9_, shl9);
+    const auto t32 = _mm256_srlv_epi64(s9_, shr9);
+    const auto s9__ = _mm256_xor_si256(t31, t32); // s'[9], _, _, _
+    const auto t33 = _mm256_sllv_epi64(s14_, shl14);
+    const auto t34 = _mm256_srlv_epi64(s14_, shr14);
+    const auto s14__ = _mm256_xor_si256(t33, t34); // s'[14], _, _, _
+    const auto t35 = _mm256_sllv_epi64(s19_, shl19);
+    const auto t36 = _mm256_srlv_epi64(s19_, shr19);
+    const auto s19__ = _mm256_xor_si256(t35, t36); // s'[19], _, _, _
+    const auto t37 = _mm256_sllv_epi64(s24_, shl24);
+    const auto t38 = _mm256_srlv_epi64(s24_, shr24);
+    const auto s24__ = _mm256_xor_si256(t37, t38); // s'[24], _, _, _
   }
 
   _mm256_store_si256((__m256i*)(tmp + 0), s0);
