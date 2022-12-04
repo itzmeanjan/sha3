@@ -32,4 +32,4 @@ bench/a.out: bench/main.cpp include/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -lbenchmark -o $@
 
 benchmark: bench/a.out
-	./$<
+	./$< --benchmark_counters_tabular=true
