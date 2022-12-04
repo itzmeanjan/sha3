@@ -26,13 +26,11 @@ constexpr size_t ROUNDS = 12 + 2 * L;
 //
 // Note, following offsets are obtained by performing % 64 ( bit width of lane )
 // on offsets provided in above mentioned link
-constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE, 28 % LANE_SIZE,
-                        91 % LANE_SIZE,  36 % LANE_SIZE,  300 % LANE_SIZE, 6 % LANE_SIZE,
-                        55 % LANE_SIZE,  276 % LANE_SIZE, 3 % LANE_SIZE,   10 % LANE_SIZE,
-                        171 % LANE_SIZE, 153 % LANE_SIZE, 231 % LANE_SIZE, 105 % LANE_SIZE,
-                        45 % LANE_SIZE,  15 % LANE_SIZE,  21 % LANE_SIZE,  136 % LANE_SIZE,
-                        210 % LANE_SIZE, 66 % LANE_SIZE,  253 % LANE_SIZE, 120 % LANE_SIZE,
-                        78 % LANE_SIZE };
+constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE, 28 % LANE_SIZE,  91 % LANE_SIZE,
+                        36 % LANE_SIZE,  300 % LANE_SIZE, 6 % LANE_SIZE,   55 % LANE_SIZE,  276 % LANE_SIZE,
+                        3 % LANE_SIZE,   10 % LANE_SIZE,  171 % LANE_SIZE, 153 % LANE_SIZE, 231 % LANE_SIZE,
+                        105 % LANE_SIZE, 45 % LANE_SIZE,  15 % LANE_SIZE,  21 % LANE_SIZE,  136 % LANE_SIZE,
+                        210 % LANE_SIZE, 66 % LANE_SIZE,  253 % LANE_SIZE, 120 % LANE_SIZE, 78 % LANE_SIZE };
 
 // Computes single bit of Keccak-p[1600, 24] round constant ( at compile-time ),
 // using binary LFSR, defined by primitive polynomial x^8 + x^6 + x^5 + x^4 + 1
@@ -95,11 +93,10 @@ compute_rc(const size_t r_idx)
 // Round constants to be XORed with lane (0, 0) of keccak-p[1600, 24]
 // permutation state, see section 3.2.5 of
 // https://dx.doi.org/10.s6028/NIST.FIPS.202
-constexpr uint64_t RC[ROUNDS]{ compute_rc(0),  compute_rc(1),  compute_rc(2),  compute_rc(3),
-                               compute_rc(4),  compute_rc(5),  compute_rc(6),  compute_rc(7),
-                               compute_rc(8),  compute_rc(9),  compute_rc(10), compute_rc(11),
-                               compute_rc(12), compute_rc(13), compute_rc(14), compute_rc(15),
-                               compute_rc(16), compute_rc(17), compute_rc(18), compute_rc(19),
+constexpr uint64_t RC[ROUNDS]{ compute_rc(0),  compute_rc(1),  compute_rc(2),  compute_rc(3),  compute_rc(4),
+                               compute_rc(5),  compute_rc(6),  compute_rc(7),  compute_rc(8),  compute_rc(9),
+                               compute_rc(10), compute_rc(11), compute_rc(12), compute_rc(13), compute_rc(14),
+                               compute_rc(15), compute_rc(16), compute_rc(17), compute_rc(18), compute_rc(19),
                                compute_rc(20), compute_rc(21), compute_rc(22), compute_rc(23) };
 
 // Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
@@ -344,6 +341,31 @@ permute(uint64_t* const state)
     const auto t37 = _mm256_sllv_epi64(s24_, shl24);
     const auto t38 = _mm256_srlv_epi64(s24_, shr24);
     const auto s24__ = _mm256_xor_si256(t37, t38); // s'[24], _, _, _
+
+    // π step mapping
+
+    const auto t39 = _mm256_permute4x64_epi64(s4__, 0b11001001u); // _, _, s'[4], _
+    const auto t40 = _mm256_blend_epi32(s0__, t39, 0b00110000u);  // s'[0], s'[1], s'[4], s'[3]
+    const auto t41 = _mm256_permute4x64_epi64(t40, 0b10011100u);  // s''[0], s''[5], s''[10], s''[15]
+
+    const auto t42 = _mm256_permute4x64_epi64(s9__, 0b00111001u); // _, _, _, s'[9]
+    const auto t43 = _mm256_blend_epi32(s5__, t42, 0b11000000u);  // s'[5], s'[6], s'[7], s'[9]
+    const auto t44 = _mm256_permute4x64_epi64(t43, 0b00101101u);  // s''[1], s''[6], s''[11], s''[16]
+
+    const auto t45 = _mm256_permute4x64_epi64(s10__, 0b01110010u); // s''[2], s''[7], s''[12], s''[17]
+
+    const auto t46 = _mm256_blend_epi32(s15__, s19__, 0b00000011u); // s'[19], s'[16], s'[17], s'[18]
+    const auto t47 = _mm256_permute4x64_epi64(t46, 0b10000111u);    // s''[3], s''[8], s''[13], s''[18]
+
+    const auto t48 = _mm256_permute4x64_epi64(s24__, 0b11100001u); // _, s'[24], _, _
+    const auto t49 = _mm256_blend_epi32(s20__, t48, 0b00001100u);  // s'[20], s'[24], s'[22], s'[23]
+    const auto t50 = _mm256_permute4x64_epi64(t49, 0b11001001u);   // s''[4], s''[9], s''[14], s''[19]
+
+    const auto t51 = _mm256_permute4x64_epi64(s0__, 0b10101010u);  // s''[20], _, _, _
+    const auto t52 = _mm256_permute4x64_epi64(s5__, 0b11111111u);  // s''[21], _, _, _
+    const auto t53 = s14__;                                        // s''[22], _, _, _
+    const auto t54 = s15__;                                        // s''[23], _, _, _
+    const auto t55 = _mm256_permute4x64_epi64(s20__, 0b01010101u); // s''[24], _, _, _
   }
 
   _mm256_store_si256((__m256i*)(tmp + 0), s0);
