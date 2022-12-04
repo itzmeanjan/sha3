@@ -1,5 +1,5 @@
-#include "test_shake128.hpp"
-#include "test_shake256.hpp"
+#include "test/test_shake128.hpp"
+#include "test/test_shake256.hpp"
 #include <iostream>
 
 int

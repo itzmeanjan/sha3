@@ -1,5 +1,5 @@
-#include "bench_keccak.hpp"
-#include "bench_sha3.hpp"
+#include "bench/bench_keccak.hpp"
+#include "bench/bench_sha3.hpp"
 
 // register keccak-f[1600] for benchmark
 BENCHMARK(bench_sha3::keccakf1600);
