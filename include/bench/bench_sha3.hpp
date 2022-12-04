@@ -6,6 +6,7 @@
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include "utils.hpp"
+#include "x86_64_cpu_cycles.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmarks SHA3 functions on CPU systems, using google-benchmark
@@ -24,8 +25,21 @@ sha3_224(benchmark::State& state)
   random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 28);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     sha3_224::hash(msg, mlen, dig);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(dig);
     benchmark::ClobberMemory();
@@ -33,6 +47,11 @@ sha3_224(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(msg);
   std::free(dig);
@@ -51,8 +70,21 @@ sha3_256(benchmark::State& state)
   random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 32);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     sha3_256::hash(msg, mlen, dig);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(dig);
     benchmark::ClobberMemory();
@@ -60,6 +92,11 @@ sha3_256(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(msg);
   std::free(dig);
@@ -78,8 +115,21 @@ sha3_384(benchmark::State& state)
   random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 48);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     sha3_384::hash(msg, mlen, dig);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(dig);
     benchmark::ClobberMemory();
@@ -87,6 +137,11 @@ sha3_384(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(msg);
   std::free(dig);
@@ -105,8 +160,21 @@ sha3_512(benchmark::State& state)
   random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 64);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     sha3_512::hash(msg, mlen, dig);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(dig);
     benchmark::ClobberMemory();
@@ -114,6 +182,11 @@ sha3_512(benchmark::State& state)
 
   const size_t tot_bytes = state.iterations() * mlen;
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(msg);
   std::free(dig);
@@ -138,7 +211,15 @@ shake128(benchmark::State& state)
   random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, dlen);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     shake128::shake128 hasher{};
     hasher.hash(msg, mlen);
 
@@ -146,12 +227,22 @@ shake128(benchmark::State& state)
       hasher.read(dig + i, 1);
     }
 
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
+
     benchmark::DoNotOptimize(dig);
     benchmark::ClobberMemory();
   }
 
   const size_t tot_bytes = state.iterations() * (mlen + dlen);
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(msg);
   std::free(dig);
@@ -176,7 +267,15 @@ shake256(benchmark::State& state)
   random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, dlen);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     shake256::shake256 hasher{};
     hasher.hash(msg, mlen);
 
@@ -184,12 +283,22 @@ shake256(benchmark::State& state)
       hasher.read(dig + i, 1);
     }
 
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
+
     benchmark::DoNotOptimize(dig);
     benchmark::ClobberMemory();
   }
 
   const size_t tot_bytes = state.iterations() * (mlen + dlen);
   state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(msg);
   std::free(dig);
