@@ -239,6 +239,9 @@ permute(uint64_t* const state)
   const auto shr20 = _mm256_sub_epi64(bw, shl20);
   const auto shr24 = _mm256_sub_epi64(bw, shl24);
 
+  alignas(32) uint64_t rc[27]{};
+  std::memcpy(rc, RC, sizeof(RC));
+
   alignas(32) uint64_t tmp[28]{};
   std::memcpy(tmp, state, 25 * sizeof(uint64_t));
 
@@ -411,10 +414,16 @@ permute(uint64_t* const state)
     const auto t79 = _mm256_permute4x64_epi64(t67, 0b11100001u); // _, s'''[21], _, _
     const auto t80 = _mm256_permute4x64_epi64(t68, 0b11001001u); // _, _, s'''[22], _
     const auto t81 = _mm256_permute4x64_epi64(t69, 0b00111001u); // _, _, _, s'''[23]
-    const auto t82 = _mm256_blend_epi32(t66, t79, 0b00001100u);
-    const auto t83 = _mm256_blend_epi32(t82, t80, 0b00110000u);
-    s20 = _mm256_blend_epi32(t83, t81, 0b11000000u); // s'''[20], s'''[21], s'''[22], s'''[23]
-    s24 = t70;                                       // s'''[24], _, _, _
+    const auto t82 = _mm256_blend_epi32(t66, t79, 0b00001100u);  // s'''[20], s'''[21], _, _
+    const auto t83 = _mm256_blend_epi32(t82, t80, 0b00110000u);  // s'''[20], s'''[21], s'''[22], _
+    s20 = _mm256_blend_epi32(t83, t81, 0b11000000u);             // s'''[20], s'''[21], s'''[22], s'''[23]
+    s24 = t70;                                                   // s'''[24], _, _, _
+
+    // ι step mapping
+
+    const auto t84 = _mm256_loadu_si256((__m256i*)(rc + i)); // RC[i], RC[i+1], RC[i+2], RC[i+3]
+    const auto t85 = _mm256_xor_si256(s0, t84);              // s''''[0], _, _, _
+    s0 = _mm256_blend_epi32(t85, s0, 0b11111100u);           // s''''[0], s'''[1], s'''[2], s'''[3]
   }
 
   _mm256_store_si256((__m256i*)(tmp + 0), s0);
