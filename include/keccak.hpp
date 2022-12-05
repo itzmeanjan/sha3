@@ -34,22 +34,18 @@ constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE, 28 % 
                         105 % LANE_SIZE, 45 % LANE_SIZE,  15 % LANE_SIZE,  21 % LANE_SIZE,  136 % LANE_SIZE,
                         210 % LANE_SIZE, 66 % LANE_SIZE,  253 % LANE_SIZE, 120 % LANE_SIZE, 78 % LANE_SIZE };
 
-// Precomputed table holding (destination, source) index pairs of π step mapping function, used for permuting
-// kecack-p[1600, 24] state array s.t. destination state array's `idx_first` lane will get value from
-// source state array's `idx_second` lane.
+// Precomputed table used for looking up source index during application of π step mapping function on
+// keccak-[1600, 24] state
 //
-// print('idx_first <= idx_second')
+// print('to <= from')
 // for y in range(5):
-//    for x in range(x):
+//    for x in range(5):
 //        print(f'{y * 5 + x} <= {x * 5 + (x + 3 * y) % 5}')
 //
 // Table generated using above Python code snippet. See section 3.2.3 of the specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-constexpr std::pair<size_t, size_t> PERM[]{ { 0, 0 },  { 1, 6 },  { 2, 12 },  { 18, 3 },  { 24, 4 },
-                                            { 3, 5 },  { 9, 6 },  { 10, 7 },  { 8, 16 },  { 9, 22 },
-                                            { 1, 10 }, { 11, 7 }, { 12, 13 }, { 19, 13 }, { 20, 14 },
-                                            { 4, 15 }, { 16, 5 }, { 17, 11 }, { 17, 18 }, { 19, 23 },
-                                            { 2, 20 }, { 8, 21 }, { 22, 14 }, { 15, 23 }, { 24, 21 } };
+constexpr size_t PERM[]{ 0,  6,  12, 18, 24, 3,  9,  10, 16, 22, 1,  7, 13,
+                         19, 20, 4,  5,  11, 17, 23, 2,  8,  14, 15, 21 };
 
 // Computes single bit of Keccak-p[1600, 24] round constant ( at compile-time ),
 // using binary LFSR, defined by primitive polynomial x^8 + x^6 + x^5 + x^4 + 1
@@ -206,8 +202,7 @@ pi(const uint64_t* const __restrict istate, // input permutation state
 #pragma unroll 25
 #endif
   for (size_t i = 0; i < 25; i++) {
-    const auto tmp = PERM[i];
-    ostate[tmp.first] = istate[tmp.second];
+    ostate[i] = istate[PERM[i]];
   }
 }
 
