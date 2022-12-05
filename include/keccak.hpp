@@ -165,6 +165,11 @@ theta(uint64_t* const state)
 inline static void
 rho(uint64_t* const state)
 {
+#if defined __GNUC__
+#pragma GCC unroll 25
+#elif defined __clang__
+#pragma unroll 25
+#endif
   for (size_t i = 0; i < 25; i++) {
     state[i] = std::rotl(state[i], ROT[i]);
   }
