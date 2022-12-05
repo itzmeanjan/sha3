@@ -2,6 +2,7 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 #if defined __AVX2__
 #include <cstring>
@@ -32,6 +33,23 @@ constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE, 28 % 
                         3 % LANE_SIZE,   10 % LANE_SIZE,  171 % LANE_SIZE, 153 % LANE_SIZE, 231 % LANE_SIZE,
                         105 % LANE_SIZE, 45 % LANE_SIZE,  15 % LANE_SIZE,  21 % LANE_SIZE,  136 % LANE_SIZE,
                         210 % LANE_SIZE, 66 % LANE_SIZE,  253 % LANE_SIZE, 120 % LANE_SIZE, 78 % LANE_SIZE };
+
+// Precomputed table holding (destination, source) index pairs of π step mapping function, used for permuting
+// kecack-p[1600, 24] state array s.t. destination state array's `idx_first` lane will get value from
+// source state array's `idx_second` lane.
+//
+// print('idx_first <= idx_second')
+// for y in range(5):
+//    for x in range(x):
+//        print(f'{y * 5 + x} <= {x * 5 + (x + 3 * y) % 5}')
+//
+// Table generated using above Python code snippet. See section 3.2.3 of the specification
+// https://dx.doi.org/10.6028/NIST.FIPS.202
+constexpr std::pair<size_t, size_t> PERM[]{ { 0, 0 },  { 1, 6 },  { 2, 12 },  { 18, 3 },  { 24, 4 },
+                                            { 3, 5 },  { 9, 6 },  { 10, 7 },  { 8, 16 },  { 9, 22 },
+                                            { 1, 10 }, { 11, 7 }, { 12, 13 }, { 19, 13 }, { 20, 14 },
+                                            { 4, 15 }, { 16, 5 }, { 17, 11 }, { 17, 18 }, { 19, 23 },
+                                            { 2, 20 }, { 8, 21 }, { 22, 14 }, { 15, 23 }, { 24, 21 } };
 
 // Computes single bit of Keccak-p[1600, 24] round constant ( at compile-time ),
 // using binary LFSR, defined by primitive polynomial x^8 + x^6 + x^5 + x^4 + 1
@@ -182,13 +200,14 @@ pi(const uint64_t* const __restrict istate, // input permutation state
    uint64_t* const __restrict ostate        // output permutation state
 )
 {
-  for (size_t i = 0; i < 5; i++) {
-    const size_t ix3 = i * 3;
-    const size_t ix5 = i * 5;
-
-    for (size_t j = 0; j < 5; j++) {
-      ostate[ix5 + j] = istate[5 * j + (ix3 + j) % 5];
-    }
+#if defined __GNUC__
+#pragma GCC unroll 25
+#elif defined __clang__
+#pragma unroll 25
+#endif
+  for (size_t i = 0; i < 25; i++) {
+    const auto tmp = PERM[i];
+    ostate[tmp.first] = istate[tmp.second];
   }
 }
 
