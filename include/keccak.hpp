@@ -3,7 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#if !defined __AVX2__
+#if defined __AVX2__
+#include <cstring>
 #include <immintrin.h>
 #endif
 
@@ -209,7 +210,9 @@ inline static void
 permute(uint64_t* const state)
 {
 
-#if !defined __AVX2__
+#if defined __AVX2__ && defined USE_AVX2
+
+#pragma message("Using AVX2 for keccak-[1600, 24] permutation")
 
   alignas(32) constexpr uint64_t bit_widths[]{ 64, 64, 64, 64 };
   const auto bw = _mm256_load_si256((__m256i*)bit_widths);
