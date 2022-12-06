@@ -51,10 +51,9 @@ extern "C"
 
   // Given N (>=0) -bytes input message, this routines computes 28 -bytes output
   // digest, using SHA3-224 hashing algorithm
-  void sha3_224_hash(
-    const uint8_t* const __restrict in, // input message
-    const size_t ilen,                  // len(in) | >= 0
-    uint8_t* const __restrict out       // 28 -bytes digest, to be computed
+  void sha3_224_hash(const uint8_t* const __restrict in, // input message
+                     const size_t ilen,                  // len(in) | >= 0
+                     uint8_t* const __restrict out       // 28 -bytes digest, to be computed
   )
   {
     sha3_224::hash(in, ilen, out);
@@ -62,10 +61,9 @@ extern "C"
 
   // Given N (>=0) -bytes input message, this routines computes 32 -bytes output
   // digest, using SHA3-256 hashing algorithm
-  void sha3_256_hash(
-    const uint8_t* const __restrict in, // input message
-    const size_t ilen,                  // len(in) | >= 0
-    uint8_t* const __restrict out       // 32 -bytes digest, to be computed
+  void sha3_256_hash(const uint8_t* const __restrict in, // input message
+                     const size_t ilen,                  // len(in) | >= 0
+                     uint8_t* const __restrict out       // 32 -bytes digest, to be computed
   )
   {
     sha3_256::hash(in, ilen, out);
@@ -73,10 +71,9 @@ extern "C"
 
   // Given N (>=0) -bytes input message, this routines computes 48 -bytes output
   // digest, using SHA3-384 hashing algorithm
-  void sha3_384_hash(
-    const uint8_t* const __restrict in, // input message
-    const size_t ilen,                  // len(in) | >= 0
-    uint8_t* const __restrict out       // 48 -bytes digest, to be computed
+  void sha3_384_hash(const uint8_t* const __restrict in, // input message
+                     const size_t ilen,                  // len(in) | >= 0
+                     uint8_t* const __restrict out       // 48 -bytes digest, to be computed
   )
   {
     sha3_384::hash(in, ilen, out);
@@ -84,10 +81,9 @@ extern "C"
 
   // Given N (>=0) -bytes input message, this routines computes 64 -bytes output
   // digest, using SHA3-512 hashing algorithm
-  void sha3_512_hash(
-    const uint8_t* const __restrict in, // input message
-    const size_t ilen,                  // len(in) | >= 0
-    uint8_t* const __restrict out       // 64 -bytes digest, to be computed
+  void sha3_512_hash(const uint8_t* const __restrict in, // input message
+                     const size_t ilen,                  // len(in) | >= 0
+                     uint8_t* const __restrict out       // 64 -bytes digest, to be computed
   )
   {
     sha3_512::hash(in, ilen, out);

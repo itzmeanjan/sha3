@@ -10,9 +10,7 @@ namespace sha3_384 {
 // See SHA3 hash function definition in section 6.1 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
 static void
-hash(const uint8_t* const __restrict msg,
-     const size_t mlen,
-     uint8_t* const __restrict dig)
+hash(const uint8_t* const __restrict msg, const size_t mlen, uint8_t* const __restrict dig)
 {
   constexpr size_t dlen = 384;
   constexpr size_t capacity = 2 * dlen;

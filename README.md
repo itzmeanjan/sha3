@@ -3,9 +3,9 @@ SHA3: Permutation-Based Hash and Extendable-Output Functions
 
 ## Motivation
 
-SHA3 standard by NIST specifies four permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
+SHA3 standard by NIST ( i.e. NIST FIPS PUB 202 ) specifies four permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
 
-These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature generation ) i.e. some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium etc. ) of NIST PQC standardization effort or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. This is exactly why I decided to implement SHA3 specification as **zero-dependency, header-only and easy-to-use C++ library**.
+These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature algorithms ) i.e. some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium, SPHINCS+ etc. ) of NIST PQC standardization effort or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. I decided to implement SHA3 specification as **zero-dependency, header-only and easy-to-use C++ library**, so that I can make use of it as modular dependency ( say pinned to specific commit using git submodule ) in other ( *future* ) projects.
 
 > **Note**
 > `sha3` - this project will be used in various post-quantum cryptographic algorithm implementations which are already selected or will be selected by NIST.
@@ -14,6 +14,7 @@ Few of those places, where I've already used `sha3` as ( git submodule based ) d
 
 - [Kyber: Post-Quantum Public-key Encryption & Key-establishment Algorithm](https://github.com/itzmeanjan/kyber)
 - [Dilithium: Post-Quantum Digital Signature Algorithm](https://github.com/itzmeanjan/dilithium)
+- [SPHINCS+: Stateless Hash-based Digital Signature Algorithm](https://github.com/itzmeanjan/sphincs)
 
 Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{11, 17, 20} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms are implemented in `sha3` library
 
@@ -90,7 +91,13 @@ and check for their equality.
 Issue following command for running test cases
 
 ```fish
-make
+make       # by default USE_AVX2=0
+```
+
+If target CPU has AVX2 flag, this SHA3 implementation can make use of AVX2 intrinsics for keccak-p[1600, 24] permutation. All one needs to do is define `USE_AVX2` preprocessor constant with non-zero value, which is used in [keccak.hpp](./include/keccak.hpp) for determining whether to use AVX2 for keccak permutation or not. For testing functional correctness of AVX2 intrinsic based keccak permutation, you may issue
+
+```fish
+AVX2=1 make # trigger AVX2 based keccak permutation code compilation
 ```
 
 ## Benchmarking
@@ -104,6 +111,14 @@ Find micro-benchmarking ( using `google-benchmark` ) results [here](./bench).
 - Include proper header files ( select what you need by name )
 - Properly use API ( see usage examples/ test cases )
 - When compiling, let your compiler know where it can find respective header files
+
+> **Note**
+
+> When compiling you can ask your compiler to check if AVX2 is available on target CPU by issuing
+
+> $ `echo | g++ -march=native -dM -E -x c++ - | grep -i avx`
+
+> If AVX2 is available on target CPU and you want to make use of it for keccak-p[1600, 24] permutation, consider passing `-march=native -DUSE_AVX2=1` when compiling [include/keccak.hpp](./include/keccak.hpp). By default it won't trigger compilation of AVX2 intrinsic based code path, you've to explicitly ask for it.
 
 Hash Function | Header/ Namespace | Example
 --- | --- | --:
@@ -124,6 +139,7 @@ SHAKE256 ( explicit incremental consumption ) | [`shake256::`](./include/shake25
 
 ```fish
 $ g++ -std=c++20 -Wall -O3 -I include example/sha3_224.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/sha3_224.cpp && ./a.out # for keccak with AVX2
 SHA3-224
 
 Input  : 043f0fa310343b6ca42c3d2ab6f168574fd41774d49c9c1e5922c2cd60b43dbb
@@ -132,6 +148,7 @@ Output : 3bfbd5e41e850f29daf9c08dbcaca7c43ca939e7d6c0b6d8993c6af4
 # ---
 
 $ g++ -std=c++20 -Wall -O3 -I include example/sha3_256.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/sha3_256.cpp && ./a.out # for keccak with AVX2
 SHA3-256
 
 Input  : 70a3bf382218c7f4ae25775ab1d21f9d48e2f03af70dcdec790a338e982e6fa8
@@ -140,6 +157,7 @@ Output : 57be0ef9634da2d94219c53032809f4ffc145df6782279a8059afe607715d675
 # ---
 
 $ g++ -std=c++20 -Wall -O3 -I include example/sha3_384.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/sha3_384.cpp && ./a.out # for keccak with AVX2
 SHA3-384
 
 Input  : 314686636dc0499f2ebf0a201fe2d44e2e8888ac1109939998230f2cba5d0e94
@@ -148,6 +166,7 @@ Output : 554f4506a1b73724d0ce25cc4a0c0b4fc26478cde43013a59c7e25a22e3e73fbcfa731f
 # ---
 
 $ g++ -std=c++20 -Wall -O3 -I include example/sha3_512.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/sha3_512.cpp && ./a.out # for keccak with AVX2
 SHA3-512
 
 Input  : 2c3c0ae485204067f1ecbc69a8fefd19a94c9c1552158a8d57a6612b3202f373
@@ -155,7 +174,8 @@ Output : 578386bdd6eb816d6d0cbc984351c889f70675a2661ba605aa65ce204b88a6d6553946c
 
 # ---
 
-g++ -std=c++20 -Wall -O3 -I include example/shake128.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -I include example/shake128.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/shake128.cpp && ./a.out # for keccak with AVX2
 SHAKE-128
 
 Input  : 8814e9f091cd4ee6ac6795be43b25b4d741143f4d7f7e9858731447359eaa1e8
@@ -163,7 +183,8 @@ Output : d32991406e38740f9b9b2674e59259891bfd23f9d6ea71a816c3133466163dacb3b1cef
 
 # ---
 
-g++ -std=c++20 -Wall -O3 -I include example/shake256.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -I include example/shake256.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/shake256.cpp && ./a.out # for keccak with AVX2
 SHAKE-256
 
 Input  : a6506638e34127e0a8415241479c968c20422f46497663eaf244f205a756f0b3
@@ -171,7 +192,8 @@ Output : ce679163b642380365c3c11dcbca7a36ddd01cefba35b8ec18ad937268f584999c6e8ae
 
 # ---
 
-g++ -std=c++20 -Wall -O3 -I include example/incremental_shake128.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -I include example/incremental_shake128.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/incremental_shake128.cpp && ./a.out # for keccak with AVX2
 Incremental SHAKE-128
 
 Input 0  : 8ee149be89652aa3a96bb1cb21c03a
@@ -180,7 +202,8 @@ Output   : 94f03616a7ed0168833dcec6f51a359b3c3cd42ac0c27409106424f0adb2257f4bfe2
 
 # ---
 
-g++ -std=c++20 -Wall -O3 -I include example/incremental_shake256.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -I include example/incremental_shake256.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -DUSE_AVX2=1 -I include example/incremental_shake256.cpp && ./a.out # for keccak with AVX2
 Incremental SHAKE-256
 
 Input 0  : 58efcb50a9a8bb61cd25f89be74fe6

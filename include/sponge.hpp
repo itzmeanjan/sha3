@@ -56,14 +56,13 @@ pad101(const size_t mlen, uint8_t* const pad)
 // This function helps when absorbing padded message bytes into sponge.
 template<const uint8_t dom_sep, const size_t bits, const size_t rate>
 static void
-get_msg_blk(
-  const uint8_t* const __restrict msg, // message ( except domain seperator )
-  const size_t mlen,                   // in bytes
-  const uint8_t* const __restrict pad, // padding ( includes domain seperator )
-  const size_t plen,                   // in bits
-  uint8_t* const __restrict blk,       // extracted block
-  const size_t blk_idx                 // index of block to extract
-  )
+get_msg_blk(const uint8_t* const __restrict msg, // message ( except domain seperator )
+            const size_t mlen,                   // in bytes
+            const uint8_t* const __restrict pad, // padding ( includes domain seperator )
+            const size_t plen,                   // in bits
+            uint8_t* const __restrict blk,       // extracted block
+            const size_t blk_idx                 // index of block to extract
+            )
   requires(check_domain_seperator(bits))
 {
   const size_t mblen = mlen << 3;             // in bits | < first segment >
@@ -100,9 +99,7 @@ get_msg_blk(
 // https://dx.doi.org/10.6028/NIST.FIPS.202
 template<const uint8_t dom_sep, const size_t bits, const size_t rate>
 static void
-absorb(uint64_t* const __restrict state,
-       const uint8_t* const __restrict msg,
-       const size_t mlen)
+absorb(uint64_t* const __restrict state, const uint8_t* const __restrict msg, const size_t mlen)
   requires(check_domain_seperator(bits))
 {
   const size_t mblen = mlen << 3;        // in bits
@@ -154,9 +151,7 @@ absorb(uint64_t* const __restrict state,
 // https://dx.doi.org/10.6028/NIST.FIPS.202
 template<const size_t rate>
 static void
-squeeze(uint64_t* const __restrict state,
-        uint8_t* const __restrict dig,
-        const size_t dlen)
+squeeze(uint64_t* const __restrict state, uint8_t* const __restrict dig, const size_t dlen)
 {
   constexpr size_t rbytes = rate >> 3;
 
