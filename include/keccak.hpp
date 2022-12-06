@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <utility>
 
-#if defined __AVX2__
+#if defined __AVX2__ && USE_AVX2 != 0
 #include <cstring>
 #include <immintrin.h>
 #endif
@@ -105,7 +105,7 @@ compute_rc(const size_t r_idx)
   return tmp;
 }
 
-#if defined __AVX2__ && defined USE_AVX2
+#if defined __AVX2__ && USE_AVX2 != 0
 
 // Round constants to be XORed with lane (0, 0) of keccak-p[1600, 24]
 // permutation state, when using AVX2 implementation, see section 3.2.5 of
@@ -257,7 +257,7 @@ inline static void
 permute(uint64_t* const state)
 {
 
-#if defined __AVX2__ && defined USE_AVX2
+#if defined __AVX2__ && USE_AVX2 != 0
 
 #pragma message("Using AVX2 for keccak-[1600, 24] permutation")
 
