@@ -17,7 +17,11 @@ jobs:
       run: sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10; sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
     - name: Install Python Dependencies
       run: python3 -m pip install -r wrapper/python/requirements.txt --user
-    - name: Execute Tests
+    - name: Execute Tests ( without AVX2 )
       run: make
+    - name: Cleanup
+      run: make clean
+    - name: Execute Tests ( with AVX2 )
+      run: AVX2=1 make # If AVX2 is not available on target CPU, uses scalar implementation
     - name: Cleanup
       run: make clean
