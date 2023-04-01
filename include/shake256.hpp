@@ -29,7 +29,7 @@ public:
   //
   // Once you call this function on some object, calling it again doesn't do
   // anything !
-  void hash(const uint8_t* const __restrict msg, const size_t mlen)
+  inline void hash(const uint8_t* const __restrict msg, const size_t mlen)
     requires(!incremental)
   {
     if (!absorbed) {
@@ -50,7 +50,7 @@ public:
   // This function is only enabled, when you decide to use SHAKE256 in
   // incremental mode ( compile-time decision ). By default one uses SHAKE256
   // API in non-incremental mode.
-  void absorb(const uint8_t* const __restrict msg, const size_t mlen)
+  inline void absorb(const uint8_t* const __restrict msg, const size_t mlen)
     requires(incremental)
   {
     constexpr size_t rbytes = rate >> 3;   // # -of bytes
@@ -141,7 +141,7 @@ public:
   // This function is only enabled, when you decide to use SHAKE256 in
   // incremental mode ( compile-time decision ). By default one uses SHAKE256
   // API in non-incremental mode.
-  void finalize()
+  inline void finalize()
     requires(incremental)
   {
     constexpr size_t rbytes = rate >> 3;   // # -of bytes
@@ -200,7 +200,7 @@ public:
   //
   // Make sure you absorb ( see hash(...) routine ) message bytes first, then
   // only call this function, otherwise it can't squeeze out anything.
-  void read(uint8_t* const __restrict dig, const size_t dlen)
+  inline void read(uint8_t* const __restrict dig, const size_t dlen)
   {
     if (!absorbed) {
       return;

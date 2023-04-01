@@ -23,7 +23,7 @@ random_data(T* const data, const size_t len)
 
 // Given a bytearray of length N, this function converts it to human readable
 // hex string of length N << 1 | N >= 0
-static inline const std::string
+inline const std::string
 to_hex(const uint8_t* const bytes, const size_t len)
 {
   std::stringstream ss;
