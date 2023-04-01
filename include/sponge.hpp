@@ -1,5 +1,6 @@
 #pragma once
 #include "keccak.hpp"
+#include "utils.hpp"
 #include <algorithm>
 #include <cstring>
 
@@ -123,22 +124,7 @@ absorb(uint64_t* const __restrict state,
 
   for (size_t i = 0; i < blk_cnt; i++) {
     get_msg_blk<dom_sep, bits, rate>(msg, mlen, pad, plen, blk_bytes, i);
-
-    if constexpr (std::endian::native == std::endian::little) {
-      std::memcpy(blk_words, blk_bytes, rbytes);
-    } else {
-      for (size_t j = 0; j < rwords; j++) {
-        const size_t off = j << 3;
-        blk_words[j] = (static_cast<uint64_t>(blk_bytes[off ^ 7]) << 56) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 6]) << 48) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 5]) << 40) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 4]) << 32) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 3]) << 24) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 2]) << 16) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 1]) << 8) |
-                       (static_cast<uint64_t>(blk_bytes[off ^ 0]) << 0);
-      }
-    }
+    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
 
     for (size_t j = 0; j < rwords; j++) {
       state[j] ^= blk_words[j];

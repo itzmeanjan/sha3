@@ -1,5 +1,6 @@
 #pragma once
 #include "sponge.hpp"
+#include "utils.hpp"
 #include <climits>
 
 // SHAKE256 Extendable Output Function : Keccak[512](M || 1111, d)
@@ -70,66 +71,29 @@ public:
 
     for (size_t i = 0; i < blk_cnt; i++) {
       std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
-
-      if constexpr (std::endian::native == std::endian::little) {
-        std::memcpy(blk_words, blk_bytes, rbytes);
-      } else {
-        for (size_t j = 0; j < rwords; j++) {
-          const size_t boff = j << 3;
-          blk_words[j] = (static_cast<uint64_t>(blk_bytes[boff ^ 7]) << 56) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 6]) << 48) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 5]) << 40) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 4]) << 32) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 3]) << 24) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 2]) << 16) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 1]) << 8) |
-                         (static_cast<uint64_t>(blk_bytes[boff ^ 0]) << 0);
-        }
-      }
+      sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
 
       for (size_t j = 0; j < rwords; j++) {
         state[j] ^= blk_words[j];
       }
 
-      moff += (rbytes - offset);
-      offset += (rbytes - offset);
-
       keccak::permute(state);
-      offset %= rbytes;
+
+      moff += (rbytes - offset);
+      offset = 0;
     }
 
     const size_t rm_bytes = mlen - moff;
 
     std::memset(blk_bytes, 0, rbytes);
     std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
-
-    if constexpr (std::endian::native == std::endian::little) {
-      std::memcpy(blk_words, blk_bytes, rbytes);
-    } else {
-      for (size_t i = 0; i < rwords; i++) {
-        const size_t boff = i << 3;
-        blk_words[i] = (static_cast<uint64_t>(blk_bytes[boff ^ 7]) << 56) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 6]) << 48) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 5]) << 40) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 4]) << 32) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 3]) << 24) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 2]) << 16) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 1]) << 8) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 0]) << 0);
-      }
-    }
+    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
 
     for (size_t i = 0; i < rwords; i++) {
       state[i] ^= blk_words[i];
     }
 
     offset += rm_bytes;
-
-    if (offset == rbytes) {
-      keccak::permute(state);
-      offset %= rbytes;
-    }
-
     abytes += mlen;
   }
 
@@ -165,34 +129,15 @@ public:
     const size_t read = (plen + 4) >> 3; // in bytes
 
     std::memcpy(blk_bytes + offset, pad, read);
-
-    if constexpr (std::endian::native == std::endian::little) {
-      std::memcpy(blk_words, blk_bytes, rbytes);
-    } else {
-      for (size_t i = 0; i < rwords; i++) {
-        const size_t boff = i << 3;
-        blk_words[i] = (static_cast<uint64_t>(blk_bytes[boff ^ 7]) << 56) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 6]) << 48) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 5]) << 40) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 4]) << 32) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 3]) << 24) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 2]) << 16) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 1]) << 8) |
-                       (static_cast<uint64_t>(blk_bytes[boff ^ 0]) << 0);
-      }
-    }
+    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
 
     for (size_t i = 0; i < rwords; i++) {
       state[i] ^= blk_words[i];
     }
 
-    offset += read;
+    keccak::permute(state);
 
-    if (offset == rbytes) {
-      keccak::permute(state);
-      offset %= rbytes;
-    }
-
+    offset = 0;
     absorbed = SIZE_T_MAX;
     readable = rate >> 3;
   }
