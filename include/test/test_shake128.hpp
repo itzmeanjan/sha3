@@ -21,8 +21,8 @@ test_shake128()
   uint8_t* dig0 = static_cast<uint8_t*>(std::malloc(dlen));
   uint8_t* dig1 = static_cast<uint8_t*>(std::malloc(dlen));
 
-  random_data<uint8_t>(msg0, m0len);
-  random_data<uint8_t>(msg1, m1len);
+  sha3_utils::random_data<uint8_t>(msg0, m0len);
+  sha3_utils::random_data<uint8_t>(msg1, m1len);
   std::memcpy(msg + 0, msg0, m0len);
   std::memcpy(msg + m0len, msg1, m1len);
 

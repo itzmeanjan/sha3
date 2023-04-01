@@ -14,7 +14,7 @@ keccakf1600(benchmark::State& state)
   uint64_t st[25]{};
 
   constexpr size_t len = sizeof(st) / sizeof(st[0]);
-  random_data<uint64_t>(st, len);
+  sha3_utils::random_data<uint64_t>(st, len);
 
 #if defined __x86_64__
   uint64_t total_cycles = 0ul;

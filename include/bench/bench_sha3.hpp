@@ -22,7 +22,7 @@ sha3_224(benchmark::State& state)
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(28));
 
-  random_data<uint8_t>(msg, mlen);
+  sha3_utils::random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 28);
 
 #if defined __x86_64__
@@ -67,7 +67,7 @@ sha3_256(benchmark::State& state)
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(32));
 
-  random_data<uint8_t>(msg, mlen);
+  sha3_utils::random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 32);
 
 #if defined __x86_64__
@@ -112,7 +112,7 @@ sha3_384(benchmark::State& state)
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(48));
 
-  random_data<uint8_t>(msg, mlen);
+  sha3_utils::random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 48);
 
 #if defined __x86_64__
@@ -157,7 +157,7 @@ sha3_512(benchmark::State& state)
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(64));
 
-  random_data<uint8_t>(msg, mlen);
+  sha3_utils::random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, 64);
 
 #if defined __x86_64__
@@ -208,7 +208,7 @@ shake128(benchmark::State& state)
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(dlen));
 
-  random_data<uint8_t>(msg, mlen);
+  sha3_utils::random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, dlen);
 
 #if defined __x86_64__
@@ -264,7 +264,7 @@ shake256(benchmark::State& state)
   uint8_t* msg = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(dlen));
 
-  random_data<uint8_t>(msg, mlen);
+  sha3_utils::random_data<uint8_t>(msg, mlen);
   std::memset(dig, 0, dlen);
 
 #if defined __x86_64__

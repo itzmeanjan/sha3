@@ -16,8 +16,8 @@ main()
   uint8_t* msg1 = static_cast<uint8_t*>(std::malloc(ilen1));
   uint8_t* dig = static_cast<uint8_t*>(std::malloc(olen));
 
-  random_data<uint8_t>(msg0, ilen0);
-  random_data<uint8_t>(msg1, ilen1);
+  sha3_utils::random_data<uint8_t>(msg0, ilen0);
+  sha3_utils::random_data<uint8_t>(msg1, ilen1);
   std::memset(dig, 0, olen);
 
   // Create Shake256 object, enabling incremental API ( see template argument
@@ -37,9 +37,9 @@ main()
   }
 
   std::cout << "Incremental SHAKE-256" << std::endl << std::endl;
-  std::cout << "Input 0  : " << to_hex(msg0, ilen0) << std::endl;
-  std::cout << "Input 1  : " << to_hex(msg1, ilen1) << std::endl;
-  std::cout << "Output   : " << to_hex(dig, olen) << std::endl;
+  std::cout << "Input 0  : " << sha3_utils::to_hex(msg0, ilen0) << std::endl;
+  std::cout << "Input 1  : " << sha3_utils::to_hex(msg1, ilen1) << std::endl;
+  std::cout << "Output   : " << sha3_utils::to_hex(dig, olen) << std::endl;
 
   std::free(msg0);
   std::free(msg1);

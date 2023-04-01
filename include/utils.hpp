@@ -6,6 +6,9 @@
 #include <sstream>
 #include <type_traits>
 
+// Utility ( or commonly used ) functions for SHA3 implementation
+namespace sha3_utils {
+
 // Generates N -many random values of type T | N >= 0
 template<typename T>
 static inline void
@@ -62,4 +65,6 @@ bytes_to_le_words(const uint8_t* const __restrict bytes,
                  (static_cast<uint64_t>(bytes[boff + 0]) << 0);
     }
   }
+}
+
 }
