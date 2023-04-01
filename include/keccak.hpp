@@ -165,6 +165,18 @@ theta(uint64_t* const state)
   uint64_t c[5]{};
   uint64_t d[5];
 
+#if defined __clang__
+  // Following
+  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#elif defined __GNUG__
+  // Following
+  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+
+#pragma GCC unroll 5
+#endif
   for (size_t i = 0; i < 25; i += 5) {
     c[0] ^= state[i + 0];
     c[1] ^= state[i + 1];
@@ -173,13 +185,24 @@ theta(uint64_t* const state)
     c[4] ^= state[i + 4];
   }
 
-  for (size_t i = 0; i < 5; i++) {
-    const size_t pidx = (i + 4) % 5;
-    const size_t nidx = (i + 1) % 5;
+  d[0] = c[4] ^ std::rotl(c[1], 1);
+  d[1] = c[0] ^ std::rotl(c[2], 1);
+  d[2] = c[1] ^ std::rotl(c[3], 1);
+  d[3] = c[2] ^ std::rotl(c[4], 1);
+  d[4] = c[3] ^ std::rotl(c[0], 1);
 
-    d[i] = c[pidx] ^ std::rotl(c[nidx], 1);
-  }
+#if defined __clang__
+  // Following
+  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#elif defined __GNUG__
+  // Following
+  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+
+#pragma GCC unroll 5
+#endif
   for (size_t i = 0; i < 25; i += 5) {
     state[i + 0] ^= d[0];
     state[i + 1] ^= d[1];
@@ -194,10 +217,17 @@ theta(uint64_t* const state)
 inline static void
 rho(uint64_t* const state)
 {
-#if defined __GNUC__
+#if defined __clang__
+  // Following
+  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#elif defined __GNUG__
+  // Following
+  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+
 #pragma GCC unroll 25
-#elif defined __clang__
-#pragma unroll 25
 #endif
   for (size_t i = 0; i < 25; i++) {
     state[i] = std::rotl(state[i], ROT[i]);
@@ -211,10 +241,17 @@ pi(const uint64_t* const __restrict istate, // input permutation state
    uint64_t* const __restrict ostate        // output permutation state
 )
 {
-#if defined __GNUC__
+#if defined __clang__
+  // Following
+  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#elif defined __GNUG__
+  // Following
+  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+
 #pragma GCC unroll 25
-#elif defined __clang__
-#pragma unroll 25
 #endif
   for (size_t i = 0; i < 25; i++) {
     ostate[i] = istate[PERM[i]];
@@ -231,13 +268,11 @@ chi(const uint64_t* const __restrict istate, // input permutation state
   for (size_t i = 0; i < 5; i++) {
     const size_t ix5 = i * 5;
 
-    for (size_t j = 0; j < 5; j++) {
-      const size_t j0 = (j + 1) % 5;
-      const size_t j1 = (j + 2) % 5;
-
-      const uint64_t rhs = ~istate[ix5 + j0] & istate[ix5 + j1];
-      ostate[ix5 + j] = istate[ix5 + j] ^ rhs;
-    }
+    ostate[ix5 + 0] = istate[ix5 + 0] ^ (~istate[ix5 + 1] & istate[ix5 + 2]);
+    ostate[ix5 + 1] = istate[ix5 + 1] ^ (~istate[ix5 + 2] & istate[ix5 + 3]);
+    ostate[ix5 + 2] = istate[ix5 + 2] ^ (~istate[ix5 + 3] & istate[ix5 + 4]);
+    ostate[ix5 + 3] = istate[ix5 + 3] ^ (~istate[ix5 + 4] & istate[ix5 + 0]);
+    ostate[ix5 + 4] = istate[ix5 + 4] ^ (~istate[ix5 + 0] & istate[ix5 + 1]);
   }
 }
 
