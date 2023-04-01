@@ -1,5 +1,6 @@
 #pragma once
 #include "sponge.hpp"
+#include <climits>
 
 // SHAKE128 Extendable Output Function : Keccak[256](M || 1111, d)
 namespace shake128 {
@@ -37,7 +38,7 @@ public:
     }
 
     sponge::absorb<0b00001111, 4, rate>(state, msg, mlen);
-    absorbed = true;
+    absorbed = SIZE_T_MAX;
     readable = rate >> 3;
   }
 
@@ -192,7 +193,7 @@ public:
       offset %= rbytes;
     }
 
-    absorbed = true;
+    absorbed = SIZE_T_MAX;
     readable = rate >> 3;
   }
 
