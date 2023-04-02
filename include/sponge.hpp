@@ -2,6 +2,7 @@
 #include "keccak.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <array>
 #include <cstring>
 
 // Keccak family of sponge functions
@@ -19,6 +20,36 @@ constexpr bool
 check_domain_seperator(const size_t dom_sep_bit_len)
 {
   return (dom_sep_bit_len == 2) | (dom_sep_bit_len == 4);
+}
+
+// Pad10*1 - generates a padding, while also considering domain seperator bits (
+// which are either 2 or 4 -bit wide ), such that when both domain seperator
+// bits and 10*1 padding is appended ( in order ) to actual message, total byte
+// length of message consumed into keccak-p[1600, 24] permutation becomes
+// multiple of `rate` -bits. The only parameter `offset` denotes how many bytes
+// are already mixed with rate portion of permutation state meaning `offset`
+// must ∈ [0, `rate/ 8`). This routine returns a byte array of length `rate/ 8`
+// -bytes which can safely be mixed into permutation state duing sponge
+// finalization phase.
+//
+// This function implementation collects motivation from
+// https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
+template<const uint8_t domain_seperator,
+         const size_t ds_bits,
+         const size_t rate>
+static inline std::array<uint8_t, rate / 8>
+pad10x1(const size_t offset)
+  requires(check_domain_seperator(ds_bits))
+{
+  std::array<uint8_t, rate / 8> res{};
+
+  constexpr uint8_t mask = (1 << ds_bits) - 1;
+  constexpr uint8_t pad_byte = (1 << ds_bits) | (domain_seperator & mask);
+
+  res[offset] = pad_byte;
+  res[(rate / 8) - 1] = 0x80;
+
+  return res;
 }
 
 // Pad10*1 --- generates padding string P = 1 || 0^j || 1 such that when padded
