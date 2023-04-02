@@ -1,6 +1,5 @@
 #pragma once
 #include "sponge.hpp"
-#include <climits>
 
 // SHAKE256 Extendable Output Function : Keccak[512](M || 1111, d)
 namespace shake256 {
@@ -9,6 +8,9 @@ namespace shake256 {
 constexpr size_t capacity = 512;
 // Rate of sponge, in bits
 constexpr size_t rate = 1600 - capacity;
+
+// Truth value denoting all message bytes are absorbed.
+constexpr size_t ABSORBED_TRUE = -1ul;
 
 // SHAKE256 Extendable Output Function
 //
@@ -32,14 +34,14 @@ public:
   inline void hash(const uint8_t* const __restrict msg, const size_t mlen)
     requires(!incremental)
   {
-    if (absorbed == SIZE_T_MAX) {
+    if (absorbed == ABSORBED_TRUE) {
       return;
     }
 
     sponge::absorb<rate>(state, offset, msg, mlen);
     sponge::finalize<0b00001111, 4, rate>(state, offset);
 
-    absorbed = SIZE_T_MAX;
+    absorbed = ABSORBED_TRUE;
     squeezable = rate >> 3;
   }
 
@@ -56,7 +58,7 @@ public:
   inline void absorb(const uint8_t* const __restrict msg, const size_t mlen)
     requires(incremental)
   {
-    if (absorbed == SIZE_T_MAX) {
+    if (absorbed == ABSORBED_TRUE) {
       return;
     }
 
@@ -78,13 +80,13 @@ public:
   inline void finalize()
     requires(incremental)
   {
-    if (absorbed == SIZE_T_MAX) {
+    if (absorbed == ABSORBED_TRUE) {
       return;
     }
 
     sponge::finalize<0b00001111, 4, rate>(state, offset);
 
-    absorbed = SIZE_T_MAX;
+    absorbed = ABSORBED_TRUE;
     squeezable = rate >> 3;
   }
 
@@ -99,7 +101,7 @@ public:
   // only call this function, otherwise it can't squeeze out anything.
   inline void read(uint8_t* const __restrict dig, const size_t dlen)
   {
-    if (absorbed != SIZE_T_MAX) {
+    if (absorbed != ABSORBED_TRUE) {
       return;
     }
 
