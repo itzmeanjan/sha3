@@ -95,6 +95,58 @@ get_msg_blk(
   }
 }
 
+// Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c]
+// permutation state s.t. `offset` ( second parameter ) denotes how many bytes
+// are already consumed into rate portion of the state.
+//
+// - `rate` portion of sponge will have bitwidth of 1600 - c.
+// - `offset` must ∈ [0, `rbytes`)
+//
+// This function implementation collects inspiration from
+// https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
+template<const size_t rate>
+static inline void
+_absorb(uint64_t* const __restrict state,
+        size_t& offset,
+        const uint8_t* const __restrict msg,
+        const size_t mlen)
+{
+  constexpr size_t rbytes = rate >> 3;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+
+  uint8_t blk_bytes[rbytes]{};
+  uint64_t blk_words[rwords]{};
+
+  const size_t blk_cnt = (offset + mlen) / rbytes;
+  size_t moff = 0;
+
+  for (size_t i = 0; i < blk_cnt; i++) {
+    std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
+    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
+
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= blk_words[j];
+    }
+
+    keccak::permute(state);
+
+    moff += (rbytes - offset);
+    offset = 0;
+  }
+
+  const size_t rm_bytes = mlen - moff;
+
+  std::memset(blk_bytes, 0, rbytes);
+  std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
+  sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
+
+  for (size_t i = 0; i < rwords; i++) {
+    state[i] ^= blk_words[i];
+  }
+
+  offset += rm_bytes;
+}
+
 // Sequentially absorbs N -message blocks into keccak[c] sponge state
 //
 // See step (1 - 6) of algorithm 8 defined in section 4 of SHA3 specification
