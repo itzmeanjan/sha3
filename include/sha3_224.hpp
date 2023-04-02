@@ -22,9 +22,9 @@ hash(const uint8_t* const __restrict msg,
   size_t offset = 0;
   size_t squeezable = rate >> 3;
 
-  sponge::_absorb<rate>(state, offset, msg, mlen);
+  sponge::absorb<rate>(state, offset, msg, mlen);
   sponge::finalize<0b00000010, 2, rate>(state, offset);
-  sponge::_squeeze<rate>(state, squeezable, dig, dlen >> 3);
+  sponge::squeeze<rate>(state, squeezable, dig, dlen >> 3);
 }
 
 }

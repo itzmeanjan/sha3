@@ -36,7 +36,7 @@ public:
       return;
     }
 
-    sponge::_absorb<rate>(state, offset, msg, mlen);
+    sponge::absorb<rate>(state, offset, msg, mlen);
     sponge::finalize<0b00001111, 4, rate>(state, offset);
 
     absorbed = SIZE_T_MAX;
@@ -60,7 +60,7 @@ public:
       return;
     }
 
-    sponge::_absorb<rate>(state, offset, msg, mlen);
+    sponge::absorb<rate>(state, offset, msg, mlen);
   }
 
   // After consuming N -many bytes ( by invoking absorb routine arbitrary many
@@ -103,7 +103,7 @@ public:
       return;
     }
 
-    sponge::_squeeze<rate>(state, squeezable, dig, dlen);
+    sponge::squeeze<rate>(state, squeezable, dig, dlen);
   }
 };
 
