@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <bit>
 #include <cstddef>
 #include <cstdint>
@@ -7,11 +8,14 @@
 // Keccak-p[1600, 24] permutation
 namespace keccak {
 
-// Bit width of each lane of Keccak-p[1600, 24] state
-constexpr size_t LANE_SIZE = 64;
-
-// Logarithmic base 2 of bit width of lane i.e. log2(LANE_SIZE)
+// Logarithmic base 2 of bit width of lane i.e. log2(LANE_BW)
 constexpr size_t L = 6;
+
+// Bit width of each lane of Keccak-p[1600, 24] state
+constexpr size_t LANE_BW = 1ul << L;
+
+// # -of lanes ( each of 64 -bit width ) in Keccak-p[1600, 24] state
+constexpr size_t LANE_CNT = 1600 / LANE_BW;
 
 // Keccak-p[b, nr] permutation to be applied `nr` ( = 24 ) rounds
 // s.t. b = 1600, w = b/ 25, l = log2(w), nr = 12 + 2l
@@ -23,15 +27,13 @@ constexpr size_t ROUNDS = 12 + 2 * L;
 //
 // Note, following offsets are obtained by performing % 64 ( bit width of lane )
 // on offsets provided in above mentioned link
-constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE,
-                        28 % LANE_SIZE,  91 % LANE_SIZE,  36 % LANE_SIZE,
-                        300 % LANE_SIZE, 6 % LANE_SIZE,   55 % LANE_SIZE,
-                        276 % LANE_SIZE, 3 % LANE_SIZE,   10 % LANE_SIZE,
-                        171 % LANE_SIZE, 153 % LANE_SIZE, 231 % LANE_SIZE,
-                        105 % LANE_SIZE, 45 % LANE_SIZE,  15 % LANE_SIZE,
-                        21 % LANE_SIZE,  136 % LANE_SIZE, 210 % LANE_SIZE,
-                        66 % LANE_SIZE,  253 % LANE_SIZE, 120 % LANE_SIZE,
-                        78 % LANE_SIZE };
+constexpr size_t ROT[LANE_CNT]{
+  0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW,  91 % LANE_BW,
+  36 % LANE_BW,  300 % LANE_BW, 6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW,
+  3 % LANE_BW,   10 % LANE_BW,  171 % LANE_BW, 153 % LANE_BW, 231 % LANE_BW,
+  105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW,  21 % LANE_BW,  136 % LANE_BW,
+  210 % LANE_BW, 66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW
+};
 
 // Precomputed table used for looking up source index during application of π
 // step mapping function on keccak-[1600, 24] state
@@ -43,8 +45,9 @@ constexpr size_t ROT[]{ 0 % LANE_SIZE,   1 % LANE_SIZE,   190 % LANE_SIZE,
 //
 // Table generated using above Python code snippet. See section 3.2.3 of the
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-constexpr size_t PERM[]{ 0,  6,  12, 18, 24, 3,  9,  10, 16, 22, 1,  7, 13,
-                         19, 20, 4,  5,  11, 17, 23, 2,  8,  14, 15, 21 };
+constexpr size_t PERM[LANE_CNT]{ 0,  6,  12, 18, 24, 3,  9, 10, 16,
+                                 22, 1,  7,  13, 19, 20, 4, 5,  11,
+                                 17, 23, 2,  8,  14, 15, 21 };
 
 // Computes single bit of Keccak-p[1600, 24] round constant ( at compile-time ),
 // using binary LFSR, defined by primitive polynomial x^8 + x^6 + x^5 + x^4 + 1
@@ -104,17 +107,22 @@ compute_rc(const size_t r_idx)
   return tmp;
 }
 
+// Compile-time evaluate Keccak-p[1600, 24] round constants.
+consteval std::array<uint64_t, LANE_CNT>
+compute_rcs()
+{
+  std::array<uint64_t, LANE_CNT> res;
+  for (size_t i = 0; i < LANE_CNT; i++) {
+    res[i] = compute_rc(i);
+  }
+
+  return res;
+}
+
 // Round constants to be XORed with lane (0, 0) of keccak-p[1600, 24]
 // permutation state, see section 3.2.5 of
 // https://dx.doi.org/10.s6028/NIST.FIPS.202
-constexpr uint64_t RC[ROUNDS]{ compute_rc(0),  compute_rc(1),  compute_rc(2),
-                               compute_rc(3),  compute_rc(4),  compute_rc(5),
-                               compute_rc(6),  compute_rc(7),  compute_rc(8),
-                               compute_rc(9),  compute_rc(10), compute_rc(11),
-                               compute_rc(12), compute_rc(13), compute_rc(14),
-                               compute_rc(15), compute_rc(16), compute_rc(17),
-                               compute_rc(18), compute_rc(19), compute_rc(20),
-                               compute_rc(21), compute_rc(22), compute_rc(23) };
+constexpr auto RC = compute_rcs();
 
 // Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
@@ -224,6 +232,18 @@ chi(const uint64_t* const __restrict istate, // input permutation state
     uint64_t* const __restrict ostate        // output permutation state
 )
 {
+#if defined __clang__
+  // Following
+  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#elif defined __GNUG__
+  // Following
+  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+
+#pragma GCC unroll 5
+#endif
   for (size_t i = 0; i < 5; i++) {
     const size_t ix5 = i * 5;
 
