@@ -251,6 +251,46 @@ finalize(uint64_t* const __restrict state, size_t& offset)
   offset = 0;
 }
 
+// Given that Keccak[c] permutation state is finalized, this routine can be
+// invoked for squeezing `olen` -bytes out of rate portion of the state.
+//
+// - `rate` portion of sponge will have bitwidth of 1600 - c.
+// - `squeezable` denotes how many bytes can be squeezed without permutating the
+// sponge state.
+// - When `squeezable` becomes 0, state needs to be permutated again, after
+// which `rbytes` can again be squeezed from rate portion of the state.
+//
+// This function implementation collects motivation from
+// https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
+template<const size_t rate>
+static inline void
+_squeeze(uint64_t* const __restrict state,
+         size_t& squeezable,
+         uint8_t* const __restrict out,
+         const size_t olen)
+{
+  constexpr size_t rbytes = rate >> 3;
+
+  uint8_t rate_blk[rbytes];
+  size_t off = 0;
+
+  while (off < olen) {
+    const size_t read = std::min(squeezable, olen - off);
+    const size_t soff = rbytes - squeezable;
+
+    sha3_utils::words_to_le_bytes<rate>(state, rate_blk);
+    std::memcpy(out + off, rate_blk + soff, read);
+
+    squeezable -= read;
+    off += read;
+
+    if (squeezable == 0) {
+      keccak::permute(state);
+      squeezable = rbytes;
+    }
+  }
+}
+
 // Squeezes N -bytes output from sponge state which has consumed input message
 //
 // See step (7 - 10) of algorithm 8 defined in section 4 of SHA3 specification
