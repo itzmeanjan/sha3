@@ -47,7 +47,7 @@ pad10x1(const size_t offset)
   constexpr uint8_t pad_byte = (1 << ds_bits) | (domain_seperator & mask);
 
   res[offset] = pad_byte;
-  res[(rate / 8) - 1] = 0x80;
+  res[(rate / 8) - 1] ^= 0x80;
 
   return res;
 }
