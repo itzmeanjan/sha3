@@ -19,9 +19,12 @@ hash(const uint8_t* const __restrict msg,
   constexpr size_t rate = 1600 - capacity;
 
   uint64_t state[25]{};
+  size_t offset = 0;
+  size_t squeezable = rate >> 3;
 
-  sponge::absorb<0b00000010, 2, rate>(state, msg, mlen);
-  sponge::squeeze<rate>(state, dig, dlen >> 3);
+  sponge::_absorb<rate>(state, offset, msg, mlen);
+  sponge::finalize<0b00000010, 2, rate>(state, offset);
+  sponge::_squeeze<rate>(state, squeezable, dig, dlen >> 3);
 }
 
 }
