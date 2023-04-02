@@ -68,4 +68,32 @@ bytes_to_le_words(const uint8_t* const __restrict bytes,
   }
 }
 
+// Given an array of uint64_t words, holding rate/ 8 -many bytes, this routine
+// can be used for interpreting words as little-endian bytes.
+template<const size_t rate>
+static inline void
+words_to_le_bytes(const uint64_t* const __restrict words,
+                  uint8_t* const __restrict bytes)
+{
+  constexpr size_t rbytes = rate >> 3;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+
+  if constexpr (std::endian::native == std::endian::little) {
+    std::memcpy(bytes, words, rbytes);
+  } else {
+    for (size_t i = 0; i < rwords; i++) {
+      const size_t boff = i * 8;
+
+      bytes[boff + 0] = static_cast<uint8_t>(words[i] >> 0);
+      bytes[boff + 1] = static_cast<uint8_t>(words[i] >> 8);
+      bytes[boff + 2] = static_cast<uint8_t>(words[i] >> 16);
+      bytes[boff + 3] = static_cast<uint8_t>(words[i] >> 24);
+      bytes[boff + 4] = static_cast<uint8_t>(words[i] >> 32);
+      bytes[boff + 5] = static_cast<uint8_t>(words[i] >> 40);
+      bytes[boff + 6] = static_cast<uint8_t>(words[i] >> 48);
+      bytes[boff + 7] = static_cast<uint8_t>(words[i] >> 56);
+    }
+  }
+}
+
 }
