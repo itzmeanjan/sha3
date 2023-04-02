@@ -3,7 +3,6 @@
 import random
 import hashlib
 import sha3
-import pytest
 
 FROM_BYTES = 0  # minimum test input message byte length
 TO_BYTES = 1024  # maximum test input message byte length
@@ -105,102 +104,6 @@ def test_shake256_xof():
         assert (
             dig0 == dig1
         ), f"[SHAKE-256] Expected {dig1.hex()}, found {dig0.hex()}, for input {msg.hex()}"
-
-
-@pytest.mark.benchmark(group="sha3-224", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_224_self(benchmark):
-    """
-    Benchmark my implementation of SHA3-224 hash function
-    """
-    msg = gen_rand_bytes(56)
-
-    @benchmark
-    def compute():
-        return sha3.sha3_224_hash(msg)
-
-
-@pytest.mark.benchmark(group="sha3-224", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_224_hashlib(benchmark):
-    """
-    Benchmark SHA3-224 hash function implementation of hashlib
-    """
-    msg = gen_rand_bytes(56)
-
-    @benchmark
-    def compute():
-        return hashlib.sha3_224(msg).digest()
-
-
-@pytest.mark.benchmark(group="sha3-256", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_256_self(benchmark):
-    """
-    Benchmark my implementation of SHA3-256 hash function
-    """
-    msg = gen_rand_bytes(64)
-
-    @benchmark
-    def compute():
-        return sha3.sha3_256_hash(msg)
-
-
-@pytest.mark.benchmark(group="sha3-256", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_256_hashlib(benchmark):
-    """
-    Benchmark SHA3-256 hash function implementation of hashlib
-    """
-    msg = gen_rand_bytes(64)
-
-    @benchmark
-    def compute():
-        return hashlib.sha3_256(msg).digest()
-
-
-@pytest.mark.benchmark(group="sha3-384", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_384_self(benchmark):
-    """
-    Benchmark my implementation of SHA3-384 hash function
-    """
-    msg = gen_rand_bytes(96)
-
-    @benchmark
-    def compute():
-        return sha3.sha3_384_hash(msg)
-
-
-@pytest.mark.benchmark(group="sha3-384", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_384_hashlib(benchmark):
-    """
-    Benchmark SHA3-384 hash function implementation of hashlib
-    """
-    msg = gen_rand_bytes(96)
-
-    @benchmark
-    def compute():
-        return hashlib.sha3_384(msg).digest()
-
-
-@pytest.mark.benchmark(group="sha3-512", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_512_self(benchmark):
-    """
-    Benchmark my implementation of SHA3-512 hash function
-    """
-    msg = gen_rand_bytes(128)
-
-    @benchmark
-    def compute():
-        return sha3.sha3_512_hash(msg)
-
-
-@pytest.mark.benchmark(group="sha3-512", min_rounds=5, disable_gc=True, warmup=True)
-def test_bench_sha3_512_hashlib(benchmark):
-    """
-    Benchmark SHA3-512 hash function implementation of hashlib
-    """
-    msg = gen_rand_bytes(128)
-
-    @benchmark
-    def compute():
-        return hashlib.sha3_512(msg).digest()
 
 
 if __name__ == "__main__":
