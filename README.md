@@ -168,6 +168,138 @@ bench_sha3::shake256/2048/32       5504 ns         5476 ns       127351       36
 bench_sha3::shake256/4096/32      10469 ns        10462 ns        65923       376.291M/s
 ```
 
+### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( using `g++` )
+
+```bash
+2023-04-02T14:51:48+00:00
+Running ./bench/a.out
+Run on (4 X 2300.08 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x2)
+  L1 Instruction 32 KiB (x2)
+  L2 Unified 256 KiB (x2)
+  L3 Unified 46080 KiB (x1)
+Load Average: 0.12, 0.03, 0.01
+----------------------------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations bytes_per_second
+----------------------------------------------------------------------------------------
+bench_sha3::keccakf1600             568 ns          568 ns      1231212        336.01M/s
+bench_sha3::sha3_224/32             646 ns          646 ns      1083827       88.5952M/s
+bench_sha3::sha3_224/64             643 ns          642 ns      1090111       136.567M/s
+bench_sha3::sha3_224/128            644 ns          644 ns      1089500       231.162M/s
+bench_sha3::sha3_224/256           1225 ns         1225 ns       570762       221.007M/s
+bench_sha3::sha3_224/512           2385 ns         2385 ns       293244       215.885M/s
+bench_sha3::sha3_224/1024          4729 ns         4729 ns       148039       212.147M/s
+bench_sha3::sha3_224/2048          8777 ns         8777 ns        79754       225.566M/s
+bench_sha3::sha3_224/4096         16905 ns        16905 ns        41450        232.65M/s
+bench_sha3::sha3_256/32             629 ns          629 ns      1112175       97.0429M/s
+bench_sha3::sha3_256/64             630 ns          630 ns      1111404       145.403M/s
+bench_sha3::sha3_256/128            631 ns          631 ns      1110022        241.76M/s
+bench_sha3::sha3_256/256           1227 ns         1227 ns       570319       223.762M/s
+bench_sha3::sha3_256/512           2417 ns         2417 ns       289903       214.674M/s
+bench_sha3::sha3_256/1024          4797 ns         4796 ns       145754       209.966M/s
+bench_sha3::sha3_256/2048          9494 ns         9494 ns        73812        208.94M/s
+bench_sha3::sha3_256/4096         18341 ns        18341 ns        38168       214.643M/s
+bench_sha3::sha3_384/32             579 ns          579 ns      1211352       131.879M/s
+bench_sha3::sha3_384/64             578 ns          578 ns      1211169       184.796M/s
+bench_sha3::sha3_384/128           1136 ns         1136 ns       615841       147.699M/s
+bench_sha3::sha3_384/256           1693 ns         1693 ns       413916        171.21M/s
+bench_sha3::sha3_384/512           2795 ns         2794 ns       250205       191.118M/s
+bench_sha3::sha3_384/1024          5575 ns         5575 ns       125628       183.377M/s
+bench_sha3::sha3_384/2048         11107 ns        11107 ns        63059       179.974M/s
+bench_sha3::sha3_384/4096         22159 ns        22159 ns        31597       178.345M/s
+bench_sha3::sha3_512/32             579 ns          579 ns      1210637       158.152M/s
+bench_sha3::sha3_512/64             577 ns          577 ns      1212272        211.57M/s
+bench_sha3::sha3_512/128           1140 ns         1140 ns       613610        160.59M/s
+bench_sha3::sha3_512/256           2257 ns         2257 ns       310244       135.234M/s
+bench_sha3::sha3_512/512           4505 ns         4505 ns       155391       121.929M/s
+bench_sha3::sha3_512/1024          8415 ns         8415 ns        83226       123.304M/s
+bench_sha3::sha3_512/2048         16265 ns        16266 ns        43042        123.83M/s
+bench_sha3::sha3_512/4096         31909 ns        31909 ns        21920       124.332M/s
+bench_sha3::shake128/32/32          696 ns          696 ns      1006963       87.6991M/s
+bench_sha3::shake128/64/32          696 ns          696 ns      1005666       131.559M/s
+bench_sha3::shake128/128/32         696 ns          696 ns      1005782       219.243M/s
+bench_sha3::shake128/256/32        1303 ns         1303 ns       537414       210.844M/s
+bench_sha3::shake128/512/32        2462 ns         2462 ns       284406       210.729M/s
+bench_sha3::shake128/1024/32       4216 ns         4216 ns       165930       238.867M/s
+bench_sha3::shake128/2048/32       7711 ns         7711 ns        90869       257.256M/s
+bench_sha3::shake128/4096/32      14679 ns        14679 ns        47684        268.19M/s
+bench_sha3::shake256/32/32          667 ns          667 ns      1051529        91.571M/s
+bench_sha3::shake256/64/32          666 ns          666 ns      1050322       137.454M/s
+bench_sha3::shake256/128/32         669 ns          669 ns      1047474       228.245M/s
+bench_sha3::shake256/256/32        1274 ns         1274 ns       549185       215.598M/s
+bench_sha3::shake256/512/32        2476 ns         2476 ns       283450       209.532M/s
+bench_sha3::shake256/1024/32       4846 ns         4846 ns       144322       207.823M/s
+bench_sha3::shake256/2048/32       9581 ns         9581 ns        73065       207.041M/s
+bench_sha3::shake256/4096/32      18472 ns        18472 ns        37874       213.119M/s
+```
+
+### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( using `clang++` )
+
+```bash
+2023-04-02T14:54:00+00:00
+Running ./bench/a.out
+Run on (4 X 2300.08 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x2)
+  L1 Instruction 32 KiB (x2)
+  L2 Unified 256 KiB (x2)
+  L3 Unified 46080 KiB (x1)
+Load Average: 0.12, 0.11, 0.04
+----------------------------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations bytes_per_second
+----------------------------------------------------------------------------------------
+bench_sha3::keccakf1600             481 ns          481 ns      1456386       396.831M/s
+bench_sha3::sha3_224/32             514 ns          514 ns      1362291       111.316M/s
+bench_sha3::sha3_224/64             514 ns          514 ns      1363026       170.766M/s
+bench_sha3::sha3_224/128            507 ns          507 ns      1381475       293.201M/s
+bench_sha3::sha3_224/256           1002 ns         1002 ns       698750       270.273M/s
+bench_sha3::sha3_224/512           1975 ns         1975 ns       354911        260.81M/s
+bench_sha3::sha3_224/1024          3922 ns         3921 ns       178421        255.84M/s
+bench_sha3::sha3_224/2048          7309 ns         7309 ns        95792       270.877M/s
+bench_sha3::sha3_224/4096         14151 ns        14150 ns        49459       277.944M/s
+bench_sha3::sha3_256/32             507 ns          507 ns      1384609        120.41M/s
+bench_sha3::sha3_256/64             506 ns          506 ns      1384559       181.104M/s
+bench_sha3::sha3_256/128            507 ns          507 ns      1381857       301.164M/s
+bench_sha3::sha3_256/256           1012 ns         1012 ns       692174        271.44M/s
+bench_sha3::sha3_256/512           1985 ns         1985 ns       352718         261.4M/s
+bench_sha3::sha3_256/1024          3937 ns         3936 ns       177732       255.832M/s
+bench_sha3::sha3_256/2048          7840 ns         7840 ns        89274       253.029M/s
+bench_sha3::sha3_256/4096         15129 ns        15129 ns        46294       260.211M/s
+bench_sha3::sha3_384/32             506 ns          506 ns      1383488       150.705M/s
+bench_sha3::sha3_384/64             506 ns          506 ns      1385882        211.28M/s
+bench_sha3::sha3_384/128           1005 ns         1005 ns       696805       167.053M/s
+bench_sha3::sha3_384/256           1485 ns         1485 ns       471658       195.274M/s
+bench_sha3::sha3_384/512           2444 ns         2444 ns       286540       218.534M/s
+bench_sha3::sha3_384/1024          4894 ns         4894 ns       142954       208.917M/s
+bench_sha3::sha3_384/2048          9772 ns         9772 ns        71671       204.561M/s
+bench_sha3::sha3_384/4096         19513 ns        19513 ns        35881       202.528M/s
+bench_sha3::sha3_512/32             503 ns          503 ns      1390447        181.98M/s
+bench_sha3::sha3_512/64             498 ns          498 ns      1408215       245.191M/s
+bench_sha3::sha3_512/128           1005 ns         1005 ns       697134       182.203M/s
+bench_sha3::sha3_512/256           1964 ns         1964 ns       356452       155.367M/s
+bench_sha3::sha3_512/512           3909 ns         3909 ns       179073       140.543M/s
+bench_sha3::sha3_512/1024          7313 ns         7313 ns        95731       141.877M/s
+bench_sha3::sha3_512/2048         14108 ns        14107 ns        49578       142.776M/s
+bench_sha3::sha3_512/4096         27659 ns        27657 ns        25318       143.444M/s
+bench_sha3::shake128/32/32          508 ns          508 ns      1372543       120.081M/s
+bench_sha3::shake128/64/32          508 ns          508 ns      1377174       180.139M/s
+bench_sha3::shake128/128/32         511 ns          511 ns      1368739       298.444M/s
+bench_sha3::shake128/256/32        1015 ns         1015 ns       690315       270.602M/s
+bench_sha3::shake128/512/32        1994 ns         1993 ns       350931       260.252M/s
+bench_sha3::shake128/1024/32       3466 ns         3465 ns       202087       290.617M/s
+bench_sha3::shake128/2048/32       6413 ns         6413 ns       109159       309.314M/s
+bench_sha3::shake128/4096/32      12294 ns        12293 ns        56928       320.235M/s
+bench_sha3::shake256/32/32          511 ns          511 ns      1375825       119.462M/s
+bench_sha3::shake256/64/32          511 ns          511 ns      1370707       179.276M/s
+bench_sha3::shake256/128/32         509 ns          509 ns      1373614        299.85M/s
+bench_sha3::shake256/256/32        1010 ns         1010 ns       695152       272.029M/s
+bench_sha3::shake256/512/32        1983 ns         1983 ns       353181       261.676M/s
+bench_sha3::shake256/1024/32       3935 ns         3935 ns       177885       255.946M/s
+bench_sha3::shake256/2048/32       7820 ns         7820 ns        89541       253.649M/s
+bench_sha3::shake256/4096/32      15134 ns        15134 ns        46244       260.131M/s
+```
+
 ## Usage
 
 `sha3` C++ library is written such that it's fairly easy for one to start using it in their project. All one needs to do
