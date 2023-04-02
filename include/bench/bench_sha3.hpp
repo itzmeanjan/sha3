@@ -126,7 +126,7 @@ sha3_512(benchmark::State& state)
 // input message bytes & output digest bytes.
 //
 // Note, all input bytes are absorbed in a single call to `hash` function.
-// And all output bytes are read in a single call to `read` function.
+// And all output bytes are squeezed in a single call to `read` function.
 inline void
 shake128(benchmark::State& state)
 {
@@ -164,9 +164,10 @@ shake128(benchmark::State& state)
 }
 
 // Benchmarks SHAKE-256 extendable output function with specified number of
-// input bytes & output digest byte length
+// input message bytes & output digest bytes.
 //
-// Note, each byte of output digest is read at a time.
+// Note, all input bytes are absorbed in a single call to `hash` function.
+// And all output bytes are squeezed in a single call to `read` function.
 inline void
 shake256(benchmark::State& state)
 {

@@ -4,7 +4,8 @@
 
 // Compile it using
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I include example/incremental_shake256.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I include
+// example/incremental_shake256.cpp
 int
 main()
 {
