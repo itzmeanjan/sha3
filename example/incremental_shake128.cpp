@@ -4,7 +4,7 @@
 
 // Compile it using
 //
-// g++ -std=c++20 -Wall -O3 -I include example/incremental_shake128.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I include example/incremental_shake128.cpp
 int
 main()
 {
