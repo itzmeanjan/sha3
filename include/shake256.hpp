@@ -1,6 +1,5 @@
 #pragma once
 #include "sponge.hpp"
-#include "utils.hpp"
 #include <climits>
 
 // SHAKE256 Extendable Output Function : Keccak[512](M || 1111, d)
@@ -22,7 +21,7 @@ private:
   uint64_t state[25]{};
   size_t offset = 0;
   size_t absorbed = 0; // all message bytes absorbed ?
-  size_t readable = 0;
+  size_t squeezable = 0;
 
 public:
   // Given N -bytes input message, this routine consumes it into keccak[512]
@@ -41,7 +40,7 @@ public:
     sponge::finalize<0b00001111, 4, rate>(state, offset);
 
     absorbed = SIZE_T_MAX;
-    readable = rate >> 3;
+    squeezable = rate >> 3;
   }
 
   // Given N -many bytes input message, this routine consumes those into
@@ -86,7 +85,7 @@ public:
     sponge::finalize<0b00001111, 4, rate>(state, offset);
 
     absorbed = SIZE_T_MAX;
-    readable = rate >> 3;
+    squeezable = rate >> 3;
   }
 
   // Given that N -bytes input message is already absorbed into sponge state
@@ -104,7 +103,7 @@ public:
       return;
     }
 
-    sponge::_squeeze<rate>(state, readable, dig, dlen);
+    sponge::_squeeze<rate>(state, squeezable, dig, dlen);
   }
 };
 

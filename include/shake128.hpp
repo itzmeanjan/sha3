@@ -1,6 +1,5 @@
 #pragma once
 #include "sponge.hpp"
-#include "utils.hpp"
 #include <climits>
 
 // SHAKE128 Extendable Output Function : Keccak[256](M || 1111, d)
