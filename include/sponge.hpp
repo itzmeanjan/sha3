@@ -217,6 +217,40 @@ absorb(uint64_t* const __restrict state,
   }
 }
 
+// Given that N message bytes are already consumed into Keccak[c] permutation
+// state, this routine finalizes sponge state and makes it ready for squeezing,
+// by appending ( along with domain seperation bits ) 10*1 padding bits to input
+// message s.t. total absorbed message byte length becomes multiple of
+// `rate/ 8` -bytes.
+//
+// - `rate` portion of sponge will have bitwidth of 1600 - c.
+// - `offset` must ∈ [0, `rbytes`)
+//
+// This function implementation collects some motivation from
+// https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
+template<const uint8_t domain_seperator,
+         const size_t ds_bits,
+         const size_t rate>
+static inline void
+finalize(uint64_t* const __restrict state, size_t& offset)
+  requires(check_domain_seperator(ds_bits))
+{
+  constexpr size_t rbytes = rate >> 3;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+
+  uint64_t words[rwords];
+
+  const auto pad = pad10x1<domain_seperator, ds_bits, rate>(offset);
+  sha3_utils::bytes_to_le_words<rate>(pad.data(), words);
+
+  for (size_t j = 0; j < rwords; j++) {
+    state[j] ^= words[j];
+  }
+
+  keccak::permute(state);
+  offset = 0;
+}
+
 // Squeezes N -bytes output from sponge state which has consumed input message
 //
 // See step (7 - 10) of algorithm 8 defined in section 4 of SHA3 specification
