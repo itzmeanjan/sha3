@@ -8,22 +8,22 @@
 // Keccak family of sponge functions
 namespace sponge {
 
-// Compile-time check to ensure that domain seperator can only be 2/ 4 -bits
+// Compile-time check to ensure that domain separator can only be 2/ 4 -bits
 // wide
 //
 // When used in context of extendable output functions ( SHAKE{128, 256} )
-// domain seperator bits are 4 -bit wide
+// domain separator bits are 4 -bit wide
 //
 // See section 6.{1, 2} of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
 constexpr bool
-check_domain_seperator(const size_t dom_sep_bit_len)
+check_domain_separator(const size_t dom_sep_bit_len)
 {
   return (dom_sep_bit_len == 2) | (dom_sep_bit_len == 4);
 }
 
-// Pad10*1 - generates a padding, while also considering domain seperator bits (
-// which are either 2 or 4 -bit wide ), such that when both domain seperator
+// Pad10*1 - generates a padding, while also considering domain separator bits (
+// which are either 2 or 4 -bit wide ), such that when both domain separator
 // bits and 10*1 padding is appended ( in order ) to actual message, total byte
 // length of message consumed into keccak-p[1600, 24] permutation becomes
 // multiple of `rate` -bits. The only parameter `offset` denotes how many bytes
@@ -34,17 +34,17 @@ check_domain_seperator(const size_t dom_sep_bit_len)
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
-template<const uint8_t domain_seperator,
+template<const uint8_t domain_separator,
          const size_t ds_bits,
          const size_t rate>
 static inline std::array<uint8_t, rate / 8>
 pad10x1(const size_t offset)
-  requires(check_domain_seperator(ds_bits))
+  requires(check_domain_separator(ds_bits))
 {
   std::array<uint8_t, rate / 8> res{};
 
   constexpr uint8_t mask = (1 << ds_bits) - 1;
-  constexpr uint8_t pad_byte = (1 << ds_bits) | (domain_seperator & mask);
+  constexpr uint8_t pad_byte = (1 << ds_bits) | (domain_separator & mask);
 
   res[offset] = pad_byte;
   res[(rate / 8) - 1] ^= 0x80;
@@ -106,7 +106,7 @@ absorb(uint64_t* const __restrict state,
 
 // Given that N message bytes are already consumed into Keccak[c] permutation
 // state, this routine finalizes sponge state and makes it ready for squeezing,
-// by appending ( along with domain seperation bits ) 10*1 padding bits to input
+// by appending ( along with domain separation bits ) 10*1 padding bits to input
 // message s.t. total absorbed message byte length becomes multiple of
 // `rate/ 8` -bytes.
 //
@@ -115,19 +115,19 @@ absorb(uint64_t* const __restrict state,
 //
 // This function implementation collects some motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
-template<const uint8_t domain_seperator,
+template<const uint8_t domain_separator,
          const size_t ds_bits,
          const size_t rate>
 static inline void
 finalize(uint64_t* const __restrict state, size_t& offset)
-  requires(check_domain_seperator(ds_bits))
+  requires(check_domain_separator(ds_bits))
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
   uint64_t words[rwords];
 
-  const auto pad = pad10x1<domain_seperator, ds_bits, rate>(offset);
+  const auto pad = pad10x1<domain_separator, ds_bits, rate>(offset);
   sha3_utils::bytes_to_le_words<rate>(pad.data(), words);
 
   for (size_t j = 0; j < rwords; j++) {
