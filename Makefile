@@ -16,7 +16,7 @@ clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
 
 format:
-	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style="Mozilla" && python3 -m black wrapper/python/*.py
+	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style="Mozilla"
 
 benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you haven't built google-benchmark with libPFM support.
