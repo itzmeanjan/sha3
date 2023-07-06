@@ -26,5 +26,17 @@ main()
   }
   std::cout << "[test] SHAKE{128,256} incremental absorption and squeezing\n";
 
+  test_sha3::test_sha3_224_kat();
+  std::cout << "[test] SHA3-224 K(nown) A(nswer) T(ests)\n";
+
+  test_sha3::test_sha3_256_kat();
+  std::cout << "[test] SHA3-256 K(nown) A(nswer) T(ests)\n";
+
+  test_sha3::test_sha3_384_kat();
+  std::cout << "[test] SHA3-384 K(nown) A(nswer) T(ests)\n";
+
+  test_sha3::test_sha3_512_kat();
+  std::cout << "[test] SHA3-512 K(nown) A(nswer) T(ests)\n";
+
   return EXIT_SUCCESS;
 }
