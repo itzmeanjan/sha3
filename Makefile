@@ -1,17 +1,18 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic
-OPTFLAGS = -O3 -march=native -mtune=native
-IFLAGS = -I ./include
+CXX_FLAGS = -std=c++20
+WARN_FLAGS = -Wall -Wextra -pedantic
+OPT_FLAGS = -O3 -march=native -mtune=native
+I_FLAGS = -I ./include
 
 all: tests
 
 wrapper/libsha3.so: wrapper/sha3.cpp include/*.hpp
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) -fPIC --shared $< -o $@
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -fPIC --shared $< -o $@
 
 lib: wrapper/libsha3.so
 
 test/a.out: test/main.cpp include/*.hpp include/test/*.hpp
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -o $@
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -o $@
 
 tests: lib test/a.out
 	cd wrapper/python; python3 -m pytest -v; cd ..
@@ -23,10 +24,22 @@ clean:
 format:
 	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style="Mozilla" && python3 -m black wrapper/python/*.py
 
-bench/a.out: bench/main.cpp include/*.hpp include/bench/*.hpp
-	# make sure you've google-benchmark globally installed;
-	# see https://github.com/google/benchmark/tree/60b16f1#installation
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $< -lbenchmark -o $@
 
-benchmark: bench/a.out
+benchmarks/main.o: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+benchmarks/bench.out: benchmarks/main.o
+	# In case you haven't built google-benchmark with libPFM support.
+	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
+	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lpthread -o $@
+
+benchmark: benchmarks/bench.out
 	./$< --benchmark_counters_tabular=true
+
+benchmarks/perf.out: benchmarks/main.o
+	# In case you've built google-benchmark with libPFM support.
+	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
+	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lpthread -lpfm -o $@
+
+perf: benchmarks/perf.out
+	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
