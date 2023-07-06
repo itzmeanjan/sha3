@@ -14,7 +14,7 @@ constexpr size_t RATE = 1600 - CAPACITY;
 constexpr uint8_t DOM_SEP = 0b00001111;
 
 // Bit-width of domain separator, starting from least significant bit.
-constexpr size_t DOM_SEP_BW = 2;
+constexpr size_t DOM_SEP_BW = 4;
 
 // SHAKE256 Extendable Output Function (Xof)
 //
