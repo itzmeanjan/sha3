@@ -4,19 +4,13 @@ WARN_FLAGS = -Wall -Wextra -pedantic
 OPT_FLAGS = -O3 -march=native -mtune=native
 I_FLAGS = -I ./include
 
-all: tests
+all: test
 
-wrapper/libsha3.so: wrapper/sha3.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -fPIC --shared $< -o $@
-
-lib: wrapper/libsha3.so
-
-test/a.out: test/main.cpp include/*.hpp include/test/*.hpp
+tests/a.out: tests/main.cpp include/*.hpp include/tests/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -o $@
 
-tests: lib test/a.out
-	cd wrapper/python; python3 -m pytest -v; cd ..
-	./test/a.out
+test: tests/a.out
+	./$<
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
