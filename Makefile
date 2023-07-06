@@ -29,7 +29,8 @@ benchmark: benchmarks/bench.out
 benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -DCYCLES_PER_BYTE $< -lbenchmark -lpthread -lpfm -o $@
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) \
+						-DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE $< -lbenchmark -lpthread -lpfm -o $@
 
 perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
+	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS

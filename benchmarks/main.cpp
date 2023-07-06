@@ -13,9 +13,9 @@ BENCHMARK(bench_sha3::sha3_512)->RangeMultiplier(2)->Range(32, 4096);
 
 // register shake-{128, 256} extendable output function for benchmark
 BENCHMARK(bench_sha3::shake128)
-  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32 } });
+  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32, 64 } });
 BENCHMARK(bench_sha3::shake256)
-  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32 } });
+  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32, 64 } });
 
 // benchmark runner main routine
 BENCHMARK_MAIN();
