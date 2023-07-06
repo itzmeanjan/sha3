@@ -61,7 +61,7 @@ public:
     }
   }
 
-  // After sponge state is finalized, 32 message digest bytes can be squeezed by
+  // After sponge state is finalized, 64 message digest bytes can be squeezed by
   // calling this function. Once digest bytes are squeezed, calling this
   // function again and again returns nothing.
   inline void digest(uint8_t* const md)
