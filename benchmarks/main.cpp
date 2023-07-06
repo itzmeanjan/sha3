@@ -1,5 +1,6 @@
+#include "benchmarks/bench_hashing.hpp"
 #include "benchmarks/bench_keccak.hpp"
-#include "benchmarks/bench_sha3.hpp"
+#include "benchmarks/bench_xof.hpp"
 
 // register keccak-p[1600, 24] permutation for benchmark
 BENCHMARK(bench_sha3::keccakf1600);
