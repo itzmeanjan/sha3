@@ -32,11 +32,11 @@ sha3_224(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
-  state.SetBytesProcessed(bytes_per_iter);
+  const size_t bytes_processed = state.iterations() * (msg.size() + md.size());
+  state.SetBytesProcessed(bytes_processed);
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
 }
 
@@ -63,11 +63,11 @@ sha3_256(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
-  state.SetBytesProcessed(bytes_per_iter);
+  const size_t bytes_processed = state.iterations() * (msg.size() + md.size());
+  state.SetBytesProcessed(bytes_processed);
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
 }
 
@@ -94,11 +94,11 @@ sha3_384(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
-  state.SetBytesProcessed(bytes_per_iter);
+  const size_t bytes_processed = state.iterations() * (msg.size() + md.size());
+  state.SetBytesProcessed(bytes_processed);
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
 }
 
@@ -125,11 +125,11 @@ sha3_512(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
-  state.SetBytesProcessed(bytes_per_iter);
+  const size_t bytes_processed = state.iterations() * (msg.size() + md.size());
+  state.SetBytesProcessed(bytes_processed);
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
 #endif
 }
 
