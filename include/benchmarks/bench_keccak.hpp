@@ -20,8 +20,12 @@ keccakf1600(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t tot_bytes = state.iterations() * sizeof(st);
-  state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+  const size_t bytes_per_iter = state.iterations() * sizeof(st);
+  state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 }

@@ -36,6 +36,10 @@ sha3_224(benchmark::State& state)
 
   const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
   state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 // Benchmarks SHA3-256 hash function with variable length input message.
@@ -63,6 +67,10 @@ sha3_256(benchmark::State& state)
 
   const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
   state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 // Benchmarks SHA3-384 hash function with variable length input message.
@@ -90,6 +98,10 @@ sha3_384(benchmark::State& state)
 
   const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
   state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 // Benchmarks SHA3-512 hash function with variable length input message.
@@ -117,6 +129,10 @@ sha3_512(benchmark::State& state)
 
   const size_t bytes_per_iter = state.iterations() * (msg.size() + md.size());
   state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 // Benchmarks SHAKE-128 extendable output function with variable length input
@@ -149,6 +165,10 @@ shake128(benchmark::State& state)
 
   const size_t bytes_per_iter = state.iterations() * (msg.size() + out.size());
   state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 // Benchmarks SHAKE-256 extendable output function with variable length input
@@ -181,6 +201,10 @@ shake256(benchmark::State& state)
 
   const size_t bytes_per_iter = state.iterations() * (msg.size() + out.size());
   state.SetBytesProcessed(bytes_per_iter);
+
+#ifdef CYCLES_PER_BYTE
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_per_iter;
+#endif
 }
 
 }

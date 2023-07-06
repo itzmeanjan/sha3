@@ -24,22 +24,18 @@ clean:
 format:
 	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style="Mozilla" && python3 -m black wrapper/python/*.py
 
-
-benchmarks/main.o: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
-
-benchmarks/bench.out: benchmarks/main.o
+benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you haven't built google-benchmark with libPFM support.
 	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
-	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lpthread -o $@
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -lbenchmark -lpthread -o $@
 
 benchmark: benchmarks/bench.out
 	./$< --benchmark_counters_tabular=true
 
-benchmarks/perf.out: benchmarks/main.o
+benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
-	$(CXX) $(OPT_FLAGS) $^ -lbenchmark -lpthread -lpfm -o $@
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -DCYCLES_PER_BYTE $< -lbenchmark -lpthread -lpfm -o $@
 
 perf: benchmarks/perf.out
 	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
