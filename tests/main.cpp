@@ -38,5 +38,11 @@ main()
   test_sha3::test_sha3_512_kat();
   std::cout << "[test] SHA3-512 K(nown) A(nswer) T(ests)\n";
 
+  test_sha3::test_shake128_kat();
+  std::cout << "[test] Shake128 Xof K(nown) A(nswer) T(ests)\n";
+
+  test_sha3::test_shake256_kat();
+  std::cout << "[test] Shake256 Xof K(nown) A(nswer) T(ests)\n";
+
   return EXIT_SUCCESS;
 }
