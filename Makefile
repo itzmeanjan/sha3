@@ -20,7 +20,7 @@ format:
 
 benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you haven't built google-benchmark with libPFM support.
-	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
+	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -lbenchmark -lpthread -o $@
 
 benchmark: benchmarks/bench.out
@@ -28,7 +28,7 @@ benchmark: benchmarks/bench.out
 
 benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you've built google-benchmark with libPFM support.
-	# More @ https://github.com/google/benchmark/blob/b323288cbac5fd1dd35f153e767497a23c337742/docs/perf_counters.md
+	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) \
 						-DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE $< -lbenchmark -lpthread -lpfm -o $@
 
