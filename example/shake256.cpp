@@ -1,6 +1,7 @@
 #include "shake256.hpp"
 #include "utils.hpp"
 #include <iostream>
+#include <vector>
 
 // Compile it using
 //
@@ -11,28 +12,29 @@ main()
   constexpr size_t ilen = 32;
   constexpr size_t olen = 40;
 
-  uint8_t* msg = static_cast<uint8_t*>(std::malloc(ilen));
-  uint8_t* dig = static_cast<uint8_t*>(std::malloc(olen));
+  std::vector<uint8_t> msg(ilen, 0);
+  std::vector<uint8_t> dig(olen, 0);
 
-  sha3_utils::random_data<uint8_t>(msg, ilen);
-  std::memset(dig, 0, olen);
+  sha3_utils::random_data<uint8_t>(msg.data(), msg.size());
 
-  // create shake256 hasher
-  shake256::shake256 hasher{};
-  // absorb message bytes into state
-  hasher.hash(msg, ilen);
+  // Create shake256 hasher
+  shake256::shake256 hasher;
 
-  // squeeze total `olen` -bytes out of sponge, a single byte at a time
+  // Absorb message bytes into sponge state
+  hasher.absorb(msg.data(), msg.size());
+  // Finalize sponge state
+  hasher.finalize();
+
+  // Squeeze total `olen` -bytes out of sponge, a single byte at a time.
+  // One can request arbitrary many bytes of output, by calling `squeeze`
+  // arbitrary many times.
   for (size_t i = 0; i < olen; i++) {
-    hasher.read(dig + i, 1);
+    hasher.squeeze(dig.data() + i, 1);
   }
 
   std::cout << "SHAKE-256" << std::endl << std::endl;
-  std::cout << "Input  : " << sha3_utils::to_hex(msg, ilen) << std::endl;
-  std::cout << "Output : " << sha3_utils::to_hex(dig, olen) << std::endl;
-
-  std::free(msg);
-  std::free(dig);
+  std::cout << "Input  : " << sha3_utils::to_hex(msg.data(), ilen) << "\n";
+  std::cout << "Output : " << sha3_utils::to_hex(dig.data(), olen) << "\n";
 
   return EXIT_SUCCESS;
 }

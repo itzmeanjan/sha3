@@ -1,6 +1,7 @@
 #include "sha3_384.hpp"
 #include "utils.hpp"
 #include <iostream>
+#include <vector>
 
 // Compile it using
 //
@@ -9,22 +10,21 @@ int
 main()
 {
   constexpr size_t ilen = 32;
-  constexpr size_t olen = 48;
+  constexpr size_t olen = sha3_384::DIGEST_LEN;
 
-  uint8_t* msg = static_cast<uint8_t*>(std::malloc(ilen));
-  uint8_t* dig = static_cast<uint8_t*>(std::malloc(olen));
+  std::vector<uint8_t> msg(ilen, 0);
+  std::vector<uint8_t> dig(olen, 0);
 
-  sha3_utils::random_data<uint8_t>(msg, ilen);
-  std::memset(dig, 0, olen);
+  sha3_utils::random_data<uint8_t>(msg.data(), msg.size());
 
-  sha3_384::hash(msg, ilen, dig);
+  sha3_384::sha3_384 hasher;
+  hasher.absorb(msg.data(), msg.size());
+  hasher.finalize();
+  hasher.digest(dig.data());
 
   std::cout << "SHA3-384" << std::endl << std::endl;
-  std::cout << "Input  : " << sha3_utils::to_hex(msg, ilen) << std::endl;
-  std::cout << "Output : " << sha3_utils::to_hex(dig, olen) << std::endl;
-
-  std::free(msg);
-  std::free(dig);
+  std::cout << "Input  : " << sha3_utils::to_hex(msg.data(), ilen) << "\n";
+  std::cout << "Output : " << sha3_utils::to_hex(dig.data(), olen) << "\n";
 
   return EXIT_SUCCESS;
 }
