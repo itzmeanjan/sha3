@@ -282,7 +282,7 @@ round(uint64_t* const state, const size_t r_idx)
 // Keccak-p[1600, 24] permutation, applying 24 rounds of permutation
 // on state of dimension 5 x 5 x 64 ( = 1600 ) -bits, using algorithm 7 defined
 // in section 3.3 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
+inline void
 permute(uint64_t* const state)
 {
   for (size_t i = 0; i < ROUNDS; i++) {

@@ -4,27 +4,75 @@
 // SHA3-384 Hash Function : Keccak[768](M || 01, 384)
 namespace sha3_384 {
 
-// Given N -bytes input message, this routine consumes it into keccak[768]
-// sponge state and squeezes out 48 -bytes digest | N >= 0
+// Bit length of SHA3-384 message digest.
+constexpr size_t DIGEST_BIT_LEN = 384;
+
+// Byte length of SHA3-384 message digest.
+constexpr size_t DIGEST_LEN = DIGEST_BIT_LEN / 8;
+
+// Width of capacity portion of the sponge, in bits.
+constexpr size_t CAPACITY = 2 * DIGEST_BIT_LEN;
+
+// Width of rate portion of the sponge, in bits.
+constexpr size_t RATE = 1600 - CAPACITY;
+
+// Domain separator bits, used for finalization.
+constexpr uint8_t DOM_SEP = 0b00000010;
+
+// Bit-width of domain separator, starting from least significant bit.
+constexpr size_t DOM_SEP_BW = 2;
+
+// Given arbitrary many input message bytes, this routine consumes it into
+// keccak[768] sponge state and squeezes out 48 -bytes digest.
 //
 // See SHA3 hash function definition in section 6.1 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline void
-hash(const uint8_t* const __restrict msg,
-     const size_t mlen,
-     uint8_t* const __restrict dig)
+// https://dx.doi.org/10.6028/NIST.FIPS.202.
+struct sha3_384
 {
-  constexpr size_t dlen = 384;
-  constexpr size_t capacity = 2 * dlen;
-  constexpr size_t rate = 1600 - capacity;
-
-  uint64_t state[25]{};
+private:
+  uint64_t state[keccak::LANE_CNT]{};
   size_t offset = 0;
-  size_t squeezable = rate >> 3;
+  alignas(4) bool finalized = false;
+  alignas(4) bool squeezed = false;
 
-  sponge::absorb<rate>(state, offset, msg, mlen);
-  sponge::finalize<0b00000010, 2, rate>(state, offset);
-  sponge::squeeze<rate>(state, squeezable, dig, dlen >> 3);
-}
+public:
+  // Constructor
+  inline sha3_384() = default;
+
+  // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary
+  // many times ( until the sponge is finalized ), each time absorbing arbitrary
+  // many message bytes into RATE portion of the sponge.
+  inline void absorb(const uint8_t* const msg, const size_t mlen)
+  {
+    if (!finalized) {
+      sponge::absorb<RATE>(state, offset, msg, mlen);
+    }
+  }
+
+  // Finalizes the sponge after all message bytes are absorbed into it, now it
+  // should be ready for squeezing message digest bytes. Once finalized, you
+  // can't absorb any message bytes into sponge. After finalization, calling
+  // this function again and again doesn't mutate anything.
+  inline void finalize()
+  {
+    if (!finalized) {
+      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
+      finalized = true;
+    }
+  }
+
+  // After sponge state is finalized, 48 message digest bytes can be squeezed by
+  // calling this function. Once digest bytes are squeezed, calling this
+  // function again and again returns nothing.
+  inline void digest(uint8_t* const md)
+  {
+    if (finalized && !squeezed) {
+      size_t squeezable = RATE / 8;
+      sponge::squeeze<RATE>(state, squeezable, md, DIGEST_LEN);
+
+      squeezed = true;
+    }
+  }
+};
 
 }

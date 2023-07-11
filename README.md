@@ -1,33 +1,34 @@
 # sha3
-SHA3: Permutation-Based Hash and Extendable-Output Functions
+SHA3: Permutation-Based Hash and Extendable-Output Functions.
 
-## Motivation
+## Overview
 
 SHA3 standard by NIST ( i.e. NIST FIPS PUB 202 ) specifies four ( of different digest length ) permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
 
-These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature algorithms ) i.e. some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium, SPHINCS+ etc. ) of NIST PQC standardization effort - waiting to be standardized or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. I decided to implement SHA3 specification as **zero-dependency, header-only and easy-to-use C++ library**, so that I can make use of it as a modular dependency ( say pinned to specific commit using git submodule ) in libraries where I implement these PQC schemes.
+These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature ), some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium, SPHINCS+ etc. ) of NIST PQC standardization effort - waiting to be standardized or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. I decided to implement SHA3 specification as a **header-only C++ library**, so that I can make use of it as a modular dependency ( say pinned to specific commit using git submodule ) in libraries where I implement various PQC schemes.
 
 Few of those places, where I've already used `sha3` as ( git submodule based ) dependency
 
 - [Kyber: Post-Quantum Public-key Encryption & Key-establishment Algorithm](https://github.com/itzmeanjan/kyber)
 - [Dilithium: Post-Quantum Digital Signature Algorithm](https://github.com/itzmeanjan/dilithium)
 - [SPHINCS+: Stateless Hash-based Digital Signature Algorithm](https://github.com/itzmeanjan/sphincs)
-- [Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU - NIST PQC Digital Signature Algorithm](https://github.com/itzmeanjan/falcon)
+- [Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU](https://github.com/itzmeanjan/falcon)
+- [FrodoKEM: Practical Quantum-secure Key Encapsulation from Generic Lattices](https://github.com/itzmeanjan/frodokem)
 
-Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms are implemented in `sha3` library
+> **Warning** Above list may not be up-to-date !
 
-Algorithm | Input | Output | Behaviour | Interface
---- | --- | --- | --- | ---
-SHA3-224 | N ( >=0 ) -bytes message | 28 -bytes digest | Given N -bytes input message this routine computes 28 -bytes sha3-224 digest, while consuming message into Keccak[448] sponge | [`sha3_224::hash(...)`](./include/sha3_224.hpp)
-SHA3-256 | N ( >=0 ) -bytes message | 32 -bytes digest | Given N -bytes input message this routine computes 32 -bytes sha3-256 digest, while consuming message into Keccak[512] sponge | [`sha3_256::hash(...)`](./include/sha3_256.hpp)
-SHA3-384 | N ( >=0 ) -bytes message | 48 -bytes digest | Given N -bytes input message this routine computes 48 -bytes sha3-384 digest, while consuming message into Keccak[768] sponge | [`sha3_384::hash(...)`](./include/sha3_384.hpp)
-SHA3-512 | N ( >=0 ) -bytes message | 64 -bytes digest | Given N -bytes input message this routine computes 64 -bytes sha3-512 digest, while consuming message into Keccak[1024] sponge | [`sha3_512::hash(...)`](./include/sha3_512.hpp)
-SHAKE-128 | N ( >=0 ) -bytes message **[ Supports incremental message consumption ]** | M ( >=0 ) -bytes digest | Given N -bytes input message this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already absorbed input bytes | [`shake128::{hash(...), read(...)}`](./include/shake128.hpp)
-SHAKE-256 | N ( >=0 ) -bytes message **[ Supports incremental message consumption ]** | M ( >=0 ) -bytes digest | Given N -bytes input message this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already absorbed input bytes | [`shake256::{hash(...), read(...)}`](./include/shake256.hpp)
+Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms ( with flexible interfaces ) are implemented in `sha3` library.
 
-> Learn more about NIST PQC standardization effort [here](https://csrc.nist.gov/projects/post-quantum-cryptography/)
+Algorithm | Input | Output | Behaviour | Namespace + Header
+--- | :-: | :-: | :-: | --:
+SHA3-224 | N ( >=0 ) -bytes message | 28 -bytes digest | Given N -bytes input message, this routine computes 28 -bytes sha3-224 digest, while *(incrementally)* consuming message into Keccak[448] sponge. | [`sha3_224::sha3_224`](./include/sha3_224.hpp)
+SHA3-256 | N ( >=0 ) -bytes message | 32 -bytes digest | Given N -bytes input message, this routine computes 32 -bytes sha3-256 digest, while *(incrementally)* consuming message into Keccak[512] sponge. | [`sha3_256::sha3_256`](./include/sha3_256.hpp)
+SHA3-384 | N ( >=0 ) -bytes message | 48 -bytes digest | Given N -bytes input message, this routine computes 48 -bytes sha3-384 digest, while *(incrementally)* consuming message into Keccak[768] sponge. | [`sha3_384::sha3_384`](./include/sha3_384.hpp)
+SHA3-512 | N ( >=0 ) -bytes message | 64 -bytes digest | Given N -bytes input message, this routine computes 64 -bytes sha3-512 digest, while *(incrementally)* consuming message into Keccak[1024] sponge. | [`sha3_512::sha3_512`](./include/sha3_512.hpp)
+SHAKE-128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake128::shake128`](./include/shake128.hpp)
+SHAKE-256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake256::shake256`](./include/shake256.hpp)
 
-> Find NIST PQC selected algorithms [here](https://csrc.nist.gov/projects/post-quantum-cryptography/selected-algorithms-2022)
+> **Note** Learn more about NIST PQC standardization effort [here](https://csrc.nist.gov/projects/post-quantum-cryptography/).
 
 ## Prerequisites
 
@@ -35,295 +36,170 @@ SHAKE-256 | N ( >=0 ) -bytes message **[ Supports incremental message consumptio
 
 ```bash
 $ g++ --version
-g++ (Ubuntu 11.2.0-19ubuntu1) 11.2.0
+g++ (Ubuntu 12.2.0-17ubuntu1) 12.2.0
 
 $ clang++ --version
-Ubuntu clang version 14.0.0-1ubuntu1
-Target: aarch64-unknown-linux-gnu
+Ubuntu clang version 15.0.7
+Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
 ```
 
-- System development utilities such as `cmake` and `make`.
+- Build tools such as `cmake` and `make`.
 
 ```bash
 $ make --version
-GNU Make 3.81
+GNU Make 4.3
 
 $ cmake --version
-cmake version 3.23.2
+cmake version 3.25.1
 ```
 
-- For ensuring functional correctness of these implementations, you'll need `python3`.
-
-> Python `hashlib` module computed digests are used as source of truth during testing. More about [hashlib](https://docs.python.org/3/library/hashlib.html).
-
-```bash
-$ python3 --version
-Python 3.10.7
-```
-
-- Install Python dependencies by issuing.
-
-```bash
-python3 -m pip install --user -r wrapper/python/requirements.txt
-```
-
-- For benchmarking implementations on CPU systems, `google-benchmark` library and headers are required to be installed system-wide. Please follow [this](https://github.com/google/benchmark/tree/60b16f1#installation) guide if you don't have it installed.
+- For benchmarking SHA3 algorithms, targeting CPU systems, `google-benchmark` library and headers are required to be installed system-wide. Follow [this](https://github.com/google/benchmark#installation) guide if you don't have it installed yet.
+- If you are on a machine running GNU/Linux kernel and you want to obtain following (see list below), when benchmarking SHA3 algorithms, you should consider building `google-benchmark` library yourself with libPFM support, following [this](https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7) step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
+    1) CPU cycle count.
+    2) Retired instruction count.
+    3) Cycles/ byte ( aka cpb ).
+    4) Retired instructions/ cycle ( aka ipc ).
 
 ## Testing
 
-For ensuring that SHA3 hash function and extendable output function implementations are correct & conformant to the NIST standard ( see [this](https://dx.doi.org/10.6028/NIST.FIPS.202) ), I make use of Python `hashlib` module as source of truth during testing. 
+For ensuring that SHA3 hash function and extendable output function implementations are correct & conformant to the NIST standard ( see [this](https://dx.doi.org/10.6028/NIST.FIPS.202) ), I make use of K(nown) A(nswer) T(ests), generated following [this](https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364) gist.
 
-For randomly generated byte arrays of length N ( s.t. 0 <= N <= 1024 ), I compute SHA3-{224, 256, 384, 512} & SHAKE{128, 256} digest using both
+I also test correctness of
 
-- (i) my implementation ( Python wrapper interface, [here](./wrapper/python/sha3.py) )
-- (ii) `hashlib` implementation
+- Incremental message absorption property of SHA3 hash functions and Xofs.
+- Output squeezing property of SHA3 Xofs.
 
-and check for their equality.
-
-I also test implementation correctness of incremental message absorption API of SHAKE{128, 256} XOF. Issue following command for running test cases.
+Issue following command for running all the test cases.
 
 ```bash
 make
+
+[test] SHA3-{224,256,384,512} incremental absorption
+[test] SHAKE{128,256} incremental absorption and squeezing
+[test] SHA3-224 K(nown) A(nswer) T(ests)
+[test] SHA3-256 K(nown) A(nswer) T(ests)
+[test] SHA3-384 K(nown) A(nswer) T(ests)
+[test] SHA3-512 K(nown) A(nswer) T(ests)
+[test] Shake128 Xof K(nown) A(nswer) T(ests)
+[test] Shake256 Xof K(nown) A(nswer) T(ests)
 ```
 
 ## Benchmarking
 
-For benchmarking SHA3 hash functions and extendable output functions, on CPU systems, using `google-benchmark`, issue following command.
+For benchmarking SHA3 hash and extendable output functions, targeting CPU systems, using `google-benchmark`, issue following command.
 
-> **Warning** For disabling CPU scaling during benchmarking, follow [this](https://github.com/google/benchmark/blob/60b16f1/docs/user_guide.md#disabling-cpu-frequency-scaling)
+> **Warning** You must disable CPU scaling during benchmarking, following [this](https://github.com/google/benchmark/blob/4931aefb51d1e5872b096a97f43e13fa0fc33c8c/docs/reducing_variance.md) guide.
 
-> **Note** During benchmarking hash functions, a byte array ( filled with random data ) of length N is used as input | 32 <= N <= 4096 and N = 2^i
+> **Note** When benchmarking extendable output functions ( Xofs ), fixed length output of 32/ 64 -bytes are squeezed from sponge ( s.t. all bytes are read in a single call to `squeeze` function ), for each input message byte array of length N | 32 <= N <= 4096 and N = 2^i.
 
-> **Note** When benchmarking extendable output functions ( XOFs ), fixed length output of 32 -bytes are squeezed from sponge ( s.t. all bytes are read in a single call to `read` function ), for each input byte array of length N | 32 <= N <= 4096 and N = 2^i
+> **Note** Following performance figures were collected by issuing `make perf` - on machines running GNU/Linux kernel, with `google-benchmark` library compiled with *libPFM* support.
 
 ```bash
-make benchmark
+make perf      # You must issue this if you built your google-benchmark library with libPFM support.
+make benchmark # Or you can simply use this.
 ```
 
-### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( using `clang++` )
+### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with GCC )
 
 ```bash
-2023-04-02T18:00:36+04:00
-Running ./bench/a.out
-Run on (8 X 2400 MHz CPU s)
+2023-07-11T09:18:28+04:00
+Running ./benchmarks/perf.out
+Run on (16 X 601.957 MHz CPU s)
 CPU Caches:
-  L1 Data 32 KiB
-  L1 Instruction 32 KiB
-  L2 Unified 256 KiB (x4)
-  L3 Unified 6144 KiB
-Load Average: 0.87, 1.51, 1.79
-----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations bytes_per_second
-----------------------------------------------------------------------------------------
-bench_sha3::keccakf1600             331 ns          331 ns      2093771       576.078M/s
-bench_sha3::sha3_224/32             361 ns          360 ns      1974300       158.957M/s
-bench_sha3::sha3_224/64             354 ns          354 ns      1985827       247.944M/s
-bench_sha3::sha3_224/128            351 ns          350 ns      1991612        424.56M/s
-bench_sha3::sha3_224/256            699 ns          695 ns       993204       389.446M/s
-bench_sha3::sha3_224/512           1358 ns         1358 ns       504439       379.333M/s
-bench_sha3::sha3_224/1024          2705 ns         2704 ns       257154       371.059M/s
-bench_sha3::sha3_224/2048          5117 ns         5092 ns       136150       388.847M/s
-bench_sha3::sha3_224/4096          9788 ns         9780 ns        70389       402.145M/s
-bench_sha3::sha3_256/32             364 ns          363 ns      1958491       167.989M/s
-bench_sha3::sha3_256/64             357 ns          356 ns      1947945       256.992M/s
-bench_sha3::sha3_256/128            350 ns          350 ns      1967303         435.9M/s
-bench_sha3::sha3_256/256            698 ns          697 ns       981024       393.926M/s
-bench_sha3::sha3_256/512           1391 ns         1385 ns       499362       374.645M/s
-bench_sha3::sha3_256/1024          2720 ns         2719 ns       255307       370.446M/s
-bench_sha3::sha3_256/2048          5432 ns         5427 ns       127663       365.547M/s
-bench_sha3::sha3_256/4096         10449 ns        10444 ns        65402       376.957M/s
-bench_sha3::sha3_384/32             355 ns          353 ns      1975587       216.105M/s
-bench_sha3::sha3_384/64             352 ns          352 ns      1974590         303.3M/s
-bench_sha3::sha3_384/128            687 ns          686 ns       998787       244.597M/s
-bench_sha3::sha3_384/256           1055 ns         1049 ns       659662       276.479M/s
-bench_sha3::sha3_384/512           1699 ns         1697 ns       407609        314.73M/s
-bench_sha3::sha3_384/1024          3393 ns         3388 ns       207417       301.728M/s
-bench_sha3::sha3_384/2048          6790 ns         6771 ns        98625       295.215M/s
-bench_sha3::sha3_384/4096         13540 ns        13522 ns        51412       292.257M/s
-bench_sha3::sha3_512/32             353 ns          353 ns      1983469       259.295M/s
-bench_sha3::sha3_512/64             350 ns          350 ns      1966358       348.705M/s
-bench_sha3::sha3_512/128            688 ns          687 ns      1000043       266.505M/s
-bench_sha3::sha3_512/256           1378 ns         1371 ns       508082       222.639M/s
-bench_sha3::sha3_512/512           2704 ns         2701 ns       258862       203.374M/s
-bench_sha3::sha3_512/1024          5089 ns         5084 ns       137934       204.105M/s
-bench_sha3::sha3_512/2048          9898 ns         9852 ns        70907       204.437M/s
-bench_sha3::sha3_512/4096         19178 ns        19158 ns        36315       207.078M/s
-bench_sha3::shake128/32/32          357 ns          357 ns      1958508       170.876M/s
-bench_sha3::shake128/64/32          360 ns          358 ns      1956067       255.556M/s
-bench_sha3::shake128/128/32         353 ns          352 ns      1972598       432.984M/s
-bench_sha3::shake128/256/32         698 ns          697 ns       978296       393.994M/s
-bench_sha3::shake128/512/32        1377 ns         1373 ns       496391       377.721M/s
-bench_sha3::shake128/1024/32       2384 ns         2383 ns       291461       422.677M/s
-bench_sha3::shake128/2048/32       4461 ns         4440 ns       158645       446.731M/s
-bench_sha3::shake128/4096/32       8473 ns         8467 ns        80810       464.979M/s
-bench_sha3::shake256/32/32          360 ns          360 ns      1934380       169.743M/s
-bench_sha3::shake256/64/32          363 ns          361 ns      1919291       253.454M/s
-bench_sha3::shake256/128/32         354 ns          354 ns      1968200       431.106M/s
-bench_sha3::shake256/256/32         701 ns          700 ns       980282       392.429M/s
-bench_sha3::shake256/512/32        1389 ns         1384 ns       505627       374.935M/s
-bench_sha3::shake256/1024/32       2719 ns         2717 ns       255941       370.627M/s
-bench_sha3::shake256/2048/32       5504 ns         5476 ns       127351       362.261M/s
-bench_sha3::shake256/4096/32      10469 ns        10462 ns        65923       376.291M/s
-```
-
-### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( using `g++` )
-
-```bash
-2023-04-02T14:51:48+00:00
-Running ./bench/a.out
-Run on (4 X 2300.08 MHz CPU s)
-CPU Caches:
-  L1 Data 32 KiB (x2)
-  L1 Instruction 32 KiB (x2)
-  L2 Unified 256 KiB (x2)
-  L3 Unified 46080 KiB (x1)
-Load Average: 0.12, 0.03, 0.01
-----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations bytes_per_second
-----------------------------------------------------------------------------------------
-bench_sha3::keccakf1600             568 ns          568 ns      1231212        336.01M/s
-bench_sha3::sha3_224/32             646 ns          646 ns      1083827       88.5952M/s
-bench_sha3::sha3_224/64             643 ns          642 ns      1090111       136.567M/s
-bench_sha3::sha3_224/128            644 ns          644 ns      1089500       231.162M/s
-bench_sha3::sha3_224/256           1225 ns         1225 ns       570762       221.007M/s
-bench_sha3::sha3_224/512           2385 ns         2385 ns       293244       215.885M/s
-bench_sha3::sha3_224/1024          4729 ns         4729 ns       148039       212.147M/s
-bench_sha3::sha3_224/2048          8777 ns         8777 ns        79754       225.566M/s
-bench_sha3::sha3_224/4096         16905 ns        16905 ns        41450        232.65M/s
-bench_sha3::sha3_256/32             629 ns          629 ns      1112175       97.0429M/s
-bench_sha3::sha3_256/64             630 ns          630 ns      1111404       145.403M/s
-bench_sha3::sha3_256/128            631 ns          631 ns      1110022        241.76M/s
-bench_sha3::sha3_256/256           1227 ns         1227 ns       570319       223.762M/s
-bench_sha3::sha3_256/512           2417 ns         2417 ns       289903       214.674M/s
-bench_sha3::sha3_256/1024          4797 ns         4796 ns       145754       209.966M/s
-bench_sha3::sha3_256/2048          9494 ns         9494 ns        73812        208.94M/s
-bench_sha3::sha3_256/4096         18341 ns        18341 ns        38168       214.643M/s
-bench_sha3::sha3_384/32             579 ns          579 ns      1211352       131.879M/s
-bench_sha3::sha3_384/64             578 ns          578 ns      1211169       184.796M/s
-bench_sha3::sha3_384/128           1136 ns         1136 ns       615841       147.699M/s
-bench_sha3::sha3_384/256           1693 ns         1693 ns       413916        171.21M/s
-bench_sha3::sha3_384/512           2795 ns         2794 ns       250205       191.118M/s
-bench_sha3::sha3_384/1024          5575 ns         5575 ns       125628       183.377M/s
-bench_sha3::sha3_384/2048         11107 ns        11107 ns        63059       179.974M/s
-bench_sha3::sha3_384/4096         22159 ns        22159 ns        31597       178.345M/s
-bench_sha3::sha3_512/32             579 ns          579 ns      1210637       158.152M/s
-bench_sha3::sha3_512/64             577 ns          577 ns      1212272        211.57M/s
-bench_sha3::sha3_512/128           1140 ns         1140 ns       613610        160.59M/s
-bench_sha3::sha3_512/256           2257 ns         2257 ns       310244       135.234M/s
-bench_sha3::sha3_512/512           4505 ns         4505 ns       155391       121.929M/s
-bench_sha3::sha3_512/1024          8415 ns         8415 ns        83226       123.304M/s
-bench_sha3::sha3_512/2048         16265 ns        16266 ns        43042        123.83M/s
-bench_sha3::sha3_512/4096         31909 ns        31909 ns        21920       124.332M/s
-bench_sha3::shake128/32/32          696 ns          696 ns      1006963       87.6991M/s
-bench_sha3::shake128/64/32          696 ns          696 ns      1005666       131.559M/s
-bench_sha3::shake128/128/32         696 ns          696 ns      1005782       219.243M/s
-bench_sha3::shake128/256/32        1303 ns         1303 ns       537414       210.844M/s
-bench_sha3::shake128/512/32        2462 ns         2462 ns       284406       210.729M/s
-bench_sha3::shake128/1024/32       4216 ns         4216 ns       165930       238.867M/s
-bench_sha3::shake128/2048/32       7711 ns         7711 ns        90869       257.256M/s
-bench_sha3::shake128/4096/32      14679 ns        14679 ns        47684        268.19M/s
-bench_sha3::shake256/32/32          667 ns          667 ns      1051529        91.571M/s
-bench_sha3::shake256/64/32          666 ns          666 ns      1050322       137.454M/s
-bench_sha3::shake256/128/32         669 ns          669 ns      1047474       228.245M/s
-bench_sha3::shake256/256/32        1274 ns         1274 ns       549185       215.598M/s
-bench_sha3::shake256/512/32        2476 ns         2476 ns       283450       209.532M/s
-bench_sha3::shake256/1024/32       4846 ns         4846 ns       144322       207.823M/s
-bench_sha3::shake256/2048/32       9581 ns         9581 ns        73065       207.041M/s
-bench_sha3::shake256/4096/32      18472 ns        18472 ns        37874       213.119M/s
-```
-
-### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( using `clang++` )
-
-```bash
-2023-04-02T14:54:00+00:00
-Running ./bench/a.out
-Run on (4 X 2300.08 MHz CPU s)
-CPU Caches:
-  L1 Data 32 KiB (x2)
-  L1 Instruction 32 KiB (x2)
-  L2 Unified 256 KiB (x2)
-  L3 Unified 46080 KiB (x1)
-Load Average: 0.12, 0.11, 0.04
-----------------------------------------------------------------------------------------
-Benchmark                             Time             CPU   Iterations bytes_per_second
-----------------------------------------------------------------------------------------
-bench_sha3::keccakf1600             481 ns          481 ns      1456386       396.831M/s
-bench_sha3::sha3_224/32             514 ns          514 ns      1362291       111.316M/s
-bench_sha3::sha3_224/64             514 ns          514 ns      1363026       170.766M/s
-bench_sha3::sha3_224/128            507 ns          507 ns      1381475       293.201M/s
-bench_sha3::sha3_224/256           1002 ns         1002 ns       698750       270.273M/s
-bench_sha3::sha3_224/512           1975 ns         1975 ns       354911        260.81M/s
-bench_sha3::sha3_224/1024          3922 ns         3921 ns       178421        255.84M/s
-bench_sha3::sha3_224/2048          7309 ns         7309 ns        95792       270.877M/s
-bench_sha3::sha3_224/4096         14151 ns        14150 ns        49459       277.944M/s
-bench_sha3::sha3_256/32             507 ns          507 ns      1384609        120.41M/s
-bench_sha3::sha3_256/64             506 ns          506 ns      1384559       181.104M/s
-bench_sha3::sha3_256/128            507 ns          507 ns      1381857       301.164M/s
-bench_sha3::sha3_256/256           1012 ns         1012 ns       692174        271.44M/s
-bench_sha3::sha3_256/512           1985 ns         1985 ns       352718         261.4M/s
-bench_sha3::sha3_256/1024          3937 ns         3936 ns       177732       255.832M/s
-bench_sha3::sha3_256/2048          7840 ns         7840 ns        89274       253.029M/s
-bench_sha3::sha3_256/4096         15129 ns        15129 ns        46294       260.211M/s
-bench_sha3::sha3_384/32             506 ns          506 ns      1383488       150.705M/s
-bench_sha3::sha3_384/64             506 ns          506 ns      1385882        211.28M/s
-bench_sha3::sha3_384/128           1005 ns         1005 ns       696805       167.053M/s
-bench_sha3::sha3_384/256           1485 ns         1485 ns       471658       195.274M/s
-bench_sha3::sha3_384/512           2444 ns         2444 ns       286540       218.534M/s
-bench_sha3::sha3_384/1024          4894 ns         4894 ns       142954       208.917M/s
-bench_sha3::sha3_384/2048          9772 ns         9772 ns        71671       204.561M/s
-bench_sha3::sha3_384/4096         19513 ns        19513 ns        35881       202.528M/s
-bench_sha3::sha3_512/32             503 ns          503 ns      1390447        181.98M/s
-bench_sha3::sha3_512/64             498 ns          498 ns      1408215       245.191M/s
-bench_sha3::sha3_512/128           1005 ns         1005 ns       697134       182.203M/s
-bench_sha3::sha3_512/256           1964 ns         1964 ns       356452       155.367M/s
-bench_sha3::sha3_512/512           3909 ns         3909 ns       179073       140.543M/s
-bench_sha3::sha3_512/1024          7313 ns         7313 ns        95731       141.877M/s
-bench_sha3::sha3_512/2048         14108 ns        14107 ns        49578       142.776M/s
-bench_sha3::sha3_512/4096         27659 ns        27657 ns        25318       143.444M/s
-bench_sha3::shake128/32/32          508 ns          508 ns      1372543       120.081M/s
-bench_sha3::shake128/64/32          508 ns          508 ns      1377174       180.139M/s
-bench_sha3::shake128/128/32         511 ns          511 ns      1368739       298.444M/s
-bench_sha3::shake128/256/32        1015 ns         1015 ns       690315       270.602M/s
-bench_sha3::shake128/512/32        1994 ns         1993 ns       350931       260.252M/s
-bench_sha3::shake128/1024/32       3466 ns         3465 ns       202087       290.617M/s
-bench_sha3::shake128/2048/32       6413 ns         6413 ns       109159       309.314M/s
-bench_sha3::shake128/4096/32      12294 ns        12293 ns        56928       320.235M/s
-bench_sha3::shake256/32/32          511 ns          511 ns      1375825       119.462M/s
-bench_sha3::shake256/64/32          511 ns          511 ns      1370707       179.276M/s
-bench_sha3::shake256/128/32         509 ns          509 ns      1373614        299.85M/s
-bench_sha3::shake256/256/32        1010 ns         1010 ns       695152       272.029M/s
-bench_sha3::shake256/512/32        1983 ns         1983 ns       353181       261.676M/s
-bench_sha3::shake256/1024/32       3935 ns         3935 ns       177885       255.946M/s
-bench_sha3::shake256/2048/32       7820 ns         7820 ns        89541       253.649M/s
-bench_sha3::shake256/4096/32      15134 ns        15134 ns        46244       260.131M/s
+  L1 Data 48 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1280 KiB (x8)
+  L3 Unified 18432 KiB (x1)
+Load Average: 0.20, 0.49, 0.56
+***WARNING*** There are 65 benchmarks with threads and 2 performance counters were requested. Beware counters will reflect the combined usage across all threads.
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Benchmark                             Time             CPU   Iterations     CYCLES CYCLES/ BYTE INSTRUCTIONS INSTRUCTIONS/ CYCLE bytes_per_second
+-------------------------------------------------------------------------------------------------------------------------------------------------
+bench_sha3::keccakf1600             204 ns          204 ns      3382741    952.497      4.76249       5.689k             5.97272       935.552M/s
+bench_sha3::sha3_224/32             238 ns          238 ns      2944147   1.11184k      18.5306       5.906k             5.31194       240.608M/s
+bench_sha3::sha3_224/64             237 ns          237 ns      2956947   1.10706k      12.0333       5.906k             5.33485       370.651M/s
+bench_sha3::sha3_224/128            235 ns          235 ns      2979980       1096      7.02566       5.916k              5.3978       634.041M/s
+bench_sha3::sha3_224/256            438 ns          438 ns      1598391   2.04883k       7.2142      11.649k             5.68568       617.827M/s
+bench_sha3::sha3_224/512            881 ns          881 ns       785228   4.12282k      7.63485      23.071k             5.59593       584.467M/s
+bench_sha3::sha3_224/1024          1768 ns         1768 ns       396226   8.26518k      7.85664      45.904k              5.5539       567.618M/s
+bench_sha3::sha3_224/2048          3323 ns         3323 ns       210738   15.5442k      7.48756      85.882k             5.52503       595.884M/s
+bench_sha3::sha3_224/4096          6446 ns         6446 ns       108536   30.1042k      7.29976     165.836k             5.50873        610.16M/s
+bench_sha3::sha3_256/32             240 ns          240 ns      2916048   1.12198k       17.531       5.953k             5.30579       254.407M/s
+bench_sha3::sha3_256/64             239 ns          239 ns      2918469   1.11947k      11.6612       5.953k             5.31767        382.34M/s
+bench_sha3::sha3_256/128            237 ns          237 ns      2950765   1.10777k      6.92358       5.963k             5.38287       643.691M/s
+bench_sha3::sha3_256/256            467 ns          466 ns      1499310   2.18082k      7.57231      12.336k             5.65658       588.802M/s
+bench_sha3::sha3_256/512            974 ns          974 ns       712676   4.54354k       8.3521      25.048k             5.51288       532.626M/s
+bench_sha3::sha3_256/1024          2001 ns         2001 ns       350507   9.28836k       8.7958      50.472k              5.4339       503.398M/s
+bench_sha3::sha3_256/2048          4077 ns         4077 ns       171979   18.7672k       9.0227     101.311k              5.3983       486.539M/s
+bench_sha3::sha3_256/4096          7951 ns         7950 ns        87327   36.5089k      8.84421     196.649k             5.38633       495.208M/s
+bench_sha3::sha3_384/32             237 ns          237 ns      2950914    1096.34      13.7042       5.938k             5.41621       321.547M/s
+bench_sha3::sha3_384/64             237 ns          237 ns      2942018    1090.68      9.73821       5.938k             5.44431       450.048M/s
+bench_sha3::sha3_384/128            436 ns          436 ns      1604990   1.98857k      11.2987      11.758k             5.91278       384.784M/s
+bench_sha3::sha3_384/256            654 ns          654 ns      1074396   2.97678k      9.79203      17.569k             5.90202       443.049M/s
+bench_sha3::sha3_384/512           1090 ns         1090 ns       647333   4.96156k      8.85992      29.199k             5.88505       489.793M/s
+bench_sha3::sha3_384/1024          2176 ns         2176 ns       320268    9.9223k      9.25588      58.249k             5.87051       469.873M/s
+bench_sha3::sha3_384/2048          4366 ns         4366 ns       160521   19.8368k      9.46412     116.349k             5.86531       457.868M/s
+bench_sha3::sha3_384/4096          8739 ns         8739 ns        80166   39.6558k      9.56944     232.539k             5.86394       452.254M/s
+bench_sha3::sha3_512/32             239 ns          239 ns      2922842    1084.61       11.298       5.915k             5.45357        383.06M/s
+bench_sha3::sha3_512/64             239 ns          239 ns      2937449    1081.56      8.44968       5.915k             5.46896       510.621M/s
+bench_sha3::sha3_512/128            439 ns          439 ns      1589147   1.98287k      10.3275      11.696k             5.89851       416.669M/s
+bench_sha3::sha3_512/256            872 ns          872 ns       799908   3.94609k      12.3315      23.234k             5.88785       349.834M/s
+bench_sha3::sha3_512/512           1748 ns         1748 ns       400630   7.88841k      13.6952      46.311k             5.87076       314.308M/s
+bench_sha3::sha3_512/1024          3267 ns         3266 ns       213289   14.7807k      13.5852      86.692k             5.86523       317.684M/s
+bench_sha3::sha3_512/2048          6347 ns         6346 ns       110975   28.6202k      13.5513     167.459k             5.85107       317.368M/s
+bench_sha3::sha3_512/4096         12418 ns        12417 ns        56733   56.0995k      13.4854     328.991k             5.86442       319.508M/s
+bench_sha3::shake128/32/32          241 ns          241 ns      2908442    1092.45      17.0695       5.798k             5.30735        253.49M/s
+bench_sha3::shake128/64/32          241 ns          241 ns      2910706    1091.36      11.3683       5.798k             5.31265       379.296M/s
+bench_sha3::shake128/128/32         242 ns          242 ns      2910558    1091.42      6.82136       5.808k             5.32152        631.03M/s
+bench_sha3::shake128/256/32         459 ns          459 ns      1522674   2.07959k       7.2208       11.78k             5.66458       597.995M/s
+bench_sha3::shake128/512/32         943 ns          943 ns       744327    4.2413k      7.79651      23.681k             5.58343       549.972M/s
+bench_sha3::shake128/1024/32       1659 ns         1659 ns       421970   7.47771k      7.08116      41.544k             5.55571       607.027M/s
+bench_sha3::shake128/2048/32       3118 ns         3118 ns       224275   13.9865k      6.72428      77.275k             5.52497        636.24M/s
+bench_sha3::shake128/4096/32       5992 ns         5991 ns       117529   26.9722k      6.53397     148.735k             5.51438       657.067M/s
+bench_sha3::shake128/32/64          240 ns          240 ns      2914777     1092.4      11.3792       5.798k             5.30758       380.773M/s
+bench_sha3::shake128/64/64          240 ns          240 ns      2898743    1091.47      8.52711       5.798k              5.3121       507.998M/s
+bench_sha3::shake128/128/64         241 ns          241 ns      2905659     1091.6      5.68542       5.808k             5.32063       759.543M/s
+bench_sha3::shake128/256/64         460 ns          460 ns      1521896   2.07749k      6.49215       11.78k             5.67031        663.37M/s
+bench_sha3::shake128/512/64         944 ns          944 ns       742232   4.23709k      7.35607      23.681k             5.58897       581.721M/s
+bench_sha3::shake128/1024/64       1674 ns         1674 ns       420158   7.48884k      6.88313      41.544k             5.54745       619.997M/s
+bench_sha3::shake128/2048/64       3123 ns         3122 ns       224317   13.9777k      6.61823      77.275k             5.52845       645.096M/s
+bench_sha3::shake128/4096/64       6022 ns         6021 ns       117146   26.9551k       6.4796     148.735k             5.51787        658.88M/s
+bench_sha3::shake256/32/32          249 ns          249 ns      2812374    1.1233k      17.5516       5.869k             5.22477       244.991M/s
+bench_sha3::shake256/64/32          249 ns          249 ns      2803444   1.12052k      11.6721       5.869k             5.23775       367.748M/s
+bench_sha3::shake256/128/32         247 ns          247 ns      2818505   1.10777k      6.92355       5.879k             5.30707       618.551M/s
+bench_sha3::shake256/256/32         468 ns          468 ns      1493478   2.10194k      7.29841      11.916k             5.66904       587.218M/s
+bench_sha3::shake256/512/32         955 ns          955 ns       730431   4.27319k      7.85514      23.954k             5.60564       543.478M/s
+bench_sha3::shake256/1024/32       1927 ns         1927 ns       361182    8.6278k      8.17026       48.03k             5.56689       522.707M/s
+bench_sha3::shake256/2048/32       3892 ns         3892 ns       180625   17.3318k      8.33258      96.173k             5.54894       509.653M/s
+bench_sha3::shake256/4096/32       7502 ns         7501 ns        92328   33.6069k       8.1412     186.456k             5.54815       524.856M/s
+bench_sha3::shake256/32/64          249 ns          249 ns      2793855   1.12242k      11.6919       5.869k             5.22887       367.932M/s
+bench_sha3::shake256/64/64          248 ns          248 ns      2814934   1.12097k      8.75759       5.869k             5.23564       491.418M/s
+bench_sha3::shake256/128/64         247 ns          247 ns      2836927   1.10692k       5.7652       5.879k             5.31114       740.755M/s
+bench_sha3::shake256/256/64         470 ns          469 ns      1493341   2.10326k      6.57269      11.916k             5.66549       650.027M/s
+bench_sha3::shake256/512/64         956 ns          956 ns       732281   4.27517k      7.42216      23.954k             5.60306       574.727M/s
+bench_sha3::shake256/1024/64       1946 ns         1945 ns       362132   8.62615k      7.92844       48.03k             5.56796       533.376M/s
+bench_sha3::shake256/2048/64       3910 ns         3910 ns       179003   17.3289k      8.20496      96.173k             5.54987       515.158M/s
+bench_sha3::shake256/4096/64       7614 ns         7612 ns        91960   33.6347k      8.08525     186.456k             5.54357       521.159M/s
 ```
 
 ## Usage
 
-`sha3` C++ library is written such that it's fairly easy for one to start using it in their project. All one needs to do
+`sha3` - C++ header-only library is written such that it's fairly easy for one to start using it in their project. All one needs to do
 
-- Include proper header files ( select what you need by name )
-- Properly use API ( see usage examples/ test cases )
-- When compiling, let your compiler know where it can find respective header files
+- Include proper header files ( select what you need by name ).
+- Use proper struct(s)/ API(s)/ constant(s) ( see [usage examples](./example) or [test cases](./include/tests) ).
+- When compiling, let your compiler know where it can find respective header files, which is `./include` directory.
 
-Hash Function | Header/ Namespace | Example
---- | --- | --:
-SHA3-224 | [`sha3_224::`](./include/sha3_224.hpp) | [example/sha3_224.cpp](./example/sha3_224.cpp)
-SHA3-256 | [`sha3_256::`](./include/sha3_256.hpp) | [example/sha3_256.cpp](./example/sha3_256.cpp)
-SHA3-384 | [`sha3_384::`](./include/sha3_384.hpp) | [example/sha3_384.cpp](./example/sha3_384.cpp)
-SHA3-512 | [`sha3_512::`](./include/sha3_512.hpp) | [example/sha3_512.cpp](./example/sha3_512.cpp)
-
-Extendable Output Function | Header/ Namespace | Absorb API | Squeeze API | Example
---- | --- | --- | --- | --:
-SHAKE128 ( default option, one-shot consumption ) | [`shake128::`](./include/shake128.hpp) | `shake128::hash(...)` : Absorbs N (>=0) -bytes input into keccak[256] sponge | `shake128::read(...)` : Squeezes N (>=0) -bytes output from keccak[256] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/shake128.cpp](./example/shake128.cpp)
-SHAKE256 ( default option, one-shot consumption ) | [`shake256::`](./include/shake256.hpp) | `shake256::hash(...)` : Absorbs N (>=0) -bytes input into keccak[512] sponge | `shake256::read(...)` : Squeezes N (>=0) -bytes output from keccak[512] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/shake256.cpp](./example/shake256.cpp)
-
-Extendable Output Function | Header/ Namespace | Incremental Absorption API | Finalize API | Squeeze API | Example
---- | --- | --- | --- | --- | --:
-SHAKE128 ( explicit incremental consumption ) | [`shake128::`](./include/shake128.hpp) | `shake128<true>::absorb(...)` : Absorbs N (>=0) -bytes input into keccak[256] sponge, arbitrary many times | `shake128<true>::finalize()` : Finalizes state of keccak[256] sponge, so that it's ready for squeezing | `shake128<true>::read(...)` : Squeezes N (>=0) -bytes output from keccak[256] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/incremental_shake128.cpp](./example/incremental_shake128.cpp)
-SHAKE256 ( explicit incremental consumption ) | [`shake256::`](./include/shake256.hpp) | `shake256<true>::absorb(...)` : Absorbs N (>=0) -bytes input into keccak[512] sponge, arbitrary many times | `shake256<true>::finalize()` : Finalizes state of keccak[512] sponge, so that it's ready for squeezing | `shake256<true>::read(...)` : Squeezes N (>=0) -bytes output from keccak[512] sponge. This routine can be called arbitrary number of times, requesting arbitrary bytes of output. | [example/incremental_shake256.cpp](./example/incremental_shake256.cpp)
+Scheme | Header | Namespace | Example
+--- | --- | --- | --:
+SHA3-224 | ./include/sha3_224.hpp | `sha3_224::` | [example/sha3_224.cpp](./example/sha3_224.cpp)
+SHA3-256 | ./include/sha3_256.hpp | `sha3_256::` | [example/sha3_256.cpp](./example/sha3_256.cpp)
+SHA3-384 | ./include/sha3_384.hpp | `sha3_384::` | [example/sha3_384.cpp](./example/sha3_384.cpp)
+SHA3-512 | ./include/sha3_512.hpp | `sha3_512::` | [example/sha3_512.cpp](./example/sha3_512.cpp)
+SHAKE128 | ./include/shake128.hpp | `shake128::` | [example/shake128.cpp](./example/shake128.cpp)
+SHAKE256 | ./include/shake256.hpp | `shake256::` | [example/shake256.cpp](./example/shake256.cpp)
 
 ```bash
 $ g++ -std=c++20 -Wall -O3 -march=native -I include example/sha3_224.cpp && ./a.out
@@ -371,22 +247,4 @@ SHAKE-256
 
 Input  : a6506638e34127e0a8415241479c968c20422f46497663eaf244f205a756f0b3
 Output : ce679163b642380365c3c11dcbca7a36ddd01cefba35b8ec18ad937268f584999c6e8ae061c251dd
-
-# ---
-
-$ g++ -std=c++20 -Wall -O3 -march=native -I include example/incremental_shake128.cpp && ./a.out
-Incremental SHAKE-128
-
-Input 0  : 8ee149be89652aa3a96bb1cb21c03a
-Input 1  : 6c5240ef768e7a0100946e0f83bea78364
-Output   : 94f03616a7ed0168833dcec6f51a359b3c3cd42ac0c27409106424f0adb2257f4bfe214f371b3935
-
-# ---
-
-$ g++ -std=c++20 -Wall -O3 -march=native -I include example/incremental_shake256.cpp && ./a.out
-Incremental SHAKE-256
-
-Input 0  : 58efcb50a9a8bb61cd25f89be74fe6
-Input 1  : 355dc311ebdae75dd8c382dd5d04e9d17a
-Output   : 7c342b6f8b03d4ef09e4cbed70280c0ca8bbfbb3180f1acb268d6e1e67585adf18dd6e98fd71211f
 ```

@@ -1,4 +1,6 @@
 #pragma once
+#include <cassert>
+#include <charconv>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -9,36 +11,6 @@
 
 // Utility ( or commonly used ) functions for SHA3 implementation
 namespace sha3_utils {
-
-// Generates N -many random values of type T | N >= 0
-template<typename T>
-static inline void
-random_data(T* const data, const size_t len)
-  requires(std::is_unsigned_v<T>)
-{
-  std::random_device rd;
-  std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<T> dis;
-
-  for (size_t i = 0; i < len; i++) {
-    data[i] = dis(gen);
-  }
-}
-
-// Given a bytearray of length N, this function converts it to human readable
-// hex string of length N << 1 | N >= 0
-inline const std::string
-to_hex(const uint8_t* const bytes, const size_t len)
-{
-  std::stringstream ss;
-  ss << std::hex;
-
-  for (size_t i = 0; i < len; i++) {
-    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
-  }
-
-  return ss.str();
-}
 
 // Given a byte array holding rate/8 -many bytes, this routine can be invoked
 // for interpreting those bytes as rate/ 64 -many words ( each word is 64 -bit
@@ -94,6 +66,63 @@ words_to_le_bytes(const uint64_t* const __restrict words,
       bytes[boff + 7] = static_cast<uint8_t>(words[i] >> 56);
     }
   }
+}
+
+// Generates N -many random values of type T | N >= 0
+template<typename T>
+static inline void
+random_data(T* const data, const size_t len)
+  requires(std::is_unsigned_v<T>)
+{
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+  std::uniform_int_distribution<T> dis;
+
+  for (size_t i = 0; i < len; i++) {
+    data[i] = dis(gen);
+  }
+}
+
+// Given a bytearray of length N, this function converts it to human readable
+// hex string of length N << 1 | N >= 0
+inline const std::string
+to_hex(const uint8_t* const bytes, const size_t len)
+{
+  std::stringstream ss;
+  ss << std::hex;
+
+  for (size_t i = 0; i < len; i++) {
+    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
+  }
+
+  return ss.str();
+}
+
+// Given a hex encoded string of length 2*L, this routine can be used for
+// parsing it as a byte array of length L.
+//
+// Taken from
+// https://github.com/itzmeanjan/ascon/blob/603ba1f223ddd3a46cb0b3d31d014312d96792b5/include/utils.hpp#L120-L145
+inline std::vector<uint8_t>
+from_hex(std::string_view hex)
+{
+  const size_t hlen = hex.length();
+  assert(hlen % 2 == 0);
+
+  const size_t blen = hlen / 2;
+  std::vector<uint8_t> res(blen, 0);
+
+  for (size_t i = 0; i < blen; i++) {
+    const size_t off = i * 2;
+
+    uint8_t byte = 0;
+    auto sstr = hex.substr(off, 2);
+    std::from_chars(sstr.data(), sstr.data() + 2, byte, 16);
+
+    res[i] = byte;
+  }
+
+  return res;
 }
 
 }
