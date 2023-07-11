@@ -3,6 +3,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cstring>
 
 // Keccak family of sponge functions
@@ -79,10 +80,19 @@ absorb(uint64_t* const __restrict state,
 
   for (size_t i = 0; i < blk_cnt; i++) {
     std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
-    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
 
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= blk_words[j];
+    if constexpr (std::endian::native == std::endian::little) {
+      auto words = reinterpret_cast<const uint64_t*>(blk_bytes);
+
+      for (size_t j = 0; j < rwords; j++) {
+        state[j] ^= words[j];
+      }
+    } else {
+      sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
+
+      for (size_t j = 0; j < rwords; j++) {
+        state[j] ^= blk_words[j];
+      }
     }
 
     keccak::permute(state);
@@ -95,10 +105,19 @@ absorb(uint64_t* const __restrict state,
 
   std::memset(blk_bytes, 0, rbytes);
   std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
-  sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
 
-  for (size_t i = 0; i < rwords; i++) {
-    state[i] ^= blk_words[i];
+  if constexpr (std::endian::native == std::endian::little) {
+    auto words = reinterpret_cast<const uint64_t*>(blk_bytes);
+
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= words[j];
+    }
+  } else {
+    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
+
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= blk_words[j];
+    }
   }
 
   offset += rm_bytes;
@@ -125,13 +144,21 @@ finalize(uint64_t* const __restrict state, size_t& offset)
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
-  uint64_t words[rwords];
-
   const auto pad = pad10x1<domain_separator, ds_bits, rate>(offset);
-  sha3_utils::bytes_to_le_words<rate>(pad.data(), words);
 
-  for (size_t j = 0; j < rwords; j++) {
-    state[j] ^= words[j];
+  if constexpr (std::endian::native == std::endian::little) {
+    auto words = reinterpret_cast<const uint64_t*>(pad.data());
+
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= words[j];
+    }
+  } else {
+    uint64_t words[rwords];
+    sha3_utils::bytes_to_le_words<rate>(pad.data(), words);
+
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= words[j];
+    }
   }
 
   keccak::permute(state);
@@ -165,8 +192,12 @@ squeeze(uint64_t* const __restrict state,
     const size_t read = std::min(squeezable, olen - off);
     const size_t soff = rbytes - squeezable;
 
-    sha3_utils::words_to_le_bytes<rate>(state, rate_blk);
-    std::memcpy(out + off, rate_blk + soff, read);
+    if constexpr (std::endian::native == std::endian::little) {
+      std::memcpy(out + off, reinterpret_cast<uint8_t*>(state) + soff, read);
+    } else {
+      sha3_utils::words_to_le_bytes<rate>(state, rate_blk);
+      std::memcpy(out + off, rate_blk + soff, read);
+    }
 
     squeezable -= read;
     off += read;
