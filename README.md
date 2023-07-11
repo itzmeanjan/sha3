@@ -1,23 +1,23 @@
 # sha3
 SHA3: Permutation-Based Hash and Extendable-Output Functions.
 
-## Motivation
+## Overview
 
 SHA3 standard by NIST ( i.e. NIST FIPS PUB 202 ) specifies four ( of different digest length ) permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
 
-These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature algorithms ), some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium, SPHINCS+ etc. ) of NIST PQC standardization effort - waiting to be standardized or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. I decided to implement SHA3 specification as a **header-only C++ library**, so that I can make use of it as a modular dependency ( say pinned to specific commit using git submodule ) in libraries where I implement various PQC schemes.
+These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature ), some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium, SPHINCS+ etc. ) of NIST PQC standardization effort - waiting to be standardized or some are still competing ( e.g. Bike, Classic McEliece etc. ) in final round of standardization. I decided to implement SHA3 specification as a **header-only C++ library**, so that I can make use of it as a modular dependency ( say pinned to specific commit using git submodule ) in libraries where I implement various PQC schemes.
 
 Few of those places, where I've already used `sha3` as ( git submodule based ) dependency
 
 - [Kyber: Post-Quantum Public-key Encryption & Key-establishment Algorithm](https://github.com/itzmeanjan/kyber)
 - [Dilithium: Post-Quantum Digital Signature Algorithm](https://github.com/itzmeanjan/dilithium)
 - [SPHINCS+: Stateless Hash-based Digital Signature Algorithm](https://github.com/itzmeanjan/sphincs)
-- [Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU - NIST PQC Digital Signature Algorithm](https://github.com/itzmeanjan/falcon)
+- [Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU](https://github.com/itzmeanjan/falcon)
 - [FrodoKEM: Practical Quantum-secure Key Encapsulation from Generic Lattices](https://github.com/itzmeanjan/frodokem)
 
 > **Warning** Above list may not be up-to-date !
 
-Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms are implemented in `sha3` library.
+Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. Following algorithms ( with flexible interfaces ) are implemented in `sha3` library.
 
 Algorithm | Input | Output | Behaviour | Namespace + Header
 --- | :-: | :-: | :-: | --:
@@ -66,7 +66,10 @@ cmake version 3.25.1
 
 For ensuring that SHA3 hash function and extendable output function implementations are correct & conformant to the NIST standard ( see [this](https://dx.doi.org/10.6028/NIST.FIPS.202) ), I make use of K(nown) A(nswer) T(ests), generated following [this](https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364) gist.
 
-I also test correctness of incremental message absorption and output squeezing property of SHA3 hash and extendable output functions. 
+I also test correctness of
+
+- Incremental message absorption property of SHA3 hash functions and Xofs.
+- Output squeezing property of SHA3 Xofs.
 
 Issue following command for running all the test cases.
 
@@ -89,7 +92,7 @@ For benchmarking SHA3 hash and extendable output functions, targeting CPU system
 
 > **Warning** You must disable CPU scaling during benchmarking, following [this](https://github.com/google/benchmark/blob/4931aefb51d1e5872b096a97f43e13fa0fc33c8c/docs/reducing_variance.md) guide.
 
-> **Note** When benchmarking extendable output functions ( XOFs ), fixed length output of 32/ 64 -bytes are squeezed from sponge ( s.t. all bytes are read in a single call to `squeeze` function ), for each input byte array of length N | 32 <= N <= 4096 and N = 2^i.
+> **Note** When benchmarking extendable output functions ( Xofs ), fixed length output of 32/ 64 -bytes are squeezed from sponge ( s.t. all bytes are read in a single call to `squeeze` function ), for each input message byte array of length N | 32 <= N <= 4096 and N = 2^i.
 
 > **Note** Following performance figures were collected by issuing `make perf` - on machines running GNU/Linux kernel, with `google-benchmark` library compiled with *libPFM* support.
 
@@ -265,7 +268,7 @@ bench_sha3::shake256/4096/64      27913 ns        27912 ns        25080   64.152
 
 ## Usage
 
-`sha3` C++ header-only library is written such that it's fairly easy for one to start using it in their project. All one needs to do
+`sha3` - C++ header-only library is written such that it's fairly easy for one to start using it in their project. All one needs to do
 
 - Include proper header files ( select what you need by name ).
 - Use proper struct(s)/ API(s)/ constant(s) ( see [usage examples](./example) or [test cases](./include/tests) ).
