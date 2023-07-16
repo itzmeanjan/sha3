@@ -6,10 +6,29 @@ I_FLAGS = -I ./include
 
 all: test
 
-tests/a.out: tests/main.cpp include/*.hpp include/tests/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -o $@
+tests/test_sha3_224.o: tests/test_sha3_224.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
 
-test: tests/a.out
+tests/test_sha3_256.o: tests/test_sha3_256.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+tests/test_sha3_384.o: tests/test_sha3_384.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+tests/test_sha3_512.o: tests/test_sha3_512.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+tests/test_shake128.o: tests/test_shake128.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+tests/test_shake256.o: tests/test_shake256.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+tests/test.out: tests/test_sha3_224.o tests/test_sha3_256.o tests/test_sha3_384.o tests/test_sha3_512.o \
+					tests/test_shake128.o tests/test_shake256.o
+	$(CXX) $(OPT_FLAGS) $^ -lgtest -lgtest_main -o $@
+
+test: tests/test.out
 	./$<
 
 clean:
