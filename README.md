@@ -55,6 +55,7 @@ $ cmake --version
 cmake version 3.25.1
 ```
 
+- For testing SHA3 algorithms, you need to globally install `google-test` library and headers. Follow [this](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project) guide if you haven't installed it yet.
 - For benchmarking SHA3 algorithms, targeting CPU systems, `google-benchmark` library and headers are required to be installed system-wide. Follow [this](https://github.com/google/benchmark#installation) guide if you don't have it installed yet.
 - If you are on a machine running GNU/Linux kernel and you want to obtain following (see list below), when benchmarking SHA3 algorithms, you should consider building `google-benchmark` library yourself with libPFM support, following [this](https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7) step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
     1) CPU cycle count.
@@ -69,21 +70,48 @@ For ensuring that SHA3 hash function and extendable output function implementati
 I also test correctness of
 
 - Incremental message absorption property of SHA3 hash functions and Xofs.
-- Output squeezing property of SHA3 Xofs.
+- Incremental output squeezing property of SHA3 Xofs.
 
 Issue following command for running all the test cases.
 
 ```bash
-make
+$ make -j8
 
-[test] SHA3-{224,256,384,512} incremental absorption
-[test] SHAKE{128,256} incremental absorption and squeezing
-[test] SHA3-224 K(nown) A(nswer) T(ests)
-[test] SHA3-256 K(nown) A(nswer) T(ests)
-[test] SHA3-384 K(nown) A(nswer) T(ests)
-[test] SHA3-512 K(nown) A(nswer) T(ests)
-[test] Shake128 Xof K(nown) A(nswer) T(ests)
-[test] Shake256 Xof K(nown) A(nswer) T(ests)
+[==========] Running 12 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 8 tests from Sha3Hashing
+[ RUN      ] Sha3Hashing.Sha3_224IncrementalAbsorption
+[       OK ] Sha3Hashing.Sha3_224IncrementalAbsorption (1 ms)
+[ RUN      ] Sha3Hashing.Sha3_224KnownAnswerTests
+[       OK ] Sha3Hashing.Sha3_224KnownAnswerTests (2 ms)
+[ RUN      ] Sha3Hashing.Sha3_256IncrementalAbsorption
+[       OK ] Sha3Hashing.Sha3_256IncrementalAbsorption (1 ms)
+[ RUN      ] Sha3Hashing.Sha3_256KnownAnswerTests
+[       OK ] Sha3Hashing.Sha3_256KnownAnswerTests (2 ms)
+[ RUN      ] Sha3Hashing.Sha3_384IncrementalAbsorption
+[       OK ] Sha3Hashing.Sha3_384IncrementalAbsorption (1 ms)
+[ RUN      ] Sha3Hashing.Sha3_384KnownAnswerTests
+[       OK ] Sha3Hashing.Sha3_384KnownAnswerTests (2 ms)
+[ RUN      ] Sha3Hashing.Sha3_512IncrementalAbsorption
+[       OK ] Sha3Hashing.Sha3_512IncrementalAbsorption (2 ms)
+[ RUN      ] Sha3Hashing.Sha3_512KnownAnswerTests
+[       OK ] Sha3Hashing.Sha3_512KnownAnswerTests (3 ms)
+[----------] 8 tests from Sha3Hashing (17 ms total)
+
+[----------] 4 tests from Sha3Xof
+[ RUN      ] Sha3Xof.Shake128IncrementalAbsorptionAndSqueezing
+[       OK ] Sha3Xof.Shake128IncrementalAbsorptionAndSqueezing (971 ms)
+[ RUN      ] Sha3Xof.Shake128KnownAnswerTests
+[       OK ] Sha3Xof.Shake128KnownAnswerTests (2 ms)
+[ RUN      ] Sha3Xof.Shake256IncrementalAbsorptionAndSqueezing
+[       OK ] Sha3Xof.Shake256IncrementalAbsorptionAndSqueezing (1060 ms)
+[ RUN      ] Sha3Xof.Shake256KnownAnswerTests
+[       OK ] Sha3Xof.Shake256KnownAnswerTests (2 ms)
+[----------] 4 tests from Sha3Xof (2038 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 2 test suites ran. (2055 ms total)
+[  PASSED  ] 12 tests.
 ```
 
 ## Benchmarking
