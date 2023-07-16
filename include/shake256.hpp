@@ -70,6 +70,10 @@ public:
       sponge::squeeze<RATE>(state, squeezable, dig, dlen);
     }
   }
+
+  // Reset the internal state of the Shake256-Xof hasher, now it can again be
+  // used for another absorb->finalize->squeeze cycle.
+  inline void reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 }

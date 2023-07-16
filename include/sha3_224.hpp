@@ -73,6 +73,10 @@ public:
       squeezed = true;
     }
   }
+
+  // Reset the internal state of the SHA3-224 hasher, now it can again be used
+  // for another absorb->finalize->squeeze cycle.
+  inline void reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 }
