@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cstdint>
 #include <cstring>
 #include <span>
 
@@ -130,28 +131,23 @@ absorb(keccak::keccak_t& state, size_t& offset, std::span<const uint8_t> msg)
 template<const uint8_t domain_separator,
          const size_t ds_bits,
          const size_t rate>
-static inline void
+static inline constexpr void
 finalize(keccak::keccak_t& state, size_t& offset)
   requires(check_domain_separator(ds_bits))
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
-  const auto pad = pad10x1<domain_separator, ds_bits, rate>(offset);
+  const auto padb = pad10x1<domain_separator, ds_bits, rate>(offset);
+  std::array<uint64_t, rwords> padw{};
 
-  if constexpr (std::endian::native == std::endian::little) {
-    auto words = reinterpret_cast<const uint64_t*>(pad.data());
+  auto _padb = std::span(padb);
+  auto _padw = std::span(padw);
 
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= words[j];
-    }
-  } else {
-    uint64_t words[rwords];
-    sha3_utils::bytes_to_le_words<rate>(pad.data(), words);
+  sha3_utils::le_bytes_to_u64_words<rate>(_padb, _padw);
 
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= words[j];
-    }
+  for (size_t j = 0; j < rwords; j++) {
+    state[j] ^= _padw[j];
   }
 
   state.permute();
