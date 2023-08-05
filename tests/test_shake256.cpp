@@ -20,7 +20,7 @@ TEST(Sha3Xof, Shake256IncrementalAbsorptionAndSqueezing)
 
       sha3_utils::random_data(msg.data(), msg.size());
 
-      shake256::shake256 hasher;
+      shake256::shake256_t hasher;
 
       // Oneshot absorption and squeezing
       hasher.absorb(msg.data(), msg.size());
@@ -90,7 +90,7 @@ TEST(Sha3Xof, Shake256KnownAnswerTests)
 
       std::vector<uint8_t> squeezed(out.size());
 
-      shake256::shake256 hasher;
+      shake256::shake256_t hasher;
 
       hasher.absorb(msg.data(), msg.size());
       hasher.finalize();

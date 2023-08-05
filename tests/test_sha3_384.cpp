@@ -16,7 +16,7 @@ TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
 
     sha3_utils::random_data(msg.data(), msg.size());
 
-    sha3_384::sha3_384 hasher;
+    sha3_384::sha3_384_t hasher;
 
     // Oneshot Hashing
     hasher.absorb(msg.data(), msg.size());
@@ -73,7 +73,7 @@ TEST(Sha3Hashing, Sha3_384KnownAnswerTests)
 
       std::vector<uint8_t> digest(sha3_384::DIGEST_LEN);
 
-      sha3_384::sha3_384 hasher;
+      sha3_384::sha3_384_t hasher;
 
       hasher.absorb(msg.data(), msg.size());
       hasher.finalize();
