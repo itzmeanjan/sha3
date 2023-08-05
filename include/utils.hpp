@@ -108,13 +108,14 @@ u64_words_to_le_bytes(std::span<const uint64_t, rate / 64> words,
 // Generates N -many random values of type T | N >= 0
 template<typename T>
 static inline void
-random_data(T* const data, const size_t len)
+random_data(std::span<T> data)
   requires(std::is_unsigned_v<T>)
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
   std::uniform_int_distribution<T> dis;
 
+  const size_t len = data.size();
   for (size_t i = 0; i < len; i++) {
     data[i] = dis(gen);
   }
