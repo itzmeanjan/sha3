@@ -6,19 +6,42 @@
 #include <cstring>
 #include <iomanip>
 #include <random>
+#include <span>
 #include <sstream>
 #include <type_traits>
 
 // Utility ( or commonly used ) functions for SHA3 implementation
 namespace sha3_utils {
 
+// Given a 64 -bit unsigned integer word, this routine swaps byte order and
+// returns byte swapped 64 -bit word.
+//
+// Collects inspiration from
+// https://github.com/itzmeanjan/ascon/blob/6160fee18814c7c313262e365c53de96ab6602b4/include/utils.hpp#L17-L43.
+static inline constexpr uint64_t
+bswap(const uint64_t a)
+{
+#if defined __GNUG__
+  return __builtin_bswap64(a);
+#else
+  return ((a & 0x00000000000000fful) << 56) |
+         ((a & 0x000000000000ff00ul) << 40) |
+         ((a & 0x0000000000ff0000ul) << 24) |
+         ((a & 0x00000000ff000000ul) << 0x8) |
+         ((a & 0x000000ff00000000ul) >> 0x8) |
+         ((a & 0x0000ff0000000000ul) >> 24) |
+         ((a & 0x00ff000000000000ul) >> 40) |
+         ((a & 0xff00000000000000ul) >> 56);
+#endif
+}
+
 // Given a byte array holding rate/8 -many bytes, this routine can be invoked
 // for interpreting those bytes as rate/ 64 -many words ( each word is 64 -bit
 // unsigned interger ) s.t. bytes in a word are placed in little-endian order.
 template<const size_t rate>
-static inline void
-bytes_to_le_words(const uint8_t* const __restrict bytes,
-                  uint64_t* const __restrict words)
+static inline constexpr void
+bytes_to_le_words(std::span<const uint8_t, rate / 8>,
+                  std::span<uint64_t, rate / 64> words)
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
