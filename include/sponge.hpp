@@ -169,7 +169,8 @@ template<const size_t rate>
 static inline constexpr void
 squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
 {
-  constexpr size_t rbytes = rate >> 3; // # -of bytes
+  constexpr size_t rbytes = rate >> 3;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
   std::array<uint8_t, rbytes> blk_bytes{};
   auto _blk_bytes = std::span(blk_bytes);
@@ -181,7 +182,11 @@ squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
     const size_t read = std::min(squeezable, olen - off);
     const size_t soff = rbytes - squeezable;
 
-    sha3_utils::u64_words_to_le_bytes<rate>(state.reveal(), _blk_bytes);
+    auto st = state.reveal();
+    auto _st = std::span(st);
+    auto __st = _st.subspan<0, rwords>();
+
+    sha3_utils::u64_words_to_le_bytes<rate>(__st, _blk_bytes);
 
     auto _blk = _blk_bytes.subspan(soff, read);
     auto _out = out.subspan(off, read);
