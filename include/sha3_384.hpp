@@ -27,17 +27,17 @@ constexpr size_t DOM_SEP_BW = 2;
 //
 // See SHA3 hash function definition in section 6.1 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202.
-struct sha3_384
+struct sha3_384_t
 {
 private:
-  uint64_t state[keccak::LANE_CNT]{};
+  keccak::keccak_t state{};
   size_t offset = 0;
   alignas(4) bool finalized = false;
   alignas(4) bool squeezed = false;
 
 public:
   // Constructor
-  inline sha3_384() = default;
+  inline sha3_384_t() = default;
 
   // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary
   // many times ( until the sponge is finalized ), each time absorbing arbitrary

@@ -20,16 +20,16 @@ constexpr size_t DOM_SEP_BW = 4;
 //
 // See SHA3 extendable output function definition in section 6.2 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-struct shake256
+struct shake256_t
 {
 private:
-  uint64_t state[keccak::LANE_CNT]{};
+  keccak::keccak_t state{};
   size_t offset = 0;
   alignas(4) bool finalized = false; // all message bytes absorbed ?
   size_t squeezable = 0;
 
 public:
-  inline shake256() = default;
+  inline shake256_t() = default;
 
   // Given N -many bytes input message, this routine consumes those into
   // keccak[512] sponge state.

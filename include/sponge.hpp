@@ -64,7 +64,7 @@ pad10x1(const size_t offset)
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
 template<const size_t rate>
 static inline void
-absorb(uint64_t* const __restrict state,
+absorb(keccak::keccak_t& state,
        size_t& offset,
        const uint8_t* const __restrict msg,
        const size_t mlen)
@@ -95,7 +95,7 @@ absorb(uint64_t* const __restrict state,
       }
     }
 
-    keccak::permute(state);
+    state.permute();
 
     moff += (rbytes - offset);
     offset = 0;
@@ -138,7 +138,7 @@ template<const uint8_t domain_separator,
          const size_t ds_bits,
          const size_t rate>
 static inline void
-finalize(uint64_t* const __restrict state, size_t& offset)
+finalize(keccak::keccak_t& state, size_t& offset)
   requires(check_domain_separator(ds_bits))
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
@@ -161,7 +161,7 @@ finalize(uint64_t* const __restrict state, size_t& offset)
     }
   }
 
-  keccak::permute(state);
+  state.permute();
   offset = 0;
 }
 
@@ -178,7 +178,7 @@ finalize(uint64_t* const __restrict state, size_t& offset)
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
 template<const size_t rate>
 static inline void
-squeeze(uint64_t* const __restrict state,
+squeeze(keccak::keccak_t& state,
         size_t& squeezable,
         uint8_t* const __restrict out,
         const size_t olen)
@@ -193,7 +193,9 @@ squeeze(uint64_t* const __restrict state,
     const size_t soff = rbytes - squeezable;
 
     if constexpr (std::endian::native == std::endian::little) {
-      std::memcpy(out + off, reinterpret_cast<uint8_t*>(state) + soff, read);
+      std::memcpy(out + off,
+                  reinterpret_cast<uint8_t*>(state.reveal().data()) + soff,
+                  read);
     } else {
       sha3_utils::words_to_le_bytes<rate>(state, rate_blk);
       std::memcpy(out + off, rate_blk + soff, read);
@@ -203,7 +205,7 @@ squeeze(uint64_t* const __restrict state,
     off += read;
 
     if (squeezable == 0) {
-      keccak::permute(state);
+      state.permute();
       squeezable = rbytes;
     }
   }
