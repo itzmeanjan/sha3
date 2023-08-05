@@ -176,7 +176,7 @@ squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
   auto _blk_bytes = std::span(blk_bytes);
 
   auto swords = std::span(state.reveal());
-  auto _swords = swords.subspan<0, rwords>();
+  auto _swords = swords.template subspan<0, rwords>();
 
   const size_t olen = out.size();
   size_t off = 0;
