@@ -12,7 +12,7 @@ inline void
 keccakf1600(benchmark::State& state)
 {
   std::array<uint64_t, keccak::LANE_CNT> init{};
-  sha3_utils::random_data(init.data(), keccak::LANE_CNT);
+  sha3_utils::random_data<uint64_t>(init);
 
   keccak::keccak_t st(init);
 
