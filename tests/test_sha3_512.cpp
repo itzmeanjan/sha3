@@ -14,14 +14,18 @@ TEST(Sha3Hashing, Sha3_512IncrementalAbsorption)
     std::vector<uint8_t> out0(sha3_512::DIGEST_LEN);
     std::vector<uint8_t> out1(sha3_512::DIGEST_LEN);
 
-    sha3_utils::random_data(msg.data(), msg.size());
+    auto _msg = std::span(msg);
+    auto _out0 = std::span<uint8_t, sha3_512::DIGEST_LEN>(out0);
+    auto _out1 = std::span<uint8_t, sha3_512::DIGEST_LEN>(out1);
+
+    sha3_utils::random_data(_msg);
 
     sha3_512::sha3_512_t hasher;
 
     // Oneshot Hashing
-    hasher.absorb(msg.data(), msg.size());
+    hasher.absorb(_msg);
     hasher.finalize();
-    hasher.digest(out0.data());
+    hasher.digest(_out0);
 
     hasher.reset();
 
@@ -31,14 +35,14 @@ TEST(Sha3Hashing, Sha3_512IncrementalAbsorption)
       // because we don't want to be stuck in an infinite loop if msg[off] = 0 !
       auto elen = std::min<size_t>(std::max<uint8_t>(msg[off], 1), mlen - off);
 
-      hasher.absorb(msg.data() + off, elen);
+      hasher.absorb(_msg.subspan(off, elen));
       off += elen;
     }
 
     hasher.finalize();
-    hasher.digest(out1.data());
+    hasher.digest(_out1);
 
-    ASSERT_TRUE(std::ranges::equal(out0, out1));
+    EXPECT_EQ(out0, out1);
   }
 }
 
@@ -72,14 +76,15 @@ TEST(Sha3Hashing, Sha3_512KnownAnswerTests)
       auto md = sha3_utils::from_hex(md2);
 
       std::vector<uint8_t> digest(sha3_512::DIGEST_LEN);
+      auto _digest = std::span<uint8_t, sha3_512::DIGEST_LEN>(digest);
 
       sha3_512::sha3_512_t hasher;
 
-      hasher.absorb(msg.data(), msg.size());
+      hasher.absorb(msg);
       hasher.finalize();
-      hasher.digest(digest.data());
+      hasher.digest(_digest);
 
-      ASSERT_TRUE(std::ranges::equal(digest, md));
+      EXPECT_EQ(digest, md);
 
       std::string empty_line;
       std::getline(file, empty_line);

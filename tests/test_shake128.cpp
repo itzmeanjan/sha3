@@ -18,14 +18,18 @@ TEST(Sha3Xof, Shake128IncrementalAbsorptionAndSqueezing)
       std::vector<uint8_t> out0(olen);
       std::vector<uint8_t> out1(olen);
 
-      sha3_utils::random_data(msg.data(), msg.size());
+      auto _msg = std::span(msg);
+      auto _out0 = std::span(out0);
+      auto _out1 = std::span(out1);
+
+      sha3_utils::random_data(_msg);
 
       shake128::shake128_t hasher;
 
       // Oneshot absorption and squeezing
-      hasher.absorb(msg.data(), msg.size());
+      hasher.absorb(_msg);
       hasher.finalize();
-      hasher.squeeze(out0.data(), out0.size());
+      hasher.squeeze(_out0);
 
       hasher.reset();
 
@@ -36,7 +40,7 @@ TEST(Sha3Xof, Shake128IncrementalAbsorptionAndSqueezing)
         auto tmp = std::max<uint8_t>(msg[off], 1);
         auto elen = std::min<size_t>(tmp, mlen - off);
 
-        hasher.absorb(msg.data() + off, elen);
+        hasher.absorb(_msg.subspan(off, elen));
         off += elen;
       }
 
@@ -45,16 +49,16 @@ TEST(Sha3Xof, Shake128IncrementalAbsorptionAndSqueezing)
       // squeeze message bytes in many iterations
       off = 0;
       while (off < olen) {
-        hasher.squeeze(out1.data() + off, 1);
+        hasher.squeeze(_out1.subspan(off, 1));
 
         auto elen = std::min<size_t>(out1[off], olen - (off + 1));
 
         off += 1;
-        hasher.squeeze(out1.data() + off, elen);
+        hasher.squeeze(_out1.subspan(off, elen));
         off += elen;
       }
 
-      ASSERT_TRUE(std::ranges::equal(out0, out1));
+      EXPECT_EQ(out0, out1);
     }
   }
 }
@@ -92,11 +96,11 @@ TEST(Sha3Xof, Shake128KnownAnswerTests)
 
       shake128::shake128_t hasher;
 
-      hasher.absorb(msg.data(), msg.size());
+      hasher.absorb(msg);
       hasher.finalize();
-      hasher.squeeze(squeezed.data(), squeezed.size());
+      hasher.squeeze(squeezed);
 
-      ASSERT_TRUE(std::ranges::equal(squeezed, out));
+      EXPECT_EQ(squeezed, out);
 
       std::string empty_line;
       std::getline(file, empty_line);
