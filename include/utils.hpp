@@ -35,6 +35,27 @@ bswap(const uint64_t a)
 #endif
 }
 
+// Given a byte array of length 8, this routine can be used for interpreting
+// those 8 -bytes in little-endian order, as a 64 -bit unsigned integer.
+static inline constexpr uint64_t
+le_bytes_to_u64(std::span<const uint8_t> bytes)
+{
+  const uint64_t word = (static_cast<uint64_t>(bytes[7]) << 56) |
+                        (static_cast<uint64_t>(bytes[6]) << 48) |
+                        (static_cast<uint64_t>(bytes[5]) << 40) |
+                        (static_cast<uint64_t>(bytes[4]) << 32) |
+                        (static_cast<uint64_t>(bytes[3]) << 24) |
+                        (static_cast<uint64_t>(bytes[2]) << 16) |
+                        (static_cast<uint64_t>(bytes[1]) << 8) |
+                        (static_cast<uint64_t>(bytes[0]) << 0);
+
+  if constexpr (std::endian::native == std::endian::big) {
+    return bswap(word);
+  } else {
+    return word;
+  }
+}
+
 // Given a byte array holding rate/8 -many bytes, this routine can be invoked
 // for interpreting those bytes as rate/ 64 -many words ( each word is 64 -bit
 // unsigned interger ) s.t. bytes in a word are placed in little-endian order.
