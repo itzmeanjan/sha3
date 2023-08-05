@@ -76,7 +76,13 @@ public:
 
   // Reset the internal state of the SHA3-512 hasher, now it can again be used
   // for another absorb->finalize->squeeze cycle.
-  inline void reset() { std::memset(this, 0, sizeof(*this)); }
+  inline void reset()
+  {
+    state = {};
+    offset = 0;
+    finalized = false;
+    squeezed = false;
+  }
 };
 
 }
