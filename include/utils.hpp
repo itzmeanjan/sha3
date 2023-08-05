@@ -71,6 +71,25 @@ le_bytes_to_u64_words(std::span<const uint8_t, rate / 8> bytes,
   }
 }
 
+// Given a 64 -bit unsigned integer as input, this routine can be used for
+// interpreting those 8 -bytes in little-endian byte order.
+static inline constexpr void
+u64_to_le_bytes(uint64_t word, std::span<uint8_t> bytes)
+{
+  if constexpr (std::endian::native == std::endian::big) {
+    word = bswap(word);
+  }
+
+  bytes[0] = static_cast<uint8_t>(word >> 0);
+  bytes[1] = static_cast<uint8_t>(word >> 8);
+  bytes[2] = static_cast<uint8_t>(word >> 16);
+  bytes[3] = static_cast<uint8_t>(word >> 24);
+  bytes[4] = static_cast<uint8_t>(word >> 32);
+  bytes[5] = static_cast<uint8_t>(word >> 40);
+  bytes[6] = static_cast<uint8_t>(word >> 48);
+  bytes[7] = static_cast<uint8_t>(word >> 56);
+}
+
 // Given an array of uint64_t words, holding rate/ 8 -many bytes, this routine
 // can be used for interpreting words as little-endian bytes.
 template<const size_t rate>
