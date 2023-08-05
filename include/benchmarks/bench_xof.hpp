@@ -24,7 +24,7 @@ shake128(benchmark::State& state)
   sha3_utils::random_data(msg.data(), msg.size());
 
   for (auto _ : state) {
-    shake128::shake128 hasher;
+    shake128::shake128_t hasher;
     hasher.absorb(msg.data(), msg.size());
     hasher.finalize();
     hasher.squeeze(out.data(), out.size());
@@ -65,7 +65,7 @@ shake256(benchmark::State& state)
   sha3_utils::random_data(msg.data(), msg.size());
 
   for (auto _ : state) {
-    shake256::shake256 hasher;
+    shake256::shake256_t hasher;
     hasher.absorb(msg.data(), msg.size());
     hasher.finalize();
     hasher.squeeze(out.data(), out.size());

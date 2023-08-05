@@ -21,7 +21,7 @@ sha3_224(benchmark::State& state)
   sha3_utils::random_data(msg.data(), msg.size());
 
   for (auto _ : state) {
-    sha3_224::sha3_224 hasher;
+    sha3_224::sha3_224_t hasher;
     hasher.absorb(msg.data(), msg.size());
     hasher.finalize();
     hasher.digest(md.data());
@@ -57,7 +57,7 @@ sha3_256(benchmark::State& state)
   sha3_utils::random_data(msg.data(), msg.size());
 
   for (auto _ : state) {
-    sha3_256::sha3_256 hasher;
+    sha3_256::sha3_256_t hasher;
     hasher.absorb(msg.data(), msg.size());
     hasher.finalize();
     hasher.digest(md.data());
@@ -93,7 +93,7 @@ sha3_384(benchmark::State& state)
   sha3_utils::random_data(msg.data(), msg.size());
 
   for (auto _ : state) {
-    sha3_384::sha3_384 hasher;
+    sha3_384::sha3_384_t hasher;
     hasher.absorb(msg.data(), msg.size());
     hasher.finalize();
     hasher.digest(md.data());
@@ -129,7 +129,7 @@ sha3_512(benchmark::State& state)
   sha3_utils::random_data(msg.data(), msg.size());
 
   for (auto _ : state) {
-    sha3_512::sha3_512 hasher;
+    sha3_512::sha3_512_t hasher;
     hasher.absorb(msg.data(), msg.size());
     hasher.finalize();
     hasher.digest(md.data());
