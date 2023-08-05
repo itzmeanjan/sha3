@@ -61,26 +61,13 @@ le_bytes_to_u64(std::span<const uint8_t> bytes)
 // unsigned interger ) s.t. bytes in a word are placed in little-endian order.
 template<const size_t rate>
 static inline constexpr void
-bytes_to_le_words(std::span<const uint8_t, rate / 8>,
-                  std::span<uint64_t, rate / 64> words)
+le_bytes_to_u64_words(std::span<const uint8_t, rate / 8> bytes,
+                      std::span<uint64_t, rate / 64> words)
 {
-  constexpr size_t rbytes = rate >> 3;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
-
-  if constexpr (std::endian::native == std::endian::little) {
-    std::memcpy(words, bytes, rbytes);
-  } else {
-    for (size_t j = 0; j < rwords; j++) {
-      const size_t boff = j << 3;
-      words[j] = (static_cast<uint64_t>(bytes[boff + 7]) << 56) |
-                 (static_cast<uint64_t>(bytes[boff + 6]) << 48) |
-                 (static_cast<uint64_t>(bytes[boff + 5]) << 40) |
-                 (static_cast<uint64_t>(bytes[boff + 4]) << 32) |
-                 (static_cast<uint64_t>(bytes[boff + 3]) << 24) |
-                 (static_cast<uint64_t>(bytes[boff + 2]) << 16) |
-                 (static_cast<uint64_t>(bytes[boff + 1]) << 8) |
-                 (static_cast<uint64_t>(bytes[boff + 0]) << 0);
-    }
+  size_t off = 0;
+  while (off < bytes.size()) {
+    words[off / 8] = le_bytes_to_u64(bytes.subspan(off, 8));
+    off += 8;
   }
 }
 
