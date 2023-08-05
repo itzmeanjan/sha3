@@ -175,6 +175,9 @@ squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
   std::array<uint8_t, rbytes> blk_bytes{};
   auto _blk_bytes = std::span(blk_bytes);
 
+  auto swords = std::span(state.reveal());
+  auto _swords = swords.subspan<0, rwords>();
+
   const size_t olen = out.size();
   size_t off = 0;
 
@@ -182,11 +185,7 @@ squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
     const size_t read = std::min(squeezable, olen - off);
     const size_t soff = rbytes - squeezable;
 
-    auto st = state.reveal();
-    auto _st = std::span(st);
-    auto __st = _st.subspan<0, rwords>();
-
-    sha3_utils::u64_words_to_le_bytes<rate>(__st, _blk_bytes);
+    sha3_utils::u64_words_to_le_bytes<rate>(_swords, _blk_bytes);
 
     auto _blk = _blk_bytes.subspan(soff, read);
     auto _out = out.subspan(off, read);

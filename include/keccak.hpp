@@ -322,11 +322,14 @@ public:
     return state[idx];
   }
 
-  // Returns 1600 -bit whole state of Keccak-p permutation.
+  // Returns a copy of 1600 -bit whole state of Keccak-p permutation.
   inline constexpr std::array<uint64_t, LANE_CNT> reveal() const
   {
     return state;
   }
+
+  // Returns a reference to 1600 -bit whole state of Keccak-p permutation.
+  inline constexpr std::array<uint64_t, LANE_CNT>& reveal() { return state; }
 };
 
 }
