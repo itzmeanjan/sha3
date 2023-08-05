@@ -166,29 +166,27 @@ finalize(keccak::keccak_t& state, size_t& offset)
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
 template<const size_t rate>
-static inline void
-squeeze(keccak::keccak_t& state,
-        size_t& squeezable,
-        uint8_t* const __restrict out,
-        const size_t olen)
+static inline constexpr void
+squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
 {
-  constexpr size_t rbytes = rate >> 3;
+  constexpr size_t rbytes = rate >> 3; // # -of bytes
 
-  uint8_t rate_blk[rbytes];
+  std::array<uint8_t, rbytes> blk_bytes{};
+  auto _blk_bytes = std::span(blk_bytes);
+
+  const size_t olen = out.size();
   size_t off = 0;
 
   while (off < olen) {
     const size_t read = std::min(squeezable, olen - off);
     const size_t soff = rbytes - squeezable;
 
-    if constexpr (std::endian::native == std::endian::little) {
-      std::memcpy(out + off,
-                  reinterpret_cast<uint8_t*>(state.reveal().data()) + soff,
-                  read);
-    } else {
-      sha3_utils::words_to_le_bytes<rate>(state, rate_blk);
-      std::memcpy(out + off, rate_blk + soff, read);
-    }
+    sha3_utils::u64_words_to_le_bytes<rate>(state.reveal(), _blk_bytes);
+
+    auto _blk = _blk_bytes.subspan(soff, read);
+    auto _out = out.subspan(off, read);
+
+    std::ranges::copy(_blk.begin(), _blk.end(), _out.begin());
 
     squeezable -= read;
     off += read;
