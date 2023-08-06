@@ -5,6 +5,42 @@
 #include <gtest/gtest.h>
 #include <vector>
 
+// Eval SHA3-256 hash on statically defined input message during
+// compilation-time.
+constexpr std::array<uint8_t, sha3_256::DIGEST_LEN>
+eval_sha3_256()
+{
+  // Statically defined input.
+  std::array<uint8_t, sha3_256::DIGEST_LEN * 2> data{};
+  std::iota(data.begin(), data.end(), 0);
+
+  // To be computed output.
+  std::array<uint8_t, sha3_256::DIGEST_LEN> md{};
+
+  sha3_256::sha3_256_t hasher;
+  hasher.absorb(data);
+  hasher.finalize();
+  hasher.digest(md);
+
+  return md;
+}
+
+// Ensure that SHA3-256 implementation is compile-time evaluable.
+TEST(Sha3Hashing, CompileTimeEvalSha3_256)
+{
+  // Input  =
+  // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f
+  // Output = c8ad478f4e1dd9d47dfc3b985708d92db1f8db48fe9cddd459e63c321f490402
+
+  constexpr auto md = eval_sha3_256();
+  static_assert(md ==
+                  std::array<uint8_t, sha3_256::DIGEST_LEN>{
+                    200, 173, 71, 143, 78, 29,  217, 212, 125, 252, 59,
+                    152, 87,  8,  217, 45, 177, 248, 219, 72,  254, 156,
+                    221, 212, 89, 230, 60, 50,  31,  73,  4,   2 },
+                "Must be able to compute Sha3-256 hash during compile-time !");
+}
+
 // Test that absorbing same input message bytes using both incremental and
 // one-shot hashing, should yield same output bytes, for SHA3-256 hasher.
 TEST(Sha3Hashing, Sha3_256IncrementalAbsorption)
