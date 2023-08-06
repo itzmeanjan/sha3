@@ -5,6 +5,45 @@
 #include <gtest/gtest.h>
 #include <vector>
 
+// Eval SHA3-384 hash on statically defined input message during
+// compilation-time.
+constexpr std::array<uint8_t, sha3_384::DIGEST_LEN>
+eval_sha3_384()
+{
+  // Statically defined input.
+  std::array<uint8_t, sha3_384::DIGEST_LEN * 2> data{};
+  std::iota(data.begin(), data.end(), 0);
+
+  // To be computed output.
+  std::array<uint8_t, sha3_384::DIGEST_LEN> md{};
+
+  sha3_384::sha3_384_t hasher;
+  hasher.absorb(data);
+  hasher.finalize();
+  hasher.digest(md);
+
+  return md;
+}
+
+// Ensure that SHA3-384 implementation is compile-time evaluable.
+TEST(Sha3Hashing, CompileTimeEvalSha3_384)
+{
+  // Input  =
+  // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f
+  // Output =
+  // d6e266970a3fdcd4a833da861599179a060b576959e993b4698529304ee38c23c7102a7084c4d568b1d95523d14077e7
+
+  constexpr auto md = eval_sha3_384();
+  static_assert(
+    md ==
+      std::array<uint8_t, sha3_384::DIGEST_LEN>{
+        214, 226, 102, 151, 10,  63,  220, 212, 168, 51,  218, 134,
+        21,  153, 23,  154, 6,   11,  87,  105, 89,  233, 147, 180,
+        105, 133, 41,  48,  78,  227, 140, 35,  199, 16,  42,  112,
+        132, 196, 213, 104, 177, 217, 85,  35,  209, 64,  119, 231 },
+    "Must be able to compute Sha3-384 hash during compile-time !");
+}
+
 // Test that absorbing same input message bytes using both incremental and
 // one-shot hashing, should yield same output bytes, for SHA3-384 hasher.
 TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
