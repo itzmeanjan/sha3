@@ -14,14 +14,15 @@ main()
 
   std::vector<uint8_t> msg(ilen, 0);
   std::vector<uint8_t> dig(olen, 0);
+  auto _dig = std::span(dig);
 
-  sha3_utils::random_data<uint8_t>(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   // Create shake256 hasher
-  shake256::shake256 hasher;
+  shake256::shake256_t hasher;
 
   // Absorb message bytes into sponge state
-  hasher.absorb(msg.data(), msg.size());
+  hasher.absorb(msg);
   // Finalize sponge state
   hasher.finalize();
 
@@ -29,7 +30,7 @@ main()
   // One can request arbitrary many bytes of output, by calling `squeeze`
   // arbitrary many times.
   for (size_t i = 0; i < olen; i++) {
-    hasher.squeeze(dig.data() + i, 1);
+    hasher.squeeze(_dig.subspan(i, 1));
   }
 
   std::cout << "SHAKE-256" << std::endl << std::endl;
