@@ -6,78 +6,116 @@
 #include <cstring>
 #include <iomanip>
 #include <random>
+#include <span>
 #include <sstream>
 #include <type_traits>
 
 // Utility ( or commonly used ) functions for SHA3 implementation
 namespace sha3_utils {
 
+// Given a 64 -bit unsigned integer word, this routine swaps byte order and
+// returns byte swapped 64 -bit word.
+//
+// Collects inspiration from
+// https://github.com/itzmeanjan/ascon/blob/6160fee18814c7c313262e365c53de96ab6602b4/include/utils.hpp#L17-L43.
+static inline constexpr uint64_t
+bswap(const uint64_t a)
+{
+#if defined __GNUG__
+  return __builtin_bswap64(a);
+#else
+  return ((a & 0x00000000000000fful) << 56) |
+         ((a & 0x000000000000ff00ul) << 40) |
+         ((a & 0x0000000000ff0000ul) << 24) |
+         ((a & 0x00000000ff000000ul) << 0x8) |
+         ((a & 0x000000ff00000000ul) >> 0x8) |
+         ((a & 0x0000ff0000000000ul) >> 24) |
+         ((a & 0x00ff000000000000ul) >> 40) |
+         ((a & 0xff00000000000000ul) >> 56);
+#endif
+}
+
+// Given a byte array of length 8, this routine can be used for interpreting
+// those 8 -bytes in little-endian order, as a 64 -bit unsigned integer.
+static inline constexpr uint64_t
+le_bytes_to_u64(std::span<const uint8_t> bytes)
+{
+  const uint64_t word = (static_cast<uint64_t>(bytes[7]) << 56) |
+                        (static_cast<uint64_t>(bytes[6]) << 48) |
+                        (static_cast<uint64_t>(bytes[5]) << 40) |
+                        (static_cast<uint64_t>(bytes[4]) << 32) |
+                        (static_cast<uint64_t>(bytes[3]) << 24) |
+                        (static_cast<uint64_t>(bytes[2]) << 16) |
+                        (static_cast<uint64_t>(bytes[1]) << 8) |
+                        (static_cast<uint64_t>(bytes[0]) << 0);
+
+  if constexpr (std::endian::native == std::endian::big) {
+    return bswap(word);
+  } else {
+    return word;
+  }
+}
+
 // Given a byte array holding rate/8 -many bytes, this routine can be invoked
 // for interpreting those bytes as rate/ 64 -many words ( each word is 64 -bit
 // unsigned interger ) s.t. bytes in a word are placed in little-endian order.
 template<const size_t rate>
-static inline void
-bytes_to_le_words(const uint8_t* const __restrict bytes,
-                  uint64_t* const __restrict words)
+static inline constexpr void
+le_bytes_to_u64_words(std::span<const uint8_t, rate / 8> bytes,
+                      std::span<uint64_t, rate / 64> words)
 {
-  constexpr size_t rbytes = rate >> 3;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
-
-  if constexpr (std::endian::native == std::endian::little) {
-    std::memcpy(words, bytes, rbytes);
-  } else {
-    for (size_t j = 0; j < rwords; j++) {
-      const size_t boff = j << 3;
-      words[j] = (static_cast<uint64_t>(bytes[boff + 7]) << 56) |
-                 (static_cast<uint64_t>(bytes[boff + 6]) << 48) |
-                 (static_cast<uint64_t>(bytes[boff + 5]) << 40) |
-                 (static_cast<uint64_t>(bytes[boff + 4]) << 32) |
-                 (static_cast<uint64_t>(bytes[boff + 3]) << 24) |
-                 (static_cast<uint64_t>(bytes[boff + 2]) << 16) |
-                 (static_cast<uint64_t>(bytes[boff + 1]) << 8) |
-                 (static_cast<uint64_t>(bytes[boff + 0]) << 0);
-    }
+  size_t off = 0;
+  while (off < bytes.size()) {
+    words[off / 8] = le_bytes_to_u64(bytes.subspan(off, 8));
+    off += 8;
   }
 }
 
-// Given an array of uint64_t words, holding rate/ 8 -many bytes, this routine
-// can be used for interpreting words as little-endian bytes.
-template<const size_t rate>
-static inline void
-words_to_le_bytes(const uint64_t* const __restrict words,
-                  uint8_t* const __restrict bytes)
+// Given a 64 -bit unsigned integer as input, this routine can be used for
+// interpreting those 8 -bytes in little-endian byte order.
+static inline constexpr void
+u64_to_le_bytes(uint64_t word, std::span<uint8_t> bytes)
 {
-  constexpr size_t rbytes = rate >> 3;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+  if constexpr (std::endian::native == std::endian::big) {
+    word = bswap(word);
+  }
 
-  if constexpr (std::endian::native == std::endian::little) {
-    std::memcpy(bytes, words, rbytes);
-  } else {
-    for (size_t i = 0; i < rwords; i++) {
-      const size_t boff = i * 8;
+  bytes[0] = static_cast<uint8_t>(word >> 0);
+  bytes[1] = static_cast<uint8_t>(word >> 8);
+  bytes[2] = static_cast<uint8_t>(word >> 16);
+  bytes[3] = static_cast<uint8_t>(word >> 24);
+  bytes[4] = static_cast<uint8_t>(word >> 32);
+  bytes[5] = static_cast<uint8_t>(word >> 40);
+  bytes[6] = static_cast<uint8_t>(word >> 48);
+  bytes[7] = static_cast<uint8_t>(word >> 56);
+}
 
-      bytes[boff + 0] = static_cast<uint8_t>(words[i] >> 0);
-      bytes[boff + 1] = static_cast<uint8_t>(words[i] >> 8);
-      bytes[boff + 2] = static_cast<uint8_t>(words[i] >> 16);
-      bytes[boff + 3] = static_cast<uint8_t>(words[i] >> 24);
-      bytes[boff + 4] = static_cast<uint8_t>(words[i] >> 32);
-      bytes[boff + 5] = static_cast<uint8_t>(words[i] >> 40);
-      bytes[boff + 6] = static_cast<uint8_t>(words[i] >> 48);
-      bytes[boff + 7] = static_cast<uint8_t>(words[i] >> 56);
-    }
+// Given an array of rate/64 -many 64 -bit unsigned integer words, this routine
+// can be used for interpreting words in little-endian byte-order, computing
+// rate/8 -many bytes output.
+template<const size_t rate>
+static inline constexpr void
+u64_words_to_le_bytes(std::span<const uint64_t, rate / 64> words,
+                      std::span<uint8_t, rate / 8> bytes)
+{
+  size_t off = 0;
+  while (off < words.size()) {
+    u64_to_le_bytes(words[off], bytes.subspan(off * 8, 8));
+    off++;
   }
 }
 
 // Generates N -many random values of type T | N >= 0
 template<typename T>
 static inline void
-random_data(T* const data, const size_t len)
+random_data(std::span<T> data)
   requires(std::is_unsigned_v<T>)
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
   std::uniform_int_distribution<T> dis;
 
+  const size_t len = data.size();
   for (size_t i = 0; i < len; i++) {
     data[i] = dis(gen);
   }

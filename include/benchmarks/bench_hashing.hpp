@@ -17,18 +17,19 @@ sha3_224(benchmark::State& state)
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> md(sha3_224::DIGEST_LEN);
+  auto _md = std::span<uint8_t, sha3_224::DIGEST_LEN>(md);
 
-  sha3_utils::random_data(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   for (auto _ : state) {
-    sha3_224::sha3_224 hasher;
-    hasher.absorb(msg.data(), msg.size());
+    sha3_224::sha3_224_t hasher;
+    hasher.absorb(msg);
     hasher.finalize();
-    hasher.digest(md.data());
+    hasher.digest(_md);
 
     benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(md);
+    benchmark::DoNotOptimize(_md);
     benchmark::ClobberMemory();
   }
 
@@ -53,18 +54,19 @@ sha3_256(benchmark::State& state)
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> md(sha3_256::DIGEST_LEN);
+  auto _md = std::span<uint8_t, sha3_256::DIGEST_LEN>(md);
 
-  sha3_utils::random_data(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   for (auto _ : state) {
-    sha3_256::sha3_256 hasher;
-    hasher.absorb(msg.data(), msg.size());
+    sha3_256::sha3_256_t hasher;
+    hasher.absorb(msg);
     hasher.finalize();
-    hasher.digest(md.data());
+    hasher.digest(_md);
 
     benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(md);
+    benchmark::DoNotOptimize(_md);
     benchmark::ClobberMemory();
   }
 
@@ -89,18 +91,19 @@ sha3_384(benchmark::State& state)
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> md(sha3_384::DIGEST_LEN);
+  auto _md = std::span<uint8_t, sha3_384::DIGEST_LEN>(md);
 
-  sha3_utils::random_data(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   for (auto _ : state) {
-    sha3_384::sha3_384 hasher;
-    hasher.absorb(msg.data(), msg.size());
+    sha3_384::sha3_384_t hasher;
+    hasher.absorb(msg);
     hasher.finalize();
-    hasher.digest(md.data());
+    hasher.digest(_md);
 
     benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(md);
+    benchmark::DoNotOptimize(_md);
     benchmark::ClobberMemory();
   }
 
@@ -125,18 +128,19 @@ sha3_512(benchmark::State& state)
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> md(sha3_512::DIGEST_LEN);
+  auto _md = std::span<uint8_t, sha3_512::DIGEST_LEN>(md);
 
-  sha3_utils::random_data(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   for (auto _ : state) {
-    sha3_512::sha3_512 hasher;
-    hasher.absorb(msg.data(), msg.size());
+    sha3_512::sha3_512_t hasher;
+    hasher.absorb(msg);
     hasher.finalize();
-    hasher.digest(md.data());
+    hasher.digest(_md);
 
     benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(msg);
-    benchmark::DoNotOptimize(md);
+    benchmark::DoNotOptimize(_md);
     benchmark::ClobberMemory();
   }
 

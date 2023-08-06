@@ -21,13 +21,13 @@ shake128(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  sha3_utils::random_data(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   for (auto _ : state) {
-    shake128::shake128 hasher;
-    hasher.absorb(msg.data(), msg.size());
+    shake128::shake128_t hasher;
+    hasher.absorb(msg);
     hasher.finalize();
-    hasher.squeeze(out.data(), out.size());
+    hasher.squeeze(out);
 
     benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(msg);
@@ -62,13 +62,13 @@ shake256(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  sha3_utils::random_data(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
   for (auto _ : state) {
-    shake256::shake256 hasher;
-    hasher.absorb(msg.data(), msg.size());
+    shake256::shake256_t hasher;
+    hasher.absorb(msg);
     hasher.finalize();
-    hasher.squeeze(out.data(), out.size());
+    hasher.squeeze(out);
 
     benchmark::DoNotOptimize(hasher);
     benchmark::DoNotOptimize(msg);

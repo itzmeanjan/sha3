@@ -1,6 +1,7 @@
 #pragma once
 #include "keccak.hpp"
 #include "utils.hpp"
+#include <array>
 #include <benchmark/benchmark.h>
 
 // Benchmarks SHA3 functions targeting CPU systems, using google-benchmark.
@@ -10,11 +11,13 @@ namespace bench_sha3 {
 inline void
 keccakf1600(benchmark::State& state)
 {
-  uint64_t st[keccak::LANE_CNT];
-  sha3_utils::random_data(st, keccak::LANE_CNT);
+  std::array<uint64_t, keccak::LANE_CNT> init{};
+  sha3_utils::random_data<uint64_t>(init);
+
+  keccak::keccak_t st(init);
 
   for (auto _ : state) {
-    keccak::permute(st);
+    st.permute();
 
     benchmark::DoNotOptimize(st);
     benchmark::ClobberMemory();

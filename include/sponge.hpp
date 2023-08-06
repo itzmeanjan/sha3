@@ -4,16 +4,18 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cstdint>
 #include <cstring>
+#include <span>
 
 // Keccak family of sponge functions
 namespace sponge {
 
 // Compile-time check to ensure that domain separator can only be 2/ 4 -bits
-// wide
+// wide.
 //
 // When used in context of extendable output functions ( SHAKE{128, 256} )
-// domain separator bits are 4 -bit wide
+// domain separator bits are 4 -bit wide.
 //
 // See section 6.{1, 2} of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
@@ -38,7 +40,7 @@ check_domain_separator(const size_t dom_sep_bit_len)
 template<const uint8_t domain_separator,
          const size_t ds_bits,
          const size_t rate>
-static inline std::array<uint8_t, rate / 8>
+static inline constexpr std::array<uint8_t, rate / 8>
 pad10x1(const size_t offset)
   requires(check_domain_separator(ds_bits))
 {
@@ -58,66 +60,58 @@ pad10x1(const size_t offset)
 // are already consumed into rate portion of the state.
 //
 // - `rate` portion of sponge will have bitwidth of 1600 - c.
-// - `offset` must ∈ [0, `rbytes`)
+// - `offset` must ∈ [0, `rbytes`).
 //
 // This function implementation collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
 template<const size_t rate>
-static inline void
-absorb(uint64_t* const __restrict state,
-       size_t& offset,
-       const uint8_t* const __restrict msg,
-       const size_t mlen)
+static inline constexpr void
+absorb(keccak::keccak_t& state, size_t& offset, std::span<const uint8_t> msg)
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
-  uint8_t blk_bytes[rbytes]{};
-  uint64_t blk_words[rwords]{};
+  std::array<uint8_t, rbytes> blk_bytes{};
+  std::array<uint64_t, rwords> blk_words{};
 
+  auto _blk_bytes = std::span(blk_bytes);
+  auto _blk_words = std::span(blk_words);
+
+  const size_t mlen = msg.size();
   const size_t blk_cnt = (offset + mlen) / rbytes;
+
   size_t moff = 0;
 
   for (size_t i = 0; i < blk_cnt; i++) {
-    std::memcpy(blk_bytes + offset, msg + moff, rbytes - offset);
+    const size_t readable = rbytes - offset;
 
-    if constexpr (std::endian::native == std::endian::little) {
-      auto words = reinterpret_cast<const uint64_t*>(blk_bytes);
+    auto _msg = msg.subspan(moff, readable);
+    auto _blk = _blk_bytes.subspan(offset, readable);
 
-      for (size_t j = 0; j < rwords; j++) {
-        state[j] ^= words[j];
-      }
-    } else {
-      sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
+    std::ranges::copy(_msg.begin(), _msg.end(), _blk.begin());
+    sha3_utils::le_bytes_to_u64_words<rate>(_blk_bytes, _blk_words);
 
-      for (size_t j = 0; j < rwords; j++) {
-        state[j] ^= blk_words[j];
-      }
+    for (size_t j = 0; j < rwords; j++) {
+      state[j] ^= _blk_words[j];
     }
 
-    keccak::permute(state);
+    state.permute();
 
-    moff += (rbytes - offset);
+    moff += readable;
     offset = 0;
   }
 
   const size_t rm_bytes = mlen - moff;
 
-  std::memset(blk_bytes, 0, rbytes);
-  std::memcpy(blk_bytes + offset, msg + moff, rm_bytes);
+  auto _msg = msg.subspan(moff, rm_bytes);
+  auto _blk = _blk_bytes.subspan(offset, rm_bytes);
 
-  if constexpr (std::endian::native == std::endian::little) {
-    auto words = reinterpret_cast<const uint64_t*>(blk_bytes);
+  blk_bytes.fill(0x00);
+  std::ranges::copy(_msg.begin(), _msg.end(), _blk.begin());
+  sha3_utils::le_bytes_to_u64_words<rate>(_blk_bytes, _blk_words);
 
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= words[j];
-    }
-  } else {
-    sha3_utils::bytes_to_le_words<rate>(blk_bytes, blk_words);
-
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= blk_words[j];
-    }
+  for (size_t j = 0; j < rwords; j++) {
+    state[j] ^= _blk_words[j];
   }
 
   offset += rm_bytes;
@@ -137,31 +131,26 @@ absorb(uint64_t* const __restrict state,
 template<const uint8_t domain_separator,
          const size_t ds_bits,
          const size_t rate>
-static inline void
-finalize(uint64_t* const __restrict state, size_t& offset)
+static inline constexpr void
+finalize(keccak::keccak_t& state, size_t& offset)
   requires(check_domain_separator(ds_bits))
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
-  const auto pad = pad10x1<domain_separator, ds_bits, rate>(offset);
+  const auto padb = pad10x1<domain_separator, ds_bits, rate>(offset);
+  std::array<uint64_t, rwords> padw{};
 
-  if constexpr (std::endian::native == std::endian::little) {
-    auto words = reinterpret_cast<const uint64_t*>(pad.data());
+  auto _padb = std::span(padb);
+  auto _padw = std::span(padw);
 
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= words[j];
-    }
-  } else {
-    uint64_t words[rwords];
-    sha3_utils::bytes_to_le_words<rate>(pad.data(), words);
+  sha3_utils::le_bytes_to_u64_words<rate>(_padb, _padw);
 
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= words[j];
-    }
+  for (size_t j = 0; j < rwords; j++) {
+    state[j] ^= _padw[j];
   }
 
-  keccak::permute(state);
+  state.permute();
   offset = 0;
 }
 
@@ -177,33 +166,37 @@ finalize(uint64_t* const __restrict state, size_t& offset)
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
 template<const size_t rate>
-static inline void
-squeeze(uint64_t* const __restrict state,
-        size_t& squeezable,
-        uint8_t* const __restrict out,
-        const size_t olen)
+static inline constexpr void
+squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
 {
-  constexpr size_t rbytes = rate >> 3;
+  constexpr size_t rbytes = rate >> 3;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
 
-  uint8_t rate_blk[rbytes];
+  std::array<uint8_t, rbytes> blk_bytes{};
+  auto _blk_bytes = std::span(blk_bytes);
+
+  auto swords = std::span(state.reveal());
+  auto _swords = swords.template subspan<0, rwords>();
+
+  const size_t olen = out.size();
   size_t off = 0;
 
   while (off < olen) {
     const size_t read = std::min(squeezable, olen - off);
     const size_t soff = rbytes - squeezable;
 
-    if constexpr (std::endian::native == std::endian::little) {
-      std::memcpy(out + off, reinterpret_cast<uint8_t*>(state) + soff, read);
-    } else {
-      sha3_utils::words_to_le_bytes<rate>(state, rate_blk);
-      std::memcpy(out + off, rate_blk + soff, read);
-    }
+    sha3_utils::u64_words_to_le_bytes<rate>(_swords, _blk_bytes);
+
+    auto _blk = _blk_bytes.subspan(soff, read);
+    auto _out = out.subspan(off, read);
+
+    std::ranges::copy(_blk.begin(), _blk.end(), _out.begin());
 
     squeezable -= read;
     off += read;
 
     if (squeezable == 0) {
-      keccak::permute(state);
+      state.permute();
       squeezable = rbytes;
     }
   }

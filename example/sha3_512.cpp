@@ -14,13 +14,14 @@ main()
 
   std::vector<uint8_t> msg(ilen, 0);
   std::vector<uint8_t> dig(olen, 0);
+  auto _dig = std::span<uint8_t, olen>(dig);
 
-  sha3_utils::random_data<uint8_t>(msg.data(), msg.size());
+  sha3_utils::random_data<uint8_t>(msg);
 
-  sha3_512::sha3_512 hasher;
-  hasher.absorb(msg.data(), msg.size());
+  sha3_512::sha3_512_t hasher;
+  hasher.absorb(msg);
   hasher.finalize();
-  hasher.digest(dig.data());
+  hasher.digest(_dig);
 
   std::cout << "SHA3-512" << std::endl << std::endl;
   std::cout << "Input  : " << sha3_utils::to_hex(msg.data(), ilen) << "\n";

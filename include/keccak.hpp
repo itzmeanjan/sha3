@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstddef>
@@ -124,170 +125,211 @@ compute_rcs()
 // https://dx.doi.org/10.s6028/NIST.FIPS.202
 constexpr auto RC = compute_rcs();
 
-// Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
-theta(uint64_t* const state)
+// 1600 -bit Keccak permutation state, on which we can apply 24 -rounds
+// permutation.
+struct keccak_t
 {
-  uint64_t c[5]{};
-  uint64_t d[5];
+private:
+  std::array<uint64_t, LANE_CNT> state{};
+
+  // Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
+  // specification https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void theta()
+  {
+    std::array<uint64_t, 5> c{};
+    std::array<uint64_t, 5> d{};
 
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+    // Following
+    // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+    // Following
+    // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
 
 #pragma GCC unroll 5
 #endif
-  for (size_t i = 0; i < 25; i += 5) {
-    c[0] ^= state[i + 0];
-    c[1] ^= state[i + 1];
-    c[2] ^= state[i + 2];
-    c[3] ^= state[i + 3];
-    c[4] ^= state[i + 4];
-  }
+    for (size_t i = 0; i < 25; i += 5) {
+      c[0] ^= state[i + 0];
+      c[1] ^= state[i + 1];
+      c[2] ^= state[i + 2];
+      c[3] ^= state[i + 3];
+      c[4] ^= state[i + 4];
+    }
 
-  d[0] = c[4] ^ std::rotl(c[1], 1);
-  d[1] = c[0] ^ std::rotl(c[2], 1);
-  d[2] = c[1] ^ std::rotl(c[3], 1);
-  d[3] = c[2] ^ std::rotl(c[4], 1);
-  d[4] = c[3] ^ std::rotl(c[0], 1);
+    d[0] = c[4] ^ std::rotl(c[1], 1);
+    d[1] = c[0] ^ std::rotl(c[2], 1);
+    d[2] = c[1] ^ std::rotl(c[3], 1);
+    d[3] = c[2] ^ std::rotl(c[4], 1);
+    d[4] = c[3] ^ std::rotl(c[0], 1);
 
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+    // Following
+    // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+    // Following
+    // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
 
 #pragma GCC unroll 5
 #endif
-  for (size_t i = 0; i < 25; i += 5) {
-    state[i + 0] ^= d[0];
-    state[i + 1] ^= d[1];
-    state[i + 2] ^= d[2];
-    state[i + 3] ^= d[3];
-    state[i + 4] ^= d[4];
+    for (size_t i = 0; i < 25; i += 5) {
+      state[i + 0] ^= d[0];
+      state[i + 1] ^= d[1];
+      state[i + 2] ^= d[2];
+      state[i + 3] ^= d[3];
+      state[i + 4] ^= d[4];
+    }
   }
-}
 
-// Keccak-p[1600, 24] step mapping function ρ, see section 3.2.2 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
-rho(uint64_t* const state)
-{
+  // Keccak-p[1600, 24] step mapping function ρ, see section 3.2.2 of SHA3
+  // specification https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void rho()
+  {
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+    // Following
+    // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+    // Following
+    // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
 
 #pragma GCC unroll 25
 #endif
-  for (size_t i = 0; i < 25; i++) {
-    state[i] = std::rotl(state[i], ROT[i]);
+    for (size_t i = 0; i < 25; i++) {
+      state[i] = std::rotl(state[i], ROT[i]);
+    }
   }
-}
 
-// Keccak-p[1600, 24] step mapping function π, see section 3.2.3 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
-pi(const uint64_t* const __restrict istate, // input permutation state
-   uint64_t* const __restrict ostate        // output permutation state
-)
-{
+  // Keccak-p[1600, 24] step mapping function π, see section 3.2.3 of SHA3
+  // specification https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void pi()
+  {
+    std::array<uint64_t, LANE_CNT> tmp{};
+
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+    // Following
+    // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+    // Following
+    // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
 
 #pragma GCC unroll 25
 #endif
-  for (size_t i = 0; i < 25; i++) {
-    ostate[i] = istate[PERM[i]];
-  }
-}
+    for (size_t i = 0; i < 25; i++) {
+      tmp[i] = state[PERM[i]];
+    }
 
-// Keccak-p[1600, 24] step mapping function χ, see section 3.2.4 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
-chi(const uint64_t* const __restrict istate, // input permutation state
-    uint64_t* const __restrict ostate        // output permutation state
-)
-{
+    std::ranges::copy(tmp.begin(), tmp.end(), state.begin());
+  }
+
+  // Keccak-p[1600, 24] step mapping function χ, see section 3.2.4 of SHA3
+  // specification https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void chi()
+  {
+    std::array<uint64_t, LANE_CNT> tmp{};
+
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
+    // Following
+    // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
+    // Following
+    // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
 
 #pragma GCC unroll 5
 #endif
-  for (size_t i = 0; i < 5; i++) {
-    const size_t ix5 = i * 5;
+    for (size_t i = 0; i < 5; i++) {
+      const size_t ix5 = i * 5;
 
-    ostate[ix5 + 0] = istate[ix5 + 0] ^ (~istate[ix5 + 1] & istate[ix5 + 2]);
-    ostate[ix5 + 1] = istate[ix5 + 1] ^ (~istate[ix5 + 2] & istate[ix5 + 3]);
-    ostate[ix5 + 2] = istate[ix5 + 2] ^ (~istate[ix5 + 3] & istate[ix5 + 4]);
-    ostate[ix5 + 3] = istate[ix5 + 3] ^ (~istate[ix5 + 4] & istate[ix5 + 0]);
-    ostate[ix5 + 4] = istate[ix5 + 4] ^ (~istate[ix5 + 0] & istate[ix5 + 1]);
+      tmp[ix5 + 0] = state[ix5 + 0] ^ (~state[ix5 + 1] & state[ix5 + 2]);
+      tmp[ix5 + 1] = state[ix5 + 1] ^ (~state[ix5 + 2] & state[ix5 + 3]);
+      tmp[ix5 + 2] = state[ix5 + 2] ^ (~state[ix5 + 3] & state[ix5 + 4]);
+      tmp[ix5 + 3] = state[ix5 + 3] ^ (~state[ix5 + 4] & state[ix5 + 0]);
+      tmp[ix5 + 4] = state[ix5 + 4] ^ (~state[ix5 + 0] & state[ix5 + 1]);
+    }
+
+    std::ranges::copy(tmp.begin(), tmp.end(), state.begin());
   }
-}
 
-// Keccak-p[1600, 24] step mapping function ι, see section 3.2.5 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
-iota(uint64_t* const state, const size_t r_idx)
-{
-  state[0] ^= RC[r_idx];
-}
+  // Keccak-p[1600, 24] step mapping function ι, see section 3.2.5 of SHA3
+  // specification https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void iota(const uint64_t rc) { state[0] ^= rc; }
 
-// Keccak-p[1600, 24] round function, which applies all five
-// step mapping functions in order, updates state array
-//
-// See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static void
-round(uint64_t* const state, const size_t r_idx)
-{
-  uint64_t tmp[25]{};
-
-  theta(state);
-  rho(state);
-  pi(state, tmp);
-  chi(tmp, state);
-  iota(state, r_idx);
-}
-
-// Keccak-p[1600, 24] permutation, applying 24 rounds of permutation
-// on state of dimension 5 x 5 x 64 ( = 1600 ) -bits, using algorithm 7 defined
-// in section 3.3 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline void
-permute(uint64_t* const state)
-{
-  for (size_t i = 0; i < ROUNDS; i++) {
-    round(state, i);
+  // Keccak-p[1600, 24] round function, which applies all five
+  // step mapping functions in order, updates state array
+  //
+  // See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void round(const uint64_t rc)
+  {
+    theta();
+    rho();
+    pi();
+    chi();
+    iota(rc);
   }
-}
+
+public:
+  // Constructors
+  inline constexpr keccak_t() = default;
+  inline constexpr keccak_t(std::array<uint64_t, LANE_CNT>& words)
+  {
+    state = words;
+  }
+  inline constexpr keccak_t(std::array<uint64_t, LANE_CNT>&& words)
+  {
+    state = words;
+  }
+  inline constexpr keccak_t(const std::array<uint64_t, LANE_CNT>& words)
+  {
+    state = words;
+  }
+  inline constexpr keccak_t(const std::array<uint64_t, LANE_CNT>&& words)
+  {
+    state = words;
+  }
+
+  // Keccak-p[1600, 24] permutation, applying 24 rounds of permutation
+  // on state of dimension 5 x 5 x 64 ( = 1600 ) -bits, using algorithm 7
+  // defined in section 3.3 of SHA3 specification
+  // https://dx.doi.org/10.6028/NIST.FIPS.202
+  inline constexpr void permute()
+  {
+    for (size_t i = 0; i < ROUNDS; i++) {
+      round(RC[i]);
+    }
+  }
+
+  // Returns reference to 64 -bit row of Keccak-p[1600] permutation state, given
+  // idx ∈ [0, 25).
+  inline constexpr uint64_t& operator[](const size_t idx) { return state[idx]; }
+
+  // Returns const reference to 64 -bit row of Keccak-p[1600] permutation state,
+  // given idx ∈ [0, 25).
+  inline constexpr const uint64_t& operator[](const size_t idx) const
+  {
+    return state[idx];
+  }
+
+  // Returns a copy of 1600 -bit whole state of Keccak-p permutation.
+  inline constexpr std::array<uint64_t, LANE_CNT> reveal() const
+  {
+    return state;
+  }
+
+  // Returns a reference to 1600 -bit whole state of Keccak-p permutation.
+  inline constexpr std::array<uint64_t, LANE_CNT>& reveal() { return state; }
+};
 
 }

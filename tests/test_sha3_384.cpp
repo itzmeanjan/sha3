@@ -5,6 +5,45 @@
 #include <gtest/gtest.h>
 #include <vector>
 
+// Eval SHA3-384 hash on statically defined input message during
+// compilation-time.
+constexpr std::array<uint8_t, sha3_384::DIGEST_LEN>
+eval_sha3_384()
+{
+  // Statically defined input.
+  std::array<uint8_t, sha3_384::DIGEST_LEN * 2> data{};
+  std::iota(data.begin(), data.end(), 0);
+
+  // To be computed output.
+  std::array<uint8_t, sha3_384::DIGEST_LEN> md{};
+
+  sha3_384::sha3_384_t hasher;
+  hasher.absorb(data);
+  hasher.finalize();
+  hasher.digest(md);
+
+  return md;
+}
+
+// Ensure that SHA3-384 implementation is compile-time evaluable.
+TEST(Sha3Hashing, CompileTimeEvalSha3_384)
+{
+  // Input  =
+  // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f
+  // Output =
+  // d6e266970a3fdcd4a833da861599179a060b576959e993b4698529304ee38c23c7102a7084c4d568b1d95523d14077e7
+
+  constexpr auto md = eval_sha3_384();
+  static_assert(
+    md ==
+      std::array<uint8_t, sha3_384::DIGEST_LEN>{
+        214, 226, 102, 151, 10,  63,  220, 212, 168, 51,  218, 134,
+        21,  153, 23,  154, 6,   11,  87,  105, 89,  233, 147, 180,
+        105, 133, 41,  48,  78,  227, 140, 35,  199, 16,  42,  112,
+        132, 196, 213, 104, 177, 217, 85,  35,  209, 64,  119, 231 },
+    "Must be able to compute Sha3-384 hash during compile-time !");
+}
+
 // Test that absorbing same input message bytes using both incremental and
 // one-shot hashing, should yield same output bytes, for SHA3-384 hasher.
 TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
@@ -14,14 +53,18 @@ TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
     std::vector<uint8_t> out0(sha3_384::DIGEST_LEN);
     std::vector<uint8_t> out1(sha3_384::DIGEST_LEN);
 
-    sha3_utils::random_data(msg.data(), msg.size());
+    auto _msg = std::span(msg);
+    auto _out0 = std::span<uint8_t, sha3_384::DIGEST_LEN>(out0);
+    auto _out1 = std::span<uint8_t, sha3_384::DIGEST_LEN>(out1);
 
-    sha3_384::sha3_384 hasher;
+    sha3_utils::random_data(_msg);
+
+    sha3_384::sha3_384_t hasher;
 
     // Oneshot Hashing
-    hasher.absorb(msg.data(), msg.size());
+    hasher.absorb(_msg);
     hasher.finalize();
-    hasher.digest(out0.data());
+    hasher.digest(_out0);
 
     hasher.reset();
 
@@ -31,14 +74,14 @@ TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
       // because we don't want to be stuck in an infinite loop if msg[off] = 0 !
       auto elen = std::min<size_t>(std::max<uint8_t>(msg[off], 1), mlen - off);
 
-      hasher.absorb(msg.data() + off, elen);
+      hasher.absorb(_msg.subspan(off, elen));
       off += elen;
     }
 
     hasher.finalize();
-    hasher.digest(out1.data());
+    hasher.digest(_out1);
 
-    ASSERT_TRUE(std::ranges::equal(out0, out1));
+    EXPECT_EQ(out0, out1);
   }
 }
 
@@ -72,14 +115,15 @@ TEST(Sha3Hashing, Sha3_384KnownAnswerTests)
       auto md = sha3_utils::from_hex(md2);
 
       std::vector<uint8_t> digest(sha3_384::DIGEST_LEN);
+      auto _digest = std::span<uint8_t, sha3_384::DIGEST_LEN>(digest);
 
-      sha3_384::sha3_384 hasher;
+      sha3_384::sha3_384_t hasher;
 
-      hasher.absorb(msg.data(), msg.size());
+      hasher.absorb(msg);
       hasher.finalize();
-      hasher.digest(digest.data());
+      hasher.digest(_digest);
 
-      ASSERT_TRUE(std::ranges::equal(digest, md));
+      EXPECT_EQ(digest, md);
 
       std::string empty_line;
       std::getline(file, empty_line);

@@ -20,16 +20,16 @@ constexpr size_t DOM_SEP_BW = 4;
 //
 // See SHA3 extendable output function definition in section 6.2 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-struct shake256
+struct shake256_t
 {
 private:
-  uint64_t state[keccak::LANE_CNT]{};
+  keccak::keccak_t state{};
   size_t offset = 0;
   alignas(4) bool finalized = false; // all message bytes absorbed ?
   size_t squeezable = 0;
 
 public:
-  inline shake256() = default;
+  inline constexpr shake256_t() = default;
 
   // Given N -many bytes input message, this routine consumes those into
   // keccak[512] sponge state.
@@ -38,10 +38,10 @@ public:
   // arbitrary bytes of input message, until keccak[512] state is finalized ( by
   // calling routine with similar name ). Once the sponge is finalized, it can't
   // absorb any more message bytes.
-  inline void absorb(const uint8_t* const msg, const size_t mlen)
+  inline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
-      sponge::absorb<RATE>(state, offset, msg, mlen);
+      sponge::absorb<RATE>(state, offset, msg);
     }
   }
 
@@ -52,7 +52,7 @@ public:
   // same SHAKE256 object, doesn't do anything. After finalization, one might
   // intend to read arbitrary many bytes by squeezing sponge, which is done by
   // calling read() function, as many times required.
-  inline void finalize()
+  inline constexpr void finalize()
   {
     if (!finalized) {
       sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
@@ -64,16 +64,22 @@ public:
 
   // After sponge state is finalized, arbitrary many output bytes can be
   // squeezed by calling this function any number of times required.
-  inline void squeeze(uint8_t* const dig, const size_t dlen)
+  inline constexpr void squeeze(std::span<uint8_t> dig)
   {
     if (finalized) {
-      sponge::squeeze<RATE>(state, squeezable, dig, dlen);
+      sponge::squeeze<RATE>(state, squeezable, dig);
     }
   }
 
   // Reset the internal state of the Shake256-Xof hasher, now it can again be
   // used for another absorb->finalize->squeeze cycle.
-  inline void reset() { std::memset(this, 0, sizeof(*this)); }
+  inline constexpr void reset()
+  {
+    state = {};
+    offset = 0;
+    finalized = false;
+    squeezable = 0;
+  }
 };
 
 }

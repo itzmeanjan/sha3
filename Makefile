@@ -43,7 +43,7 @@ benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -lbenchmark -lpthread -o $@
 
 benchmark: benchmarks/bench.out
-	./$< --benchmark_counters_tabular=true
+	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=.1
 
 benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 	# In case you've built google-benchmark with libPFM support.
@@ -52,4 +52,4 @@ benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 						-DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE $< -lbenchmark -lpthread -lpfm -o $@
 
 perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=.1 --benchmark_perf_counters=CYCLES,INSTRUCTIONS
