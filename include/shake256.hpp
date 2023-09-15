@@ -23,7 +23,7 @@ constexpr size_t DOM_SEP_BW = 4;
 struct shake256_t
 {
 private:
-  keccak::keccak_t state{};
+  uint64_t state[keccak::LANE_CNT]{};
   size_t offset = 0;
   alignas(4) bool finalized = false; // all message bytes absorbed ?
   size_t squeezable = 0;
@@ -75,7 +75,7 @@ public:
   // used for another absorb->finalize->squeeze cycle.
   inline constexpr void reset()
   {
-    state = {};
+    std::fill(std::begin(state), std::end(state), 0);
     offset = 0;
     finalized = false;
     squeezable = 0;
