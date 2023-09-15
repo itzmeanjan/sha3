@@ -34,8 +34,8 @@ main()
   }
 
   std::cout << "SHAKE-256" << std::endl << std::endl;
-  std::cout << "Input  : " << sha3_utils::to_hex(msg.data(), ilen) << "\n";
-  std::cout << "Output : " << sha3_utils::to_hex(dig.data(), olen) << "\n";
+  std::cout << "Input  : " << sha3_utils::to_hex(msg) << "\n";
+  std::cout << "Output : " << sha3_utils::to_hex(dig) << "\n";
 
   return EXIT_SUCCESS;
 }
