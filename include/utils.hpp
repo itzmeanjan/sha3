@@ -59,7 +59,7 @@ le_bytes_to_u64(std::span<const uint8_t> bytes)
 // Given a byte array holding rate/8 -many bytes, this routine can be invoked
 // for interpreting those bytes as rate/ 64 -many words ( each word is 64 -bit
 // unsigned interger ) s.t. bytes in a word are placed in little-endian order.
-template<const size_t rate>
+template<size_t rate>
 static inline constexpr void
 le_bytes_to_u64_words(std::span<const uint8_t, rate / 8> bytes,
                       std::span<uint64_t, rate / 64> words)
@@ -93,7 +93,7 @@ u64_to_le_bytes(uint64_t word, std::span<uint8_t> bytes)
 // Given an array of rate/64 -many 64 -bit unsigned integer words, this routine
 // can be used for interpreting words in little-endian byte-order, computing
 // rate/8 -many bytes output.
-template<const size_t rate>
+template<size_t rate>
 static inline constexpr void
 u64_words_to_le_bytes(std::span<const uint64_t, rate / 64> words,
                       std::span<uint8_t, rate / 8> bytes)
@@ -124,12 +124,12 @@ random_data(std::span<T> data)
 // Given a bytearray of length N, this function converts it to human readable
 // hex string of length N << 1 | N >= 0
 inline const std::string
-to_hex(const uint8_t* const bytes, const size_t len)
+to_hex(std::span<const uint8_t> bytes)
 {
   std::stringstream ss;
   ss << std::hex;
 
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < bytes.size(); i++) {
     ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
   }
 

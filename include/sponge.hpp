@@ -37,9 +37,7 @@ check_domain_separator(const size_t dom_sep_bit_len)
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
-template<const uint8_t domain_separator,
-         const size_t ds_bits,
-         const size_t rate>
+template<uint8_t domain_separator, size_t ds_bits, size_t rate>
 static inline constexpr std::array<uint8_t, rate / 8>
 pad10x1(const size_t offset)
   requires(check_domain_separator(ds_bits))
@@ -64,7 +62,7 @@ pad10x1(const size_t offset)
 //
 // This function implementation collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
-template<const size_t rate>
+template<size_t rate>
 static inline constexpr void
 absorb(uint64_t state[keccak::LANE_CNT],
        size_t& offset,
@@ -130,9 +128,7 @@ absorb(uint64_t state[keccak::LANE_CNT],
 //
 // This function implementation collects some motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
-template<const uint8_t domain_separator,
-         const size_t ds_bits,
-         const size_t rate>
+template<uint8_t domain_separator, size_t ds_bits, size_t rate>
 static inline constexpr void
 finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   requires(check_domain_separator(ds_bits))
@@ -167,7 +163,7 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
-template<const size_t rate>
+template<size_t rate>
 static inline constexpr void
 squeeze(uint64_t state[keccak::LANE_CNT],
         size_t& squeezable,
