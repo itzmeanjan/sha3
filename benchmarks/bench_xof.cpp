@@ -1,19 +1,15 @@
-#pragma once
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include <benchmark/benchmark.h>
 #include <vector>
-
-// Benchmarks SHA3 functions targeting CPU systems, using google-benchmark.
-namespace bench_sha3 {
 
 // Benchmarks SHAKE-128 extendable output function with variable length input
 // and squeezed output.
 //
 // Note, all input bytes are absorbed in a single call to `absorb` function.
 // And all output bytes are squeezed in a single call to `squeeze` function.
-inline void
-shake128(benchmark::State& state)
+void
+bench_shake128(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
   const size_t olen = static_cast<size_t>(state.range(1));
@@ -53,8 +49,8 @@ shake128(benchmark::State& state)
 //
 // Note, all input bytes are absorbed in a single call to `absorb` function.
 // And all output bytes are squeezed in a single call to `squeeze` function.
-inline void
-shake256(benchmark::State& state)
+void
+bench_shake256(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range(0));
   const size_t olen = static_cast<size_t>(state.range(1));
@@ -89,4 +85,7 @@ shake256(benchmark::State& state)
 #endif
 }
 
-}
+BENCHMARK(bench_shake128)
+  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32, 64 } });
+BENCHMARK(bench_shake256)
+  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32, 64 } });

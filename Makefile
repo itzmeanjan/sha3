@@ -1,55 +1,80 @@
-CXX = g++
+CXX = clang++
 CXX_FLAGS = -std=c++20
 WARN_FLAGS = -Wall -Wextra -pedantic
 OPT_FLAGS = -O3 -march=native -mtune=native
+LINK_FLAGS = -flto
 I_FLAGS = -I ./include
+PERF_DEFS = -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE
+
+SRC_DIR = include
+SHA3_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
+BUILD_DIR = build
+
+TEST_DIR = tests
+TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_BUILD_DIR := $(BUILD_DIR)/$(TEST_DIR)
+TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+TEST_LINK_FLAGS = -lgtest -lgtest_main
+TEST_BINARY = $(TEST_BUILD_DIR)/test.out
+
+BENCHMARK_DIR = benchmarks
+BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
+BENCHMARK_BUILD_DIR := $(BUILD_DIR)/$(BENCHMARK_DIR)
+PERF_BUILD_DIR := $(BUILD_DIR)/perfs
+BENCHMARK_OBJECTS := $(addprefix $(BENCHMARK_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
+PERF_OBJECTS := $(addprefix $(PERF_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
+BENCHMARK_LINK_FLAGS = -lbenchmark -lbenchmark_main
+BENCHMARK_BINARY = $(BENCHMARK_BUILD_DIR)/bench.out
+PERF_LINK_FLAGS = -lbenchmark -lbenchmark_main -lpfm
+PERF_BINARY = $(PERF_BUILD_DIR)/perf.out
 
 all: test
 
-tests/test_sha3_224.o: tests/test_sha3_224.cpp include/*.hpp
+$(BUILD_DIR):
+	mkdir -p $@
+
+$(TEST_BUILD_DIR): $(BUILD_DIR)
+	mkdir -p $@
+
+$(BENCHMARK_BUILD_DIR): $(BUILD_DIR)
+	mkdir -p $@
+
+$(PERF_BUILD_DIR): $(BUILD_DIR)
+	mkdir -p $@
+
+$(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
 
-tests/test_sha3_256.o: tests/test_sha3_256.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+$(TEST_BINARY): $(TEST_OBJECTS)
+	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-tests/test_sha3_384.o: tests/test_sha3_384.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
-
-tests/test_sha3_512.o: tests/test_sha3_512.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
-
-tests/test_shake128.o: tests/test_shake128.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
-
-tests/test_shake256.o: tests/test_shake256.cpp include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
-
-tests/test.out: tests/test_sha3_224.o tests/test_sha3_256.o tests/test_sha3_384.o tests/test_sha3_512.o \
-					tests/test_shake128.o tests/test_shake256.o
-	$(CXX) $(OPT_FLAGS) $^ -lgtest -lgtest_main -o $@
-
-test: tests/test.out
+test: $(TEST_BINARY)
 	./$<
 
+$(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
+
+$(PERF_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(PERF_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(PERF_DEFS) $(I_FLAGS) -c $< -o $@
+
+$(BENCHMARK_BINARY): $(BENCHMARK_OBJECTS)
+	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(BENCHMARK_LINK_FLAGS) -o $@
+
+benchmark: $(BENCHMARK_BINARY)
+	# Must *not* build google-benchmark with libPFM
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true
+
+$(PERF_BINARY): $(PERF_OBJECTS)
+	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(PERF_LINK_FLAGS) -o $@
+
+perf: $(PERF_BINARY)
+	# Must build google-benchmark with libPFM, follow https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+
+.PHONY: format clean
+
 clean:
-	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
+	rm -rf $(BUILD_DIR)
 
-format:
-	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style="Mozilla"
-
-benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
-	# In case you haven't built google-benchmark with libPFM support.
-	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $< -lbenchmark -lpthread -o $@
-
-benchmark: benchmarks/bench.out
-	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=.1
-
-benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
-	# In case you've built google-benchmark with libPFM support.
-	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) \
-						-DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE $< -lbenchmark -lpthread -lpfm -o $@
-
-perf: benchmarks/perf.out
-	./$< --benchmark_counters_tabular=true --benchmark_min_warmup_time=.1 --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+format: $(SHA3_SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES)
+	clang-format -i --style=Mozilla $^

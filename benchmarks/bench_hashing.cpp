@@ -1,4 +1,3 @@
-#pragma once
 #include "sha3_224.hpp"
 #include "sha3_256.hpp"
 #include "sha3_384.hpp"
@@ -6,12 +5,9 @@
 #include <benchmark/benchmark.h>
 #include <vector>
 
-// Benchmarks SHA3 functions targeting CPU systems, using google-benchmark.
-namespace bench_sha3 {
-
 // Benchmarks SHA3-224 hash function with variable length input message.
-inline void
-sha3_224(benchmark::State& state)
+void
+bench_sha3_224(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range());
 
@@ -47,8 +43,8 @@ sha3_224(benchmark::State& state)
 }
 
 // Benchmarks SHA3-256 hash function with variable length input message.
-inline void
-sha3_256(benchmark::State& state)
+void
+bench_sha3_256(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range());
 
@@ -84,8 +80,8 @@ sha3_256(benchmark::State& state)
 }
 
 // Benchmarks SHA3-384 hash function with variable length input message.
-inline void
-sha3_384(benchmark::State& state)
+void
+bench_sha3_384(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range());
 
@@ -121,8 +117,8 @@ sha3_384(benchmark::State& state)
 }
 
 // Benchmarks SHA3-512 hash function with variable length input message.
-inline void
-sha3_512(benchmark::State& state)
+void
+bench_sha3_512(benchmark::State& state)
 {
   const size_t mlen = static_cast<size_t>(state.range());
 
@@ -157,4 +153,7 @@ sha3_512(benchmark::State& state)
 #endif
 }
 
-}
+BENCHMARK(bench_sha3_224)->RangeMultiplier(2)->Range(32, 4096);
+BENCHMARK(bench_sha3_256)->RangeMultiplier(2)->Range(32, 4096);
+BENCHMARK(bench_sha3_384)->RangeMultiplier(2)->Range(32, 4096);
+BENCHMARK(bench_sha3_512)->RangeMultiplier(2)->Range(32, 4096);

@@ -37,9 +37,7 @@ check_domain_separator(const size_t dom_sep_bit_len)
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
-template<const uint8_t domain_separator,
-         const size_t ds_bits,
-         const size_t rate>
+template<uint8_t domain_separator, size_t ds_bits, size_t rate>
 static inline constexpr std::array<uint8_t, rate / 8>
 pad10x1(const size_t offset)
   requires(check_domain_separator(ds_bits))
@@ -64,9 +62,11 @@ pad10x1(const size_t offset)
 //
 // This function implementation collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
-template<const size_t rate>
+template<size_t rate>
 static inline constexpr void
-absorb(keccak::keccak_t& state, size_t& offset, std::span<const uint8_t> msg)
+absorb(uint64_t state[keccak::LANE_CNT],
+       size_t& offset,
+       std::span<const uint8_t> msg)
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
@@ -95,7 +95,7 @@ absorb(keccak::keccak_t& state, size_t& offset, std::span<const uint8_t> msg)
       state[j] ^= _blk_words[j];
     }
 
-    state.permute();
+    keccak::permute(state);
 
     moff += readable;
     offset = 0;
@@ -128,11 +128,9 @@ absorb(keccak::keccak_t& state, size_t& offset, std::span<const uint8_t> msg)
 //
 // This function implementation collects some motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
-template<const uint8_t domain_separator,
-         const size_t ds_bits,
-         const size_t rate>
+template<uint8_t domain_separator, size_t ds_bits, size_t rate>
 static inline constexpr void
-finalize(keccak::keccak_t& state, size_t& offset)
+finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   requires(check_domain_separator(ds_bits))
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
@@ -150,7 +148,7 @@ finalize(keccak::keccak_t& state, size_t& offset)
     state[j] ^= _padw[j];
   }
 
-  state.permute();
+  keccak::permute(state);
   offset = 0;
 }
 
@@ -165,9 +163,11 @@ finalize(keccak::keccak_t& state, size_t& offset)
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
-template<const size_t rate>
+template<size_t rate>
 static inline constexpr void
-squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
+squeeze(uint64_t state[keccak::LANE_CNT],
+        size_t& squeezable,
+        std::span<uint8_t> out)
 {
   constexpr size_t rbytes = rate >> 3;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
@@ -175,7 +175,7 @@ squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
   std::array<uint8_t, rbytes> blk_bytes{};
   auto _blk_bytes = std::span(blk_bytes);
 
-  auto swords = std::span(state.reveal());
+  auto swords = std::span{ state, keccak::LANE_CNT };
   auto _swords = swords.template subspan<0, rwords>();
 
   const size_t olen = out.size();
@@ -196,7 +196,7 @@ squeeze(keccak::keccak_t& state, size_t& squeezable, std::span<uint8_t> out)
     off += read;
 
     if (squeezable == 0) {
-      state.permute();
+      keccak::permute(state);
       squeezable = rbytes;
     }
   }
