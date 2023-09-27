@@ -153,7 +153,19 @@ bench_sha3_512(benchmark::State& state)
 #endif
 }
 
-BENCHMARK(bench_sha3_224)->RangeMultiplier(2)->Range(32, 4096);
-BENCHMARK(bench_sha3_256)->RangeMultiplier(2)->Range(32, 4096);
-BENCHMARK(bench_sha3_384)->RangeMultiplier(2)->Range(32, 4096);
-BENCHMARK(bench_sha3_512)->RangeMultiplier(2)->Range(32, 4096);
+BENCHMARK(bench_sha3_224)
+  ->RangeMultiplier(2)
+  ->Range(32, 4096)
+  ->Name("sha3_224");
+BENCHMARK(bench_sha3_256)
+  ->RangeMultiplier(2)
+  ->Range(32, 4096)
+  ->Name("sha3_256");
+BENCHMARK(bench_sha3_384)
+  ->RangeMultiplier(2)
+  ->Range(32, 4096)
+  ->Name("sha3_384");
+BENCHMARK(bench_sha3_512)
+  ->RangeMultiplier(2)
+  ->Range(32, 4096)
+  ->Name("sha3_512");

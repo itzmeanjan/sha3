@@ -29,4 +29,4 @@ bench_keccak_permutation(benchmark::State& state)
 #endif
 }
 
-BENCHMARK(bench_keccak_permutation);
+BENCHMARK(bench_keccak_permutation)->Name("keccak-p[1600, 24]");

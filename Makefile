@@ -1,7 +1,7 @@
 CXX = clang++
 CXX_FLAGS = -std=c++20
 WARN_FLAGS = -Wall -Wextra -pedantic
-OPT_FLAGS = -O3 -march=native -mtune=native
+OPT_FLAGS = -O3 -march=native
 LINK_FLAGS = -flto
 I_FLAGS = -I ./include
 PERF_DEFS = -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE
@@ -62,14 +62,14 @@ $(BENCHMARK_BINARY): $(BENCHMARK_OBJECTS)
 
 benchmark: $(BENCHMARK_BINARY)
 	# Must *not* build google-benchmark with libPFM
-	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_display_aggregates_only=true
 
 $(PERF_BINARY): $(PERF_OBJECTS)
 	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(PERF_LINK_FLAGS) -o $@
 
 perf: $(PERF_BINARY)
 	# Must build google-benchmark with libPFM, follow https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_display_aggregates_only=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
 
 .PHONY: format clean
 
