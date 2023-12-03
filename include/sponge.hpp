@@ -88,7 +88,7 @@ absorb(uint64_t state[keccak::LANE_CNT],
     auto _msg = msg.subspan(moff, readable);
     auto _blk = _blk_bytes.subspan(offset, readable);
 
-    std::ranges::copy(_msg.begin(), _msg.end(), _blk.begin());
+    std::copy(_msg.begin(), _msg.end(), _blk.begin());
     sha3_utils::le_bytes_to_u64_words<rate>(_blk_bytes, _blk_words);
 
     for (size_t j = 0; j < rwords; j++) {
@@ -107,7 +107,7 @@ absorb(uint64_t state[keccak::LANE_CNT],
   auto _blk = _blk_bytes.subspan(offset, rm_bytes);
 
   blk_bytes.fill(0x00);
-  std::ranges::copy(_msg.begin(), _msg.end(), _blk.begin());
+  std::copy(_msg.begin(), _msg.end(), _blk.begin());
   sha3_utils::le_bytes_to_u64_words<rate>(_blk_bytes, _blk_words);
 
   for (size_t j = 0; j < rwords; j++) {
@@ -190,7 +190,7 @@ squeeze(uint64_t state[keccak::LANE_CNT],
     auto _blk = _blk_bytes.subspan(soff, read);
     auto _out = out.subspan(off, read);
 
-    std::ranges::copy(_blk.begin(), _blk.end(), _out.begin());
+    std::copy(_blk.begin(), _blk.end(), _out.begin());
 
     squeezable -= read;
     off += read;
