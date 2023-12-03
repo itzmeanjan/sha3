@@ -86,8 +86,8 @@ bench_shake256(benchmark::State& state)
 }
 
 BENCHMARK(bench_shake128)
-  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32, 64 } })
+  ->ArgsProduct({ benchmark::CreateRange(64, 16384, 4), { 64 } })
   ->Name("shake128");
 BENCHMARK(bench_shake256)
-  ->ArgsProduct({ benchmark::CreateRange(32, 4096, 2), { 32, 64 } })
+  ->ArgsProduct({ benchmark::CreateRange(64, 16384, 4), { 64 } })
   ->Name("shake256");
