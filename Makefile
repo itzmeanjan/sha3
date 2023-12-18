@@ -4,18 +4,27 @@ WARN_FLAGS = -Wall -Wextra -pedantic
 OPT_FLAGS = -O3 -march=native
 LINK_FLAGS = -flto
 I_FLAGS = -I ./include
-PERF_DEFS = -DCYCLES_PER_BYTE -DINSTRUCTIONS_PER_CYCLE
+PERF_DEFS = -DCYCLES_PER_BYTE
+ASAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address # From https://clang.llvm.org/docs/AddressSanitizer.html
+UBSAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=undefined -fsanitize=nullability # From https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+                                                                                                                     # Note, *nullability* sanitization tests can't be run when compiled with GCC.
 
 SRC_DIR = include
 SHA3_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
 BUILD_DIR = build
 
 TEST_DIR = tests
-TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_BUILD_DIR := $(BUILD_DIR)/$(TEST_DIR)
+ASAN_BUILD_DIR = $(TEST_BUILD_DIR)/asan
+UBSAN_BUILD_DIR = $(TEST_BUILD_DIR)/ubsan
+TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+ASAN_TEST_OBJECTS := $(addprefix $(ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+UBSAN_TEST_OBJECTS := $(addprefix $(UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 TEST_LINK_FLAGS = -lgtest -lgtest_main
 TEST_BINARY = $(TEST_BUILD_DIR)/test.out
+ASAN_TEST_BINARY = $(ASAN_BUILD_DIR)/test.out
+UBSAN_TEST_BINARY = $(UBSAN_BUILD_DIR)/test.out
 
 BENCHMARK_DIR = benchmarks
 BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
@@ -30,25 +39,46 @@ PERF_BINARY = $(PERF_BUILD_DIR)/perf.out
 
 all: test
 
-$(BUILD_DIR):
+$(TEST_BUILD_DIR):
 	mkdir -p $@
 
-$(TEST_BUILD_DIR): $(BUILD_DIR)
+$(ASAN_BUILD_DIR):
 	mkdir -p $@
 
-$(BENCHMARK_BUILD_DIR): $(BUILD_DIR)
+$(UBSAN_BUILD_DIR):
 	mkdir -p $@
 
-$(PERF_BUILD_DIR): $(BUILD_DIR)
+$(BENCHMARK_BUILD_DIR):
+	mkdir -p $@
+
+$(PERF_BUILD_DIR):
 	mkdir -p $@
 
 $(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
 
+$(ASAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(ASAN_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(ASAN_FLAGS) $(I_FLAGS) -c $< -o $@
+
+$(UBSAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(UBSAN_BUILD_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(UBSAN_FLAGS) $(I_FLAGS) -c $< -o $@
+
 $(TEST_BINARY): $(TEST_OBJECTS)
 	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
+$(ASAN_TEST_BINARY): $(ASAN_TEST_OBJECTS)
+	$(CXX) $(ASAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
+
+$(UBSAN_TEST_BINARY): $(UBSAN_TEST_OBJECTS)
+	$(CXX) $(UBSAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
+
 test: $(TEST_BINARY)
+	./$< --gtest_shuffle --gtest_random_seed=0
+
+asan_test: $(ASAN_TEST_BINARY)
+	./$< --gtest_shuffle --gtest_random_seed=0
+
+ubsan_test: $(UBSAN_TEST_BINARY)
 	./$< --gtest_shuffle --gtest_random_seed=0
 
 $(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR)
@@ -69,7 +99,7 @@ $(PERF_BINARY): $(PERF_OBJECTS)
 
 perf: $(PERF_BINARY)
 	# Must build google-benchmark with libPFM, follow https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
-	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_display_aggregates_only=true --benchmark_perf_counters=CYCLES,INSTRUCTIONS
+	./$< --benchmark_min_warmup_time=.1 --benchmark_enable_random_interleaving=true --benchmark_repetitions=8 --benchmark_min_time=0.1s --benchmark_counters_tabular=true --benchmark_display_aggregates_only=true --benchmark_perf_counters=CYCLES
 
 .PHONY: format clean
 
