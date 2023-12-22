@@ -1,3 +1,4 @@
+#include "bench_common.hpp"
 #include "keccak.hpp"
 #include "utils.hpp"
 #include <benchmark/benchmark.h>
@@ -24,4 +25,7 @@ bench_keccak_permutation(benchmark::State& state)
 #endif
 }
 
-BENCHMARK(bench_keccak_permutation)->Name("keccak-p[1600, 24]");
+BENCHMARK(bench_keccak_permutation)
+  ->Name("keccak-p[1600, 24]")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
