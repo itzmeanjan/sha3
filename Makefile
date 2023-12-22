@@ -6,8 +6,7 @@ LINK_FLAGS = -flto
 I_FLAGS = -I ./include
 PERF_DEFS = -DCYCLES_PER_BYTE
 ASAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address # From https://clang.llvm.org/docs/AddressSanitizer.html
-UBSAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=undefined -fsanitize=nullability # From https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-                                                                                                                     # Note, *nullability* sanitization tests can't be run when compiled with GCC.
+UBSAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=undefined # From https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 
 SRC_DIR = include
 SHA3_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
