@@ -1,9 +1,9 @@
+#include "bench_common.hpp"
 #include "sha3_224.hpp"
 #include "sha3_256.hpp"
 #include "sha3_384.hpp"
 #include "sha3_512.hpp"
 #include <benchmark/benchmark.h>
-#include <vector>
 
 // Benchmarks SHA3-224 hash function with variable length input message.
 void
@@ -136,16 +136,24 @@ bench_sha3_512(benchmark::State& state)
 BENCHMARK(bench_sha3_224)
   ->RangeMultiplier(4)
   ->Range(64, 16384)
-  ->Name("sha3_224");
+  ->Name("sha3_224")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(bench_sha3_256)
   ->RangeMultiplier(4)
   ->Range(64, 16384)
-  ->Name("sha3_256");
+  ->Name("sha3_256")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(bench_sha3_384)
   ->RangeMultiplier(4)
   ->Range(64, 16384)
-  ->Name("sha3_384");
+  ->Name("sha3_384")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(bench_sha3_512)
   ->RangeMultiplier(4)
   ->Range(64, 16384)
-  ->Name("sha3_512");
+  ->Name("sha3_512")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);

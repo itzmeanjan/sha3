@@ -1,7 +1,7 @@
+#include "bench_common.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include <benchmark/benchmark.h>
-#include <vector>
 
 // Benchmarks SHAKE-128 extendable output function with variable length input
 // and squeezed output.
@@ -77,7 +77,11 @@ bench_shake256(benchmark::State& state)
 
 BENCHMARK(bench_shake128)
   ->ArgsProduct({ benchmark::CreateRange(64, 16384, 4), { 64 } })
-  ->Name("shake128");
+  ->Name("shake128")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
 BENCHMARK(bench_shake256)
   ->ArgsProduct({ benchmark::CreateRange(64, 16384, 4), { 64 } })
-  ->Name("shake256");
+  ->Name("shake256")
+  ->ComputeStatistics("min", compute_min)
+  ->ComputeStatistics("max", compute_max);
