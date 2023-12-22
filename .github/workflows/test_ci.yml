@@ -40,21 +40,3 @@ jobs:
       run: make asan_test -j
     - name: Execute Tests with UndefinedBehaviourSanitizer on ${{matrix.os}}
       run: make ubsan_test -j
-  build-on-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      # From https://github.com/marketplace/actions/actions-setup-cmake
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
-        with:
-          cmake-version: 'latest'
-      # From https://github.com/marketplace/actions/setup-googletest
-      - uses: ilammy/msvc-dev-cmd@v1
-      - uses: Bacondish2023/setup-googletest@v1
-      - name: Execute Tests
-        run: make -j
-      - name: Execute Tests with AddressSanitizer
-        run: make asan_test -j
-      - name: Execute Tests with UndefinedBehaviourSanitizer
-        run: make ubsan_test -j
