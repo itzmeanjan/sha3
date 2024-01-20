@@ -125,25 +125,486 @@ compute_rcs()
 // https://dx.doi.org/10.s6028/NIST.FIPS.202
 static constexpr auto RC = compute_rcs();
 
-// Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static constexpr void
-theta(uint64_t* const state)
-{
-  uint64_t c[5]{};
-  uint64_t d[5];
+#if defined __APPLE__ && defined __aarch64__ // On Apple Silicon
 
+// Keccak-p[1600, 24] round function, applying all five step mapping functions,
+// updating state array. Note this implementation of round function applies four
+// consecutive rounds in a single call i.e. if you invoke it to apply round `i`
+//
+// - it first applies round `i`
+// - then round `i+1`
+// - and then round `i+2`
+// - and finally round `i+3`
+//
+// See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
+//
+// This Keccak round function implementation is specifically targeting Apple
+// Silicon CPUs. And this implementation collects a lot of inspiration from
+// https://github.com/bwesterb/armed-keccak.git.
+static inline constexpr void
+roundx4(uint64_t* const state, const size_t ridx)
+{
+  std::array<uint64_t, 5> bc{}, d{};
+  uint64_t t = 0;
+
+// Round ridx + 0
 #if defined __clang__
   // Following
   // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
 
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
 #elif defined __GNUG__
   // Following
   // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
 
 #pragma GCC unroll 5
+#pragma GCC ivdep
+#endif
+  for (size_t i = 0; i < 25; i += 5) {
+    bc[0] ^= state[i + 0];
+    bc[1] ^= state[i + 1];
+    bc[2] ^= state[i + 2];
+    bc[3] ^= state[i + 3];
+    bc[4] ^= state[i + 4];
+  }
+
+  d[0] = bc[4] ^ std::rotl(bc[1], 1);
+  d[1] = bc[0] ^ std::rotl(bc[2], 1);
+  d[2] = bc[1] ^ std::rotl(bc[3], 1);
+  d[3] = bc[2] ^ std::rotl(bc[4], 1);
+  d[4] = bc[3] ^ std::rotl(bc[0], 1);
+
+  bc[0] = state[0] ^ d[0];
+  t = state[6] ^ d[1];
+  bc[1] = std::rotl(t, ROT[6]);
+  t = state[12] ^ d[2];
+  bc[2] = std::rotl(t, ROT[12]);
+  t = state[18] ^ d[3];
+  bc[3] = std::rotl(t, ROT[18]);
+  t = state[24] ^ d[4];
+  bc[4] = std::rotl(t, ROT[24]);
+
+  state[0] = bc[0] ^ (bc[2] & ~bc[1]) ^ RC[ridx];
+  state[6] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[12] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[18] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[24] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[10] ^ d[0];
+  bc[2] = std::rotl(t, ROT[10]);
+  t = state[16] ^ d[1];
+  bc[3] = std::rotl(t, ROT[16]);
+  t = state[22] ^ d[2];
+  bc[4] = std::rotl(t, ROT[22]);
+  t = state[3] ^ d[3];
+  bc[0] = std::rotl(t, ROT[3]);
+  t = state[9] ^ d[4];
+  bc[1] = std::rotl(t, ROT[9]);
+
+  state[10] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[16] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[22] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[3] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[9] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[20] ^ d[0];
+  bc[4] = std::rotl(t, ROT[20]);
+  t = state[1] ^ d[1];
+  bc[0] = std::rotl(t, ROT[1]);
+  t = state[7] ^ d[2];
+  bc[1] = std::rotl(t, ROT[7]);
+  t = state[13] ^ d[3];
+  bc[2] = std::rotl(t, ROT[13]);
+  t = state[19] ^ d[4];
+  bc[3] = std::rotl(t, ROT[19]);
+
+  state[20] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[1] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[7] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[13] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[19] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[5] ^ d[0];
+  bc[1] = std::rotl(t, ROT[5]);
+  t = state[11] ^ d[1];
+  bc[2] = std::rotl(t, ROT[11]);
+  t = state[17] ^ d[2];
+  bc[3] = std::rotl(t, ROT[17]);
+  t = state[23] ^ d[3];
+  bc[4] = std::rotl(t, ROT[23]);
+  t = state[4] ^ d[4];
+  bc[0] = std::rotl(t, ROT[4]);
+
+  state[5] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[11] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[17] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[23] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[4] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[15] ^ d[0];
+  bc[3] = std::rotl(t, ROT[15]);
+  t = state[21] ^ d[1];
+  bc[4] = std::rotl(t, ROT[21]);
+  t = state[2] ^ d[2];
+  bc[0] = std::rotl(t, ROT[2]);
+  t = state[8] ^ d[3];
+  bc[1] = std::rotl(t, ROT[8]);
+  t = state[14] ^ d[4];
+  bc[2] = std::rotl(t, ROT[14]);
+
+  state[15] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[21] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[2] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[8] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[14] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  // Round ridx + 1
+  std::fill(bc.begin(), bc.end(), 0x00);
+
+#if defined __clang__
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
+#elif defined __GNUG__
+#pragma GCC unroll 5
+#pragma GCC ivdep
+#endif
+  for (size_t i = 0; i < 25; i += 5) {
+    bc[0] ^= state[i + 0];
+    bc[1] ^= state[i + 1];
+    bc[2] ^= state[i + 2];
+    bc[3] ^= state[i + 3];
+    bc[4] ^= state[i + 4];
+  }
+
+  d[0] = bc[4] ^ std::rotl(bc[1], 1);
+  d[1] = bc[0] ^ std::rotl(bc[2], 1);
+  d[2] = bc[1] ^ std::rotl(bc[3], 1);
+  d[3] = bc[2] ^ std::rotl(bc[4], 1);
+  d[4] = bc[3] ^ std::rotl(bc[0], 1);
+
+  bc[0] = state[0] ^ d[0];
+  t = state[16] ^ d[1];
+  bc[1] = std::rotl(t, ROT[6]);
+  t = state[7] ^ d[2];
+  bc[2] = std::rotl(t, ROT[12]);
+  t = state[23] ^ d[3];
+  bc[3] = std::rotl(t, ROT[18]);
+  t = state[14] ^ d[4];
+  bc[4] = std::rotl(t, ROT[24]);
+
+  state[0] = bc[0] ^ (bc[2] & ~bc[1]) ^ RC[ridx + 1];
+  state[16] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[7] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[23] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[14] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[20] ^ d[0];
+  bc[2] = std::rotl(t, ROT[10]);
+  t = state[11] ^ d[1];
+  bc[3] = std::rotl(t, ROT[16]);
+  t = state[2] ^ d[2];
+  bc[4] = std::rotl(t, ROT[22]);
+  t = state[18] ^ d[3];
+  bc[0] = std::rotl(t, ROT[3]);
+  t = state[9] ^ d[4];
+  bc[1] = std::rotl(t, ROT[9]);
+
+  state[20] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[11] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[2] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[18] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[9] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[15] ^ d[0];
+  bc[4] = std::rotl(t, ROT[20]);
+  t = state[6] ^ d[1];
+  bc[0] = std::rotl(t, ROT[1]);
+  t = state[22] ^ d[2];
+  bc[1] = std::rotl(t, ROT[7]);
+  t = state[13] ^ d[3];
+  bc[2] = std::rotl(t, ROT[13]);
+  t = state[4] ^ d[4];
+  bc[3] = std::rotl(t, ROT[19]);
+
+  state[15] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[6] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[22] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[13] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[4] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[10] ^ d[0];
+  bc[1] = std::rotl(t, ROT[5]);
+  t = state[1] ^ d[1];
+  bc[2] = std::rotl(t, ROT[11]);
+  t = state[17] ^ d[2];
+  bc[3] = std::rotl(t, ROT[17]);
+  t = state[8] ^ d[3];
+  bc[4] = std::rotl(t, ROT[23]);
+  t = state[24] ^ d[4];
+  bc[0] = std::rotl(t, ROT[4]);
+
+  state[10] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[1] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[17] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[8] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[24] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[5] ^ d[0];
+  bc[3] = std::rotl(t, ROT[15]);
+  t = state[21] ^ d[1];
+  bc[4] = std::rotl(t, ROT[21]);
+  t = state[12] ^ d[2];
+  bc[0] = std::rotl(t, ROT[2]);
+  t = state[3] ^ d[3];
+  bc[1] = std::rotl(t, ROT[8]);
+  t = state[19] ^ d[4];
+  bc[2] = std::rotl(t, ROT[14]);
+
+  state[5] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[21] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[12] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[3] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[19] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  // Round ridx + 2
+  std::fill(bc.begin(), bc.end(), 0x00);
+
+#if defined __clang__
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
+#elif defined __GNUG__
+#pragma GCC unroll 5
+#pragma GCC ivdep
+#endif
+  for (size_t i = 0; i < 25; i += 5) {
+    bc[0] ^= state[i + 0];
+    bc[1] ^= state[i + 1];
+    bc[2] ^= state[i + 2];
+    bc[3] ^= state[i + 3];
+    bc[4] ^= state[i + 4];
+  }
+
+  d[0] = bc[4] ^ std::rotl(bc[1], 1);
+  d[1] = bc[0] ^ std::rotl(bc[2], 1);
+  d[2] = bc[1] ^ std::rotl(bc[3], 1);
+  d[3] = bc[2] ^ std::rotl(bc[4], 1);
+  d[4] = bc[3] ^ std::rotl(bc[0], 1);
+
+  bc[0] = state[0] ^ d[0];
+  t = state[11] ^ d[1];
+  bc[1] = std::rotl(t, ROT[6]);
+  t = state[22] ^ d[2];
+  bc[2] = std::rotl(t, ROT[12]);
+  t = state[8] ^ d[3];
+  bc[3] = std::rotl(t, ROT[18]);
+  t = state[19] ^ d[4];
+  bc[4] = std::rotl(t, ROT[24]);
+
+  state[0] = bc[0] ^ (bc[2] & ~bc[1]) ^ RC[ridx + 2];
+  state[11] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[22] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[8] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[19] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[15] ^ d[0];
+  bc[2] = std::rotl(t, ROT[10]);
+  t = state[1] ^ d[1];
+  bc[3] = std::rotl(t, ROT[16]);
+  t = state[12] ^ d[2];
+  bc[4] = std::rotl(t, ROT[22]);
+  t = state[23] ^ d[3];
+  bc[0] = std::rotl(t, ROT[3]);
+  t = state[9] ^ d[4];
+  bc[1] = std::rotl(t, ROT[9]);
+
+  state[15] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[1] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[12] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[23] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[9] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[5] ^ d[0];
+  bc[4] = std::rotl(t, ROT[20]);
+  t = state[16] ^ d[1];
+  bc[0] = std::rotl(t, ROT[1]);
+  t = state[2] ^ d[2];
+  bc[1] = std::rotl(t, ROT[7]);
+  t = state[13] ^ d[3];
+  bc[2] = std::rotl(t, ROT[13]);
+  t = state[24] ^ d[4];
+  bc[3] = std::rotl(t, ROT[19]);
+
+  state[5] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[16] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[2] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[13] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[24] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[20] ^ d[0];
+  bc[1] = std::rotl(t, ROT[5]);
+  t = state[6] ^ d[1];
+  bc[2] = std::rotl(t, ROT[11]);
+  t = state[17] ^ d[2];
+  bc[3] = std::rotl(t, ROT[17]);
+  t = state[3] ^ d[3];
+  bc[4] = std::rotl(t, ROT[23]);
+  t = state[14] ^ d[4];
+  bc[0] = std::rotl(t, ROT[4]);
+
+  state[20] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[6] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[17] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[3] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[14] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[10] ^ d[0];
+  bc[3] = std::rotl(t, ROT[15]);
+  t = state[21] ^ d[1];
+  bc[4] = std::rotl(t, ROT[21]);
+  t = state[7] ^ d[2];
+  bc[0] = std::rotl(t, ROT[2]);
+  t = state[18] ^ d[3];
+  bc[1] = std::rotl(t, ROT[8]);
+  t = state[4] ^ d[4];
+  bc[2] = std::rotl(t, ROT[14]);
+
+  state[10] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[21] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[7] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[18] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[4] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  // Round ridx + 3
+  std::fill(bc.begin(), bc.end(), 0x00);
+
+#if defined __clang__
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
+#elif defined __GNUG__
+#pragma GCC unroll 5
+#pragma GCC ivdep
+#endif
+  for (size_t i = 0; i < 25; i += 5) {
+    bc[0] ^= state[i + 0];
+    bc[1] ^= state[i + 1];
+    bc[2] ^= state[i + 2];
+    bc[3] ^= state[i + 3];
+    bc[4] ^= state[i + 4];
+  }
+
+  d[0] = bc[4] ^ std::rotl(bc[1], 1);
+  d[1] = bc[0] ^ std::rotl(bc[2], 1);
+  d[2] = bc[1] ^ std::rotl(bc[3], 1);
+  d[3] = bc[2] ^ std::rotl(bc[4], 1);
+  d[4] = bc[3] ^ std::rotl(bc[0], 1);
+
+  bc[0] = state[0] ^ d[0];
+  t = state[1] ^ d[1];
+  bc[1] = std::rotl(t, ROT[6]);
+  t = state[2] ^ d[2];
+  bc[2] = std::rotl(t, ROT[12]);
+  t = state[3] ^ d[3];
+  bc[3] = std::rotl(t, ROT[18]);
+  t = state[4] ^ d[4];
+  bc[4] = std::rotl(t, ROT[24]);
+
+  state[0] = bc[0] ^ (bc[2] & ~bc[1]) ^ RC[ridx + 3];
+  state[1] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[2] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[3] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[4] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[5] ^ d[0];
+  bc[2] = std::rotl(t, ROT[10]);
+  t = state[6] ^ d[1];
+  bc[3] = std::rotl(t, ROT[16]);
+  t = state[7] ^ d[2];
+  bc[4] = std::rotl(t, ROT[22]);
+  t = state[8] ^ d[3];
+  bc[0] = std::rotl(t, ROT[3]);
+  t = state[9] ^ d[4];
+  bc[1] = std::rotl(t, ROT[9]);
+
+  state[5] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[6] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[7] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[8] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[9] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[10] ^ d[0];
+  bc[4] = std::rotl(t, ROT[20]);
+  t = state[11] ^ d[1];
+  bc[0] = std::rotl(t, ROT[1]);
+  t = state[12] ^ d[2];
+  bc[1] = std::rotl(t, ROT[7]);
+  t = state[13] ^ d[3];
+  bc[2] = std::rotl(t, ROT[13]);
+  t = state[14] ^ d[4];
+  bc[3] = std::rotl(t, ROT[19]);
+
+  state[10] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[11] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[12] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[13] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[14] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[15] ^ d[0];
+  bc[1] = std::rotl(t, ROT[5]);
+  t = state[16] ^ d[1];
+  bc[2] = std::rotl(t, ROT[11]);
+  t = state[17] ^ d[2];
+  bc[3] = std::rotl(t, ROT[17]);
+  t = state[18] ^ d[3];
+  bc[4] = std::rotl(t, ROT[23]);
+  t = state[19] ^ d[4];
+  bc[0] = std::rotl(t, ROT[4]);
+
+  state[15] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[16] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[17] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[18] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[19] = bc[4] ^ (bc[1] & ~bc[0]);
+
+  t = state[20] ^ d[0];
+  bc[3] = std::rotl(t, ROT[15]);
+  t = state[21] ^ d[1];
+  bc[4] = std::rotl(t, ROT[21]);
+  t = state[22] ^ d[2];
+  bc[0] = std::rotl(t, ROT[2]);
+  t = state[23] ^ d[3];
+  bc[1] = std::rotl(t, ROT[8]);
+  t = state[24] ^ d[4];
+  bc[2] = std::rotl(t, ROT[14]);
+
+  state[20] = bc[0] ^ (bc[2] & ~bc[1]);
+  state[21] = bc[1] ^ (bc[3] & ~bc[2]);
+  state[22] = bc[2] ^ (bc[4] & ~bc[3]);
+  state[23] = bc[3] ^ (bc[0] & ~bc[4]);
+  state[24] = bc[4] ^ (bc[1] & ~bc[0]);
+}
+
+#else // On everywhere else
+
+// Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3
+// specification https://dx.doi.org/10.6028/NIST.FIPS.202
+static inline constexpr void
+theta(uint64_t* const state)
+{
+  uint64_t c[5]{};
+  uint64_t d[5];
+
+#if defined __clang__
+#pragma clang loop unroll(enable)
+#pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
+#elif defined __GNUG__
+#pragma GCC unroll 5
+#pragma GCC ivdep
 #endif
   for (size_t i = 0; i < 25; i += 5) {
     c[0] ^= state[i + 0];
@@ -160,16 +621,12 @@ theta(uint64_t* const state)
   d[4] = c[3] ^ std::rotl(c[0], 1);
 
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
-
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
-
 #pragma GCC unroll 5
+#pragma GCC ivdep
 #endif
   for (size_t i = 0; i < 25; i += 5) {
     state[i + 0] ^= d[0];
@@ -182,20 +639,16 @@ theta(uint64_t* const state)
 
 // Keccak-p[1600, 24] step mapping function ρ, see section 3.2.2 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static constexpr void
+static inline constexpr void
 rho(uint64_t* const state)
 {
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
-
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
-
 #pragma GCC unroll 25
+#pragma GCC ivdep
 #endif
   for (size_t i = 0; i < 25; i++) {
     state[i] = std::rotl(state[i], ROT[i]);
@@ -204,22 +657,18 @@ rho(uint64_t* const state)
 
 // Keccak-p[1600, 24] step mapping function π, see section 3.2.3 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static constexpr void
+static inline constexpr void
 pi(const uint64_t* const __restrict istate, // input permutation state
    uint64_t* const __restrict ostate        // output permutation state
 )
 {
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
-
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
-
 #pragma GCC unroll 25
+#pragma GCC ivdep
 #endif
   for (size_t i = 0; i < 25; i++) {
     ostate[i] = istate[PERM[i]];
@@ -228,20 +677,16 @@ pi(const uint64_t* const __restrict istate, // input permutation state
 
 // Keccak-p[1600, 24] step mapping function χ, see section 3.2.4 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static constexpr void
+static inline constexpr void
 chi(uint64_t* const state)
 {
 #if defined __clang__
-  // Following
-  // https://clang.llvm.org/docs/LanguageExtensions.html#extensions-for-loop-hint-optimizations
-
 #pragma clang loop unroll(enable)
 #pragma clang loop vectorize(enable)
+#pragma clang loop interleave(enable)
 #elif defined __GNUG__
-  // Following
-  // https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html#Loop-Specific-Pragmas
-
 #pragma GCC unroll 5
+#pragma GCC ivdep
 #endif
   for (size_t i = 0; i < 5; i++) {
     const size_t ix5 = i * 5;
@@ -259,7 +704,7 @@ chi(uint64_t* const state)
 
 // Keccak-p[1600, 24] step mapping function ι, see section 3.2.5 of SHA3
 // specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static constexpr void
+static inline constexpr void
 iota(uint64_t* const state, const size_t ridx)
 {
   state[0] ^= RC[ridx];
@@ -271,7 +716,7 @@ iota(uint64_t* const state, const size_t ridx)
 // it to apply round `i` - it first applies round `i` and then round `i+1`.
 //
 // See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
-inline static constexpr void
+static inline constexpr void
 roundx2(uint64_t* const state, const size_t ridx)
 {
   uint64_t tmp[LANE_CNT]{};
@@ -291,6 +736,8 @@ roundx2(uint64_t* const state, const size_t ridx)
   iota(state, ridx + 1);
 }
 
+#endif
+
 // Keccak-p[1600, 24] permutation, applying 24 rounds of permutation
 // on state of dimension 5 x 5 x 64 ( = 1600 ) -bits, using algorithm 7
 // defined in section 3.3 of SHA3 specification
@@ -298,9 +745,15 @@ roundx2(uint64_t* const state, const size_t ridx)
 inline constexpr void
 permute(uint64_t state[LANE_CNT])
 {
+#if defined __APPLE__ && defined __aarch64__ // On Apple Silicon
+  for (size_t i = 0; i < ROUNDS; i += 4) {
+    roundx4(state, i);
+  }
+#else // On everywhere else
   for (size_t i = 0; i < ROUNDS; i += 2) {
     roundx2(state, i);
   }
+#endif
 }
 
 }
