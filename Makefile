@@ -35,6 +35,7 @@ BENCHMARK_LINK_FLAGS = -lbenchmark -lbenchmark_main
 BENCHMARK_BINARY = $(BENCHMARK_BUILD_DIR)/bench.out
 PERF_LINK_FLAGS = -lbenchmark -lbenchmark_main -lpfm
 PERF_BINARY = $(PERF_BUILD_DIR)/perf.out
+GTEST_PARALLEL = ./gtest-parallel/gtest-parallel
 
 all: test
 
@@ -52,6 +53,9 @@ $(BENCHMARK_BUILD_DIR):
 
 $(PERF_BUILD_DIR):
 	mkdir -p $@
+
+$(GTEST_PARALLEL):
+	git submodule update --init
 
 $(TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(TEST_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
@@ -71,14 +75,14 @@ $(ASAN_TEST_BINARY): $(ASAN_TEST_OBJECTS)
 $(UBSAN_TEST_BINARY): $(UBSAN_TEST_OBJECTS)
 	$(CXX) $(UBSAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-test: $(TEST_BINARY)
-	./$< --gtest_shuffle --gtest_random_seed=0
+test: $(TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
-asan_test: $(ASAN_TEST_BINARY)
-	./$< --gtest_shuffle --gtest_random_seed=0
+asan_test: $(ASAN_TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
-ubsan_test: $(UBSAN_TEST_BINARY)
-	./$< --gtest_shuffle --gtest_random_seed=0
+ubsan_test: $(UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
 $(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) -c $< -o $@
@@ -106,4 +110,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 format: $(SHA3_SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES)
-	clang-format -i --style=Mozilla $^
+	clang-format -i $^

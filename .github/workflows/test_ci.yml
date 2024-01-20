@@ -12,15 +12,11 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # From https://github.com/actions/runner-images#available-images
+        os: [ubuntu-latest, macos-latest, flyci-macos-large-latest-m1, flyci-macos-large-latest-m2]
 
     steps:
     - uses: actions/checkout@v4
-    # From https://github.com/marketplace/actions/actions-setup-cmake
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v1.13
-      with:
-        cmake-version: 'latest'
     - name: Setup Google-Test
       run: |
         pushd ~
