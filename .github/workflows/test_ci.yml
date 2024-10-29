@@ -1,4 +1,4 @@
-# Collects inspiration from https://github.com/itzmeanjan/dilithium/blob/15c2280f9448b3631a571ee2f33f8b0c695d4788/.github/workflows/test_ci.yml
+# Collects inspiration from https://github.com/itzmeanjan/frodoPIR/blob/aa654db3d11384fce73086cbbd37c63e0cb30e33/.github/workflows/test_ci.yml
 name: Test SHA3 Hash and Extendable Output Functions
 
 on:
@@ -8,31 +8,43 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build-on-nix:
+  build:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        # From https://github.com/actions/runner-images#available-images
-        os: [ubuntu-latest, macos-latest, flyci-macos-large-latest-m1, flyci-macos-large-latest-m2]
+        os: [ubuntu-latest, macos-latest]
+        compiler: [g++, clang++]
+        build_type: [debug, release]
+        test_type: [standard, asan, ubsan]
 
     steps:
     - uses: actions/checkout@v4
     - name: Setup Google-Test
       run: |
         pushd ~
-        git clone https://github.com/google/googletest.git -b v1.14.0
+        git clone https://github.com/google/googletest.git -b v1.15.2
         pushd googletest
         mkdir build
         pushd build
         cmake .. -DBUILD_GMOCK=OFF
-        make
-        sudo make install
+        make -j
+        sudo make -j install
         popd
         popd
         popd
-    - name: Execute Tests on ${{matrix.os}}
-      run: make -j
-    - name: Execute Tests with AddressSanitizer on ${{matrix.os}}
-      run: make asan_test -j
-    - name: Execute Tests with UndefinedBehaviourSanitizer on ${{matrix.os}}
-      run: make ubsan_test -j
+    - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      if: ${{matrix.test_type == 'standard'}}
+      run: |
+        CXX=${{matrix.compiler}} make -j
+        make clean
+
+    - name: Execute Tests with ${{matrix.test_type}}, in ${{matrix.build_type}} mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      if: ${{matrix.test_type != 'standard'}}
+      run: |
+        CXX=${{matrix.compiler}} make ${{matrix.build_type}}_${{matrix.test_type}}_test -j
+        make clean
+
+    - name: Build and run examples
+      run: |
+        make example -j
+        make clean
