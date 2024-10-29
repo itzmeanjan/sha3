@@ -1,6 +1,5 @@
 #include "bench_common.hpp"
-#include "keccak.hpp"
-#include "utils.hpp"
+#include "sha3/internals/keccak.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmarks Keccak-p[1600, 24] permutation.
@@ -8,7 +7,7 @@ void
 bench_keccak_permutation(benchmark::State& state)
 {
   uint64_t st[keccak::LANE_CNT]{};
-  sha3_utils::random_data<uint64_t>(st);
+  random_data<uint64_t>(st);
 
   for (auto _ : state) {
     keccak::permute(st);

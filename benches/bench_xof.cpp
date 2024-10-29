@@ -1,6 +1,6 @@
 #include "bench_common.hpp"
-#include "shake128.hpp"
-#include "shake256.hpp"
+#include "sha3/shake128.hpp"
+#include "sha3/shake256.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmarks SHAKE-128 extendable output function with variable length input
@@ -17,7 +17,7 @@ bench_shake128(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     shake128::shake128_t hasher;
@@ -53,7 +53,7 @@ bench_shake256(benchmark::State& state)
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     shake256::shake256_t hasher;

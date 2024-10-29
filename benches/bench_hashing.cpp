@@ -1,8 +1,8 @@
 #include "bench_common.hpp"
-#include "sha3_224.hpp"
-#include "sha3_256.hpp"
-#include "sha3_384.hpp"
-#include "sha3_512.hpp"
+#include "sha3/sha3_224.hpp"
+#include "sha3/sha3_256.hpp"
+#include "sha3/sha3_384.hpp"
+#include "sha3/sha3_512.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmarks SHA3-224 hash function with variable length input message.
@@ -15,7 +15,7 @@ bench_sha3_224(benchmark::State& state)
   std::vector<uint8_t> md(sha3_224::DIGEST_LEN);
   auto _md = std::span<uint8_t, sha3_224::DIGEST_LEN>(md);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     sha3_224::sha3_224_t hasher;
@@ -47,7 +47,7 @@ bench_sha3_256(benchmark::State& state)
   std::vector<uint8_t> md(sha3_256::DIGEST_LEN);
   auto _md = std::span<uint8_t, sha3_256::DIGEST_LEN>(md);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     sha3_256::sha3_256_t hasher;
@@ -79,7 +79,7 @@ bench_sha3_384(benchmark::State& state)
   std::vector<uint8_t> md(sha3_384::DIGEST_LEN);
   auto _md = std::span<uint8_t, sha3_384::DIGEST_LEN>(md);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     sha3_384::sha3_384_t hasher;
@@ -111,7 +111,7 @@ bench_sha3_512(benchmark::State& state)
   std::vector<uint8_t> md(sha3_512::DIGEST_LEN);
   auto _md = std::span<uint8_t, sha3_512::DIGEST_LEN>(md);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     sha3_512::sha3_512_t hasher;
