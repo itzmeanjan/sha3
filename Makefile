@@ -17,6 +17,7 @@ all: test
 
 include tests/test.mk
 include benches/bench.mk
+include examples/example.mk
 
 $(GTEST_PARALLEL):
 	git submodule update --init gtest-parallel
@@ -26,5 +27,5 @@ $(GTEST_PARALLEL):
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(SHA3_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
+format: $(SHA3_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS) $(EXAMPLE_SOURCES) $(EXAMPLE_HEADERS)
 	clang-format -i $^

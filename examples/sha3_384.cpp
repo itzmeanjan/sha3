@@ -1,5 +1,5 @@
-#include "sha3_384.hpp"
-#include "utils.hpp"
+#include "sha3/sha3_384.hpp"
+#include "example_helper.hpp"
 #include <iostream>
 #include <vector>
 
@@ -16,7 +16,7 @@ main()
   std::vector<uint8_t> dig(olen, 0);
   auto _dig = std::span<uint8_t, olen>(dig);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   sha3_384::sha3_384_t hasher;
   hasher.absorb(msg);
@@ -24,8 +24,8 @@ main()
   hasher.digest(_dig);
 
   std::cout << "SHA3-384" << std::endl << std::endl;
-  std::cout << "Input  : " << sha3_utils::to_hex(msg) << "\n";
-  std::cout << "Output : " << sha3_utils::to_hex(dig) << "\n";
+  std::cout << "Input  : " << to_hex(msg) << "\n";
+  std::cout << "Output : " << to_hex(dig) << "\n";
 
   return EXIT_SUCCESS;
 }

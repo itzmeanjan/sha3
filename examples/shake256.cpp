@@ -1,5 +1,5 @@
-#include "shake256.hpp"
-#include "utils.hpp"
+#include "sha3/shake256.hpp"
+#include "example_helper.hpp"
 #include <iostream>
 #include <vector>
 
@@ -16,7 +16,7 @@ main()
   std::vector<uint8_t> dig(olen, 0);
   auto _dig = std::span(dig);
 
-  sha3_utils::random_data<uint8_t>(msg);
+  random_data<uint8_t>(msg);
 
   // Create shake256 hasher
   shake256::shake256_t hasher;
@@ -34,8 +34,8 @@ main()
   }
 
   std::cout << "SHAKE-256" << std::endl << std::endl;
-  std::cout << "Input  : " << sha3_utils::to_hex(msg) << "\n";
-  std::cout << "Output : " << sha3_utils::to_hex(dig) << "\n";
+  std::cout << "Input  : " << to_hex(msg) << "\n";
+  std::cout << "Output : " << to_hex(dig) << "\n";
 
   return EXIT_SUCCESS;
 }
