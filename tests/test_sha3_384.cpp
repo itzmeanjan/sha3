@@ -1,8 +1,10 @@
-#include "sha3_384.hpp"
+#include "sha3/sha3_384.hpp"
 #include "test_conf.hpp"
+#include "test_utils.hpp"
 #include <algorithm>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <numeric>
 #include <vector>
 
 // Eval SHA3-384 hash on statically defined input message during
@@ -57,7 +59,7 @@ TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
     auto _out0 = std::span<uint8_t, sha3_384::DIGEST_LEN>(out0);
     auto _out1 = std::span<uint8_t, sha3_384::DIGEST_LEN>(out1);
 
-    sha3_utils::random_data(_msg);
+    sha3_test_utils::random_data(_msg);
 
     sha3_384::sha3_384_t hasher;
 
@@ -111,8 +113,8 @@ TEST(Sha3Hashing, Sha3_384KnownAnswerTests)
       auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
       auto md2 = md1.substr(md1.find("="sv) + 2, md1.size());
 
-      auto msg = sha3_utils::from_hex(msg2);
-      auto md = sha3_utils::from_hex(md2);
+      auto msg = sha3_test_utils::from_hex(msg2);
+      auto md = sha3_test_utils::from_hex(md2);
 
       std::vector<uint8_t> digest(sha3_384::DIGEST_LEN);
       auto _digest = std::span<uint8_t, sha3_384::DIGEST_LEN>(digest);

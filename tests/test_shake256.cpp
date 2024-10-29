@@ -1,8 +1,10 @@
-#include "shake256.hpp"
+#include "sha3/shake256.hpp"
 #include "test_conf.hpp"
+#include "test_utils.hpp"
 #include <algorithm>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <numeric>
 #include <vector>
 
 // Eval Shake256 Xof on statically defined input message during
@@ -76,7 +78,7 @@ TEST(Sha3Xof, Shake256IncrementalAbsorptionAndSqueezing)
       auto _out0 = std::span(out0);
       auto _out1 = std::span(out1);
 
-      sha3_utils::random_data(_msg);
+      sha3_test_utils::random_data(_msg);
 
       shake256::shake256_t hasher;
 
@@ -143,8 +145,8 @@ TEST(Sha3Xof, Shake256KnownAnswerTests)
       auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
       auto out2 = out1.substr(out1.find("="sv) + 2, out1.size());
 
-      auto msg = sha3_utils::from_hex(msg2);
-      auto out = sha3_utils::from_hex(out2);
+      auto msg = sha3_test_utils::from_hex(msg2);
+      auto out = sha3_test_utils::from_hex(out2);
 
       std::vector<uint8_t> squeezed(out.size());
 
