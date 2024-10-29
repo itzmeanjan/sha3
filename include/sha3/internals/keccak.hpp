@@ -1,10 +1,8 @@
 #pragma once
-#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstddef>
 #include <cstdint>
-#include <utility>
 
 // Keccak-p[1600, 24] permutation
 namespace keccak {

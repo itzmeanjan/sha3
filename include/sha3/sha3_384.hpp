@@ -1,13 +1,13 @@
 #pragma once
-#include "sponge.hpp"
+#include "sha3/internals/sponge.hpp"
 
-// SHA3-256 Hash Function : Keccak[512](M || 01, 256)
-namespace sha3_256 {
+// SHA3-384 Hash Function : Keccak[768](M || 01, 384)
+namespace sha3_384 {
 
-// Bit length of SHA3-256 message digest.
-constexpr size_t DIGEST_BIT_LEN = 256;
+// Bit length of SHA3-384 message digest.
+constexpr size_t DIGEST_BIT_LEN = 384;
 
-// Byte length of SHA3-256 message digest.
+// Byte length of SHA3-384 message digest.
 constexpr size_t DIGEST_LEN = DIGEST_BIT_LEN / 8;
 
 // Width of capacity portion of the sponge, in bits.
@@ -23,11 +23,11 @@ constexpr uint8_t DOM_SEP = 0b00000010;
 constexpr size_t DOM_SEP_BW = 2;
 
 // Given arbitrary many input message bytes, this routine consumes it into
-// keccak[512] sponge state and squeezes out 32 -bytes digest.
+// keccak[768] sponge state and squeezes out 48 -bytes digest.
 //
 // See SHA3 hash function definition in section 6.1 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202.
-struct sha3_256_t
+struct sha3_384_t
 {
 private:
   uint64_t state[keccak::LANE_CNT]{};
@@ -37,7 +37,7 @@ private:
 
 public:
   // Constructor
-  inline constexpr sha3_256_t() = default;
+  inline constexpr sha3_384_t() = default;
 
   // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary
   // many times ( until the sponge is finalized ), each time absorbing arbitrary
@@ -61,7 +61,7 @@ public:
     }
   }
 
-  // After sponge state is finalized, 32 message digest bytes can be squeezed by
+  // After sponge state is finalized, 48 message digest bytes can be squeezed by
   // calling this function. Once digest bytes are squeezed, calling this
   // function again and again returns nothing.
   inline constexpr void digest(std::span<uint8_t, DIGEST_LEN> md)
@@ -74,7 +74,7 @@ public:
     }
   }
 
-  // Reset the internal state of the SHA3-256 hasher, now it can again be used
+  // Reset the internal state of the SHA3-384 hasher, now it can again be used
   // for another absorb->finalize->squeeze cycle.
   inline constexpr void reset()
   {

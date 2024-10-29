@@ -1,5 +1,5 @@
 #pragma once
-#include "sponge.hpp"
+#include "sha3/internals/sponge.hpp"
 
 // SHAKE128 Extendable Output Function : Keccak[256](M || 1111, d)
 namespace shake128 {

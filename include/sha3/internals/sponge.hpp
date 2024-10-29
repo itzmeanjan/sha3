@@ -3,7 +3,6 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <array>
-#include <bit>
 #include <cstdint>
 #include <cstring>
 #include <span>

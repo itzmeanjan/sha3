@@ -1,5 +1,5 @@
 #pragma once
-#include "sponge.hpp"
+#include "sha3/internals/sponge.hpp"
 
 // SHAKE256 Extendable Output Function : Keccak[512](M || 1111, d)
 namespace shake256 {

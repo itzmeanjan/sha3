@@ -1,5 +1,5 @@
 #pragma once
-#include "sponge.hpp"
+#include "sha3/internals/sponge.hpp"
 
 // SHA3-512 Hash Function : Keccak[1024](M || 01, 512)
 namespace sha3_512 {
