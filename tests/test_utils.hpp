@@ -24,8 +24,7 @@ random_data(std::span<T> data)
   }
 }
 
-// Given a hex encoded string of length 2*L, this routine can be used for
-// parsing it as a byte array of length L.
+// Given a hex encoded string of length 2*L, this routine can be used for parsing it as a byte array of length L.
 //
 // Taken from
 // https://github.com/itzmeanjan/ascon/blob/603ba1f223ddd3a46cb0b3d31d014312d96792b5/include/utils.hpp#L120-L145

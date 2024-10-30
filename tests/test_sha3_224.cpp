@@ -7,8 +7,7 @@
 #include <numeric>
 #include <vector>
 
-// Eval SHA3-224 hash on statically defined input message during
-// compilation-time.
+// Eval SHA3-224 hash on statically defined input message during compilation-time.
 constexpr std::array<uint8_t, sha3_224::DIGEST_LEN>
 eval_sha3_224()
 {
@@ -35,16 +34,14 @@ TEST(Sha3Hashing, CompileTimeEvalSha3_224)
   // Output = fc95d44e806cbbd484e379882238f555fda923878c443abe4ce4cdd6
 
   constexpr auto md = eval_sha3_224();
-  static_assert(md ==
-                  std::array<uint8_t, sha3_224::DIGEST_LEN>{
-                    252, 149, 212, 78,  128, 108, 187, 212, 132, 227,
-                    121, 136, 34,  56,  245, 85,  253, 169, 35,  135,
-                    140, 68,  58,  190, 76,  228, 205, 214 },
+  static_assert(md == std::array<uint8_t, sha3_224::DIGEST_LEN>{ 252, 149, 212, 78,  128, 108, 187, 212, 132, 227,
+                                                                 121, 136, 34,  56,  245, 85,  253, 169, 35,  135,
+                                                                 140, 68,  58,  190, 76,  228, 205, 214 },
                 "Must be able to compute Sha3-224 hash during compile-time !");
 }
 
-// Test that absorbing same input message bytes using both incremental and
-// one-shot hashing, should yield same output bytes, for SHA3-224 hasher.
+// Test that absorbing same input message bytes using both incremental and one-shot hashing, should yield same output
+// bytes, for SHA3-224 hasher.
 TEST(Sha3Hashing, Sha3_224IncrementalAbsorption)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
@@ -84,8 +81,7 @@ TEST(Sha3Hashing, Sha3_224IncrementalAbsorption)
   }
 }
 
-// Ensure that SHA3-224 implementation is conformant with FIPS 202 standard, by
-// using KAT file generated following
+// Ensure that SHA3-224 implementation is conformant with FIPS 202 standard, by using KAT file generated following
 // https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
 TEST(Sha3Hashing, Sha3_224KnownAnswerTests)
 {

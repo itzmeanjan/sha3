@@ -24,8 +24,8 @@ static constexpr size_t DOM_SEP_BW = 4;
 
 // SHAKE128 Extendable Output Function (Xof)
 //
-// See SHA3 extendable output function definition in section 6.2 of SHA3
-// specification https://dx.doi.org/10.6028/NIST.FIPS.202
+// See SHA3 extendable output function definition in section 6.2 of SHA3 specification
+// https://dx.doi.org/10.6028/NIST.FIPS.202
 struct shake128_t
 {
 private:
@@ -38,12 +38,10 @@ public:
   inline constexpr shake128_t() = default;
   inline constexpr size_t squeezable_num_bytes() const { return squeezable; }
 
-  // Given N -many bytes input message, this routine consumes those into
-  // keccak[256] sponge state.
+  // Given N -many bytes input message, this routine consumes those into keccak[256] sponge state.
   //
-  // Note, this routine can be called arbitrary number of times, each time with
-  // arbitrary bytes of input message, until keccak[256] state is finalized ( by
-  // calling routine with similar name ). Once the sponge is finalized, it can't
+  // Note, this routine can be called arbitrary number of times, each time with arbitrary bytes of input message, until
+  // keccak[256] state is finalized ( by calling routine with similar name ). Once the sponge is finalized, it can't
   // absorb any more message bytes.
   inline constexpr void absorb(std::span<const uint8_t> msg)
   {
@@ -52,12 +50,11 @@ public:
     }
   }
 
-  // After consuming arbitrary many input bytes, this routine is invoked when
-  // no more input bytes remaining to be consumed by keccak[256] state.
+  // After consuming arbitrary many input bytes, this routine is invoked when no more input bytes remaining to be
+  // consumed by keccak[256] state.
   //
-  // Note, once this routine is called, calling absorb() or finalize() again, on
-  // same SHAKE128 object, doesn't do anything. After finalization, one might
-  // intend to read arbitrary many bytes by squeezing sponge, which is done by
+  // Note, once this routine is called, calling absorb() or finalize() again, on same SHAKE128 object, doesn't do
+  // anything. After finalization, one might intend to read arbitrary many bytes by squeezing sponge, which is done by
   // calling read() function, as many times required.
   inline constexpr void finalize()
   {
@@ -69,8 +66,8 @@ public:
     }
   }
 
-  // After sponge state is finalized, arbitrary many output bytes can be
-  // squeezed by calling this function any number of times required.
+  // After sponge state is finalized, arbitrary many output bytes can be squeezed by calling this function any number of
+  // times required.
   inline constexpr void squeeze(std::span<uint8_t> dig)
   {
     if (finalized) {
@@ -78,8 +75,8 @@ public:
     }
   }
 
-  // Reset the internal state of the Shake128-Xof hasher, now it can again be
-  // used for another absorb->finalize->squeeze cycle.
+  // Reset the internal state of the Shake128-Xof hasher, now it can again be used for another absorb->finalize->squeeze
+  // cycle.
   inline constexpr void reset()
   {
     std::fill(std::begin(state), std::end(state), 0);
@@ -88,13 +85,12 @@ public:
     squeezable = 0;
   }
 
-  // Given that sponge is already finalized, this routine can be used for
-  // zeroizing first n -bytes of permutation state s.t. n <= 200.
+  // Given that sponge is already finalized, this routine can be used for zeroizing first n -bytes of permutation state
+  // s.t. n <= 200.
   inline void ratchet(const size_t byte_len)
   {
     if (finalized) {
-      const auto ratchetable_portion_byte_len =
-        std::min(byte_len, keccak::STATE_BYTE_LEN);
+      const auto ratchetable_portion_byte_len = std::min(byte_len, keccak::STATE_BYTE_LEN);
 
       auto state_as_bytes = reinterpret_cast<uint8_t*>(state);
       std::memset(state_as_bytes, 0, ratchetable_portion_byte_len);

@@ -7,8 +7,7 @@
 #include <numeric>
 #include <vector>
 
-// Eval SHA3-256 hash on statically defined input message during
-// compilation-time.
+// Eval SHA3-256 hash on statically defined input message during compilation-time.
 constexpr std::array<uint8_t, sha3_256::DIGEST_LEN>
 eval_sha3_256()
 {
@@ -35,16 +34,14 @@ TEST(Sha3Hashing, CompileTimeEvalSha3_256)
   // Output = c8ad478f4e1dd9d47dfc3b985708d92db1f8db48fe9cddd459e63c321f490402
 
   constexpr auto md = eval_sha3_256();
-  static_assert(md ==
-                  std::array<uint8_t, sha3_256::DIGEST_LEN>{
-                    200, 173, 71, 143, 78, 29,  217, 212, 125, 252, 59,
-                    152, 87,  8,  217, 45, 177, 248, 219, 72,  254, 156,
-                    221, 212, 89, 230, 60, 50,  31,  73,  4,   2 },
+  static_assert(md == std::array<uint8_t, sha3_256::DIGEST_LEN>{ 200, 173, 71, 143, 78, 29,  217, 212, 125, 252, 59,
+                                                                 152, 87,  8,  217, 45, 177, 248, 219, 72,  254, 156,
+                                                                 221, 212, 89, 230, 60, 50,  31,  73,  4,   2 },
                 "Must be able to compute Sha3-256 hash during compile-time !");
 }
 
-// Test that absorbing same input message bytes using both incremental and
-// one-shot hashing, should yield same output bytes, for SHA3-256 hasher.
+// Test that absorbing same input message bytes using both incremental and one-shot hashing, should yield same output
+// bytes, for SHA3-256 hasher.
 TEST(Sha3Hashing, Sha3_256IncrementalAbsorption)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
@@ -84,8 +81,7 @@ TEST(Sha3Hashing, Sha3_256IncrementalAbsorption)
   }
 }
 
-// Ensure that SHA3-256 implementation is conformant with FIPS 202 standard, by
-// using KAT file generated following
+// Ensure that SHA3-256 implementation is conformant with FIPS 202 standard, by using KAT file generated following
 // https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
 TEST(Sha3Hashing, Sha3_256KnownAnswerTests)
 {

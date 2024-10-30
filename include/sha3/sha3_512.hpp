@@ -24,11 +24,10 @@ static constexpr uint8_t DOM_SEP = 0b00000010;
 // Bit-width of domain separator, starting from least significant bit.
 static constexpr size_t DOM_SEP_BW = 2;
 
-// Given arbitrary many input message bytes, this routine consumes it into
-// keccak[1024] sponge state and squeezes out 64 -bytes digest.
+// Given arbitrary many input message bytes, this routine consumes it into keccak[1024] sponge state and squeezes out 64
+// -bytes digest.
 //
-// See SHA3 hash function definition in section 6.1 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202.
+// See SHA3 hash function definition in section 6.1 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202.
 struct sha3_512_t
 {
 private:
@@ -41,9 +40,8 @@ public:
   // Constructor
   inline constexpr sha3_512_t() = default;
 
-  // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary
-  // many times ( until the sponge is finalized ), each time absorbing arbitrary
-  // many message bytes into RATE portion of the sponge.
+  // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary many times ( until the sponge is
+  // finalized ), each time absorbing arbitrary many message bytes into RATE portion of the sponge.
   inline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
@@ -51,10 +49,9 @@ public:
     }
   }
 
-  // Finalizes the sponge after all message bytes are absorbed into it, now it
-  // should be ready for squeezing message digest bytes. Once finalized, you
-  // can't absorb any message bytes into sponge. After finalization, calling
-  // this function again and again doesn't mutate anything.
+  // Finalizes the sponge after all message bytes are absorbed into it, now it should be ready for squeezing message
+  // digest bytes. Once finalized, you can't absorb any message bytes into sponge. After finalization, calling this
+  // function again and again doesn't mutate anything.
   inline constexpr void finalize()
   {
     if (!finalized) {
@@ -63,9 +60,8 @@ public:
     }
   }
 
-  // After sponge state is finalized, 64 message digest bytes can be squeezed by
-  // calling this function. Once digest bytes are squeezed, calling this
-  // function again and again returns nothing.
+  // After sponge state is finalized, 64 message digest bytes can be squeezed by calling this function. Once digest
+  // bytes are squeezed, calling this function again and again returns nothing.
   inline constexpr void digest(std::span<uint8_t, DIGEST_LEN> md)
   {
     if (finalized && !squeezed) {
@@ -76,8 +72,8 @@ public:
     }
   }
 
-  // Reset the internal state of the SHA3-512 hasher, now it can again be used
-  // for another absorb->finalize->squeeze cycle.
+  // Reset the internal state of the SHA3-512 hasher, now it can again be used for another absorb->finalize->squeeze
+  // cycle.
   inline constexpr void reset()
   {
     std::fill(std::begin(state), std::end(state), 0);

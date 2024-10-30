@@ -11,35 +11,28 @@
 // Keccak family of sponge functions
 namespace sponge {
 
-// Compile-time check to ensure that domain separator can only be 2/ 4 -bits
-// wide.
+// Compile-time check to ensure that domain separator can only be 2/ 4 -bits wide.
 //
-// When used in context of extendable output functions ( SHAKE{128, 256} )
-// domain separator bits are 4 -bit wide.
+// When used in context of extendable output functions ( SHAKE{128, 256} ) domain separator bits are 4 -bit wide.
 //
-// See section 6.{1, 2} of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
+// See section 6.{1, 2} of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
 constexpr bool
 check_domain_separator(const size_t dom_sep_bit_len)
 {
   return (dom_sep_bit_len == 2u) | (dom_sep_bit_len == 4u);
 }
 
-// Pad10*1 - generates a padding, while also considering domain separator bits (
-// which are either 2 or 4 -bit wide ), such that when both domain separator
-// bits and 10*1 padding is appended ( in order ) to actual message, total byte
-// length of message consumed into keccak-p[1600, 24] permutation becomes
-// multiple of `rate` -bits. The only parameter `offset` denotes how many bytes
-// are already mixed with rate portion of permutation state meaning `offset`
-// must ∈ [0, `rate/ 8`). This routine returns a byte array of length `rate/ 8`
-// -bytes which can safely be mixed into permutation state duing sponge
-// finalization phase.
+// Pad10*1 - generates a padding, while also considering domain separator bits ( which are either 2 or 4 -bit wide ),
+// such that when both domain separator bits and 10*1 padding is appended ( in order ) to actual message, total byte
+// length of message consumed into keccak-p[1600, 24] permutation becomes multiple of `rate` -bits. The only parameter
+// `offset` denotes how many bytes are already mixed with rate portion of permutation state meaning `offset` must ∈ [0,
+// `rate/ 8`). This routine returns a byte array of length `rate/ 8` -bytes which can safely be mixed into permutation
+// state duing sponge finalization phase.
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
 template<uint8_t domain_separator, size_t ds_bits, size_t rate>
-static inline constexpr std::array<uint8_t,
-                                   rate / std::numeric_limits<uint8_t>::digits>
+static inline constexpr std::array<uint8_t, rate / std::numeric_limits<uint8_t>::digits>
 pad10x1(const size_t offset)
   requires(check_domain_separator(ds_bits))
 {
@@ -54,9 +47,8 @@ pad10x1(const size_t offset)
   return res;
 }
 
-// Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c]
-// permutation state s.t. `offset` ( second parameter ) denotes how many bytes
-// are already consumed into rate portion of the state.
+// Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c] permutation state s.t. `offset` ( second
+// parameter ) denotes how many bytes are already consumed into rate portion of the state.
 //
 // - `rate` portion of sponge will have bitwidth of 1600 - c.
 // - `offset` must ∈ [0, `rbytes`).
@@ -65,9 +57,7 @@ pad10x1(const size_t offset)
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
 template<size_t rate>
 static inline constexpr void
-absorb(uint64_t state[keccak::LANE_CNT],
-       size_t& offset,
-       std::span<const uint8_t> msg)
+absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t> msg)
 {
   constexpr size_t rbytes = rate >> 3u;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
@@ -118,11 +108,9 @@ absorb(uint64_t state[keccak::LANE_CNT],
   offset += rm_bytes;
 }
 
-// Given that N message bytes are already consumed into Keccak[c] permutation
-// state, this routine finalizes sponge state and makes it ready for squeezing,
-// by appending ( along with domain separation bits ) 10*1 padding bits to input
-// message s.t. total absorbed message byte length becomes multiple of
-// `rate/ 8` -bytes.
+// Given that N message bytes are already consumed into Keccak[c] permutation state, this routine finalizes sponge state
+// and makes it ready for squeezing, by appending ( along with domain separation bits ) 10*1 padding bits to input
+// message s.t. total absorbed message byte length becomes multiple of `rate/ 8` -bytes.
 //
 // - `rate` portion of sponge will have bitwidth of 1600 - c.
 // - `offset` must ∈ [0, `rbytes`)
@@ -153,8 +141,8 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   offset = 0;
 }
 
-// Given that Keccak[c] permutation state is finalized, this routine can be
-// invoked for squeezing `olen` -bytes out of rate portion of the state.
+// Given that Keccak[c] permutation state is finalized, this routine can be invoked for squeezing `olen` -bytes out of
+// rate portion of the state.
 //
 // - `rate` portion of sponge will have bitwidth of 1600 - c.
 // - `squeezable` denotes how many bytes can be squeezed without permutating the
@@ -166,9 +154,7 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
 template<size_t rate>
 static inline constexpr void
-squeeze(uint64_t state[keccak::LANE_CNT],
-        size_t& squeezable,
-        std::span<uint8_t> out)
+squeeze(uint64_t state[keccak::LANE_CNT], size_t& squeezable, std::span<uint8_t> out)
 {
   constexpr size_t rbytes = rate >> 3u;   // # -of bytes
   constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words

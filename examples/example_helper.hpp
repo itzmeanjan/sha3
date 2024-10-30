@@ -21,8 +21,7 @@ random_data(std::span<T> data)
   }
 }
 
-// Given a bytearray of length N, this function converts it to human readable
-// hex string of length N << 1 | N >= 0
+// Given a bytearray of length N, this function converts it to human readable hex string of length N << 1 | N >= 0
 static inline std::string
 to_hex(std::span<const uint8_t> bytes)
 {

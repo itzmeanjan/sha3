@@ -3,8 +3,7 @@
 #include "sha3/shake256.hpp"
 #include <benchmark/benchmark.h>
 
-// Benchmarks SHAKE-128 extendable output function with variable length input
-// and squeezed output.
+// Benchmarks SHAKE-128 extendable output function with variable length input and squeezed output.
 //
 // Note, all input bytes are absorbed in a single call to `absorb` function.
 // And all output bytes are squeezed in a single call to `squeeze` function.
@@ -39,8 +38,7 @@ bench_shake128(benchmark::State& state)
 #endif
 }
 
-// Benchmarks SHAKE-256 extendable output function with variable length input
-// and squeezed output.
+// Benchmarks SHAKE-256 extendable output function with variable length input and squeezed output.
 //
 // Note, all input bytes are absorbed in a single call to `absorb` function.
 // And all output bytes are squeezed in a single call to `squeeze` function.

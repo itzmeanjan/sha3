@@ -7,8 +7,7 @@
 #include <numeric>
 #include <vector>
 
-// Eval Shake256 Xof on statically defined input message during
-// compilation-time.
+// Eval Shake256 Xof on statically defined input message during compilation-time.
 constexpr std::array<uint8_t, 256>
 eval_shake256()
 {
@@ -36,33 +35,26 @@ TEST(Sha3Xof, CompileTimeEvalShake256)
   // 336c8aa7f2b08bda6bd7402cd2ea89760b7728a8b31802b80524756361165366ff8159f2f4568a2bfa286db6387895629938c2868a6421c37f988455763a75e4b9259e0a939aaa68295119ccea72c9f0ca7d048aa70eeeb4534c6bd08ecc6163217c790f33b84a89623f8e5538b734967e9490a48b7d0658afb4565364e8b234dfe6a2bceb12ce2130eec00bf2113615a276819d7815f5891d07600275f4d8fbc87b056f44bc2b141ca5ed9e4cb6e9a7bf71f520971dca1c8da6140e2af31faef5502e84991a2d9e9a80183c174cc105ef178d5f6fa45b0f284eb7bced20a47c3f584aca27eac5558da517af7569fe2e843461b4b65f81f819bf81aae6dfaa3b
 
   constexpr auto md = eval_shake256();
-  static_assert(
-    md ==
-      std::array<uint8_t, 256>{
-        51,  108, 138, 167, 242, 176, 139, 218, 107, 215, 64,  44,  210, 234,
-        137, 118, 11,  119, 40,  168, 179, 24,  2,   184, 5,   36,  117, 99,
-        97,  22,  83,  102, 255, 129, 89,  242, 244, 86,  138, 43,  250, 40,
-        109, 182, 56,  120, 149, 98,  153, 56,  194, 134, 138, 100, 33,  195,
-        127, 152, 132, 85,  118, 58,  117, 228, 185, 37,  158, 10,  147, 154,
-        170, 104, 41,  81,  25,  204, 234, 114, 201, 240, 202, 125, 4,   138,
-        167, 14,  238, 180, 83,  76,  107, 208, 142, 204, 97,  99,  33,  124,
-        121, 15,  51,  184, 74,  137, 98,  63,  142, 85,  56,  183, 52,  150,
-        126, 148, 144, 164, 139, 125, 6,   88,  175, 180, 86,  83,  100, 232,
-        178, 52,  223, 230, 162, 188, 235, 18,  206, 33,  48,  238, 192, 11,
-        242, 17,  54,  21,  162, 118, 129, 157, 120, 21,  245, 137, 29,  7,
-        96,  2,   117, 244, 216, 251, 200, 123, 5,   111, 68,  188, 43,  20,
-        28,  165, 237, 158, 76,  182, 233, 167, 191, 113, 245, 32,  151, 29,
-        202, 28,  141, 166, 20,  14,  42,  243, 31,  174, 245, 80,  46,  132,
-        153, 26,  45,  158, 154, 128, 24,  60,  23,  76,  193, 5,   239, 23,
-        141, 95,  111, 164, 91,  15,  40,  78,  183, 188, 237, 32,  164, 124,
-        63,  88,  74,  202, 39,  234, 197, 85,  141, 165, 23,  175, 117, 105,
-        254, 46,  132, 52,  97,  180, 182, 95,  129, 248, 25,  191, 129, 170,
-        230, 223, 170, 59 },
-    "Must be able to compute Shake256 Xof during compile-time !");
+  static_assert(md ==
+                  std::array<uint8_t, 256>{
+                    51,  108, 138, 167, 242, 176, 139, 218, 107, 215, 64,  44,  210, 234, 137, 118, 11,  119, 40,  168,
+                    179, 24,  2,   184, 5,   36,  117, 99,  97,  22,  83,  102, 255, 129, 89,  242, 244, 86,  138, 43,
+                    250, 40,  109, 182, 56,  120, 149, 98,  153, 56,  194, 134, 138, 100, 33,  195, 127, 152, 132, 85,
+                    118, 58,  117, 228, 185, 37,  158, 10,  147, 154, 170, 104, 41,  81,  25,  204, 234, 114, 201, 240,
+                    202, 125, 4,   138, 167, 14,  238, 180, 83,  76,  107, 208, 142, 204, 97,  99,  33,  124, 121, 15,
+                    51,  184, 74,  137, 98,  63,  142, 85,  56,  183, 52,  150, 126, 148, 144, 164, 139, 125, 6,   88,
+                    175, 180, 86,  83,  100, 232, 178, 52,  223, 230, 162, 188, 235, 18,  206, 33,  48,  238, 192, 11,
+                    242, 17,  54,  21,  162, 118, 129, 157, 120, 21,  245, 137, 29,  7,   96,  2,   117, 244, 216, 251,
+                    200, 123, 5,   111, 68,  188, 43,  20,  28,  165, 237, 158, 76,  182, 233, 167, 191, 113, 245, 32,
+                    151, 29,  202, 28,  141, 166, 20,  14,  42,  243, 31,  174, 245, 80,  46,  132, 153, 26,  45,  158,
+                    154, 128, 24,  60,  23,  76,  193, 5,   239, 23,  141, 95,  111, 164, 91,  15,  40,  78,  183, 188,
+                    237, 32,  164, 124, 63,  88,  74,  202, 39,  234, 197, 85,  141, 165, 23,  175, 117, 105, 254, 46,
+                    132, 52,  97,  180, 182, 95,  129, 248, 25,  191, 129, 170, 230, 223, 170, 59 },
+                "Must be able to compute Shake256 Xof during compile-time !");
 }
 
-// Test that absorbing same message bytes using both incremental and one-shot
-// hashing, should yield same output bytes, for SHAKE256 XOF.
+// Test that absorbing same message bytes using both incremental and one-shot hashing, should yield same output bytes,
+// for SHAKE256 XOF.
 //
 // This test collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950c5374aff49f04f6d51d807e68077ab25/src/tests.rs#L372-L415
@@ -119,8 +111,7 @@ TEST(Sha3Xof, Shake256IncrementalAbsorptionAndSqueezing)
   }
 }
 
-// Ensure that Shake256 Xof implementation is conformant with FIPS 202 standard,
-// by using KAT file generated following
+// Ensure that Shake256 Xof implementation is conformant with FIPS 202 standard, by using KAT file generated following
 // https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
 TEST(Sha3Xof, Shake256KnownAnswerTests)
 {
