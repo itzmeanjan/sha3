@@ -1,26 +1,28 @@
 #pragma once
 #include "sha3/internals/sponge.hpp"
+#include <cstdint>
+#include <limits>
 
 // SHA3-512 Hash Function : Keccak[1024](M || 01, 512)
 namespace sha3_512 {
 
 // Bit length of SHA3-512 message digest.
-constexpr size_t DIGEST_BIT_LEN = 512;
+static constexpr size_t DIGEST_BIT_LEN = 512;
 
 // Byte length of SHA3-512 message digest.
-constexpr size_t DIGEST_LEN = DIGEST_BIT_LEN / 8;
+static constexpr size_t DIGEST_LEN = DIGEST_BIT_LEN / 8;
 
 // Width of capacity portion of the sponge, in bits.
-constexpr size_t CAPACITY = 2 * DIGEST_BIT_LEN;
+static constexpr size_t CAPACITY = 2 * DIGEST_BIT_LEN;
 
 // Width of rate portion of the sponge, in bits.
-constexpr size_t RATE = 1600 - CAPACITY;
+static constexpr size_t RATE = 1600 - CAPACITY;
 
 // Domain separator bits, used for finalization.
-constexpr uint8_t DOM_SEP = 0b00000010;
+static constexpr uint8_t DOM_SEP = 0b00000010;
 
 // Bit-width of domain separator, starting from least significant bit.
-constexpr size_t DOM_SEP_BW = 2;
+static constexpr size_t DOM_SEP_BW = 2;
 
 // Given arbitrary many input message bytes, this routine consumes it into
 // keccak[1024] sponge state and squeezes out 64 -bytes digest.
@@ -67,7 +69,7 @@ public:
   inline constexpr void digest(std::span<uint8_t, DIGEST_LEN> md)
   {
     if (finalized && !squeezed) {
-      size_t squeezable = RATE / 8;
+      size_t squeezable = RATE / std::numeric_limits<uint8_t>::digits;
       sponge::squeeze<RATE>(state, squeezable, md);
 
       squeezed = true;

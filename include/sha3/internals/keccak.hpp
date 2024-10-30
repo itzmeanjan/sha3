@@ -3,6 +3,7 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 // Keccak-p[1600, 24] permutation
 namespace keccak {
@@ -13,8 +14,15 @@ static constexpr size_t L = 6;
 // Bit width of each lane of Keccak-p[1600, 24] state
 static constexpr size_t LANE_BW = 1ul << L;
 
+// Bit length of Keccak-p[1600, 24] permutation state
+static constexpr size_t STATE_BIT_LEN = 1600;
+
+// Byte length of Keccak-p[1600, 24] permutation state
+static constexpr size_t STATE_BYTE_LEN =
+  STATE_BIT_LEN / std::numeric_limits<uint8_t>::digits;
+
 // # -of lanes ( each of 64 -bit width ) in Keccak-p[1600, 24] state
-static constexpr size_t LANE_CNT = 1600 / LANE_BW;
+static constexpr size_t LANE_CNT = STATE_BIT_LEN / LANE_BW;
 
 // Keccak-p[b, nr] permutation to be applied `nr` ( = 24 ) rounds
 // s.t. b = 1600, w = b/ 25, l = log2(w), nr = 12 + 2l

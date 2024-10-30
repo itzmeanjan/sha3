@@ -5,6 +5,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <span>
 
 // Keccak family of sponge functions
@@ -21,7 +22,7 @@ namespace sponge {
 constexpr bool
 check_domain_separator(const size_t dom_sep_bit_len)
 {
-  return (dom_sep_bit_len == 2) | (dom_sep_bit_len == 4);
+  return (dom_sep_bit_len == 2u) | (dom_sep_bit_len == 4u);
 }
 
 // Pad10*1 - generates a padding, while also considering domain separator bits (
@@ -37,17 +38,18 @@ check_domain_separator(const size_t dom_sep_bit_len)
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
 template<uint8_t domain_separator, size_t ds_bits, size_t rate>
-static inline constexpr std::array<uint8_t, rate / 8>
+static inline constexpr std::array<uint8_t,
+                                   rate / std::numeric_limits<uint8_t>::digits>
 pad10x1(const size_t offset)
   requires(check_domain_separator(ds_bits))
 {
-  std::array<uint8_t, rate / 8> res{};
+  std::array<uint8_t, rate / std::numeric_limits<uint8_t>::digits> res{};
 
-  constexpr uint8_t mask = (1 << ds_bits) - 1;
-  constexpr uint8_t pad_byte = (1 << ds_bits) | (domain_separator & mask);
+  constexpr uint8_t mask = (1u << ds_bits) - 1u;
+  constexpr uint8_t pad_byte = (1u << ds_bits) | (domain_separator & mask);
 
   res[offset] = pad_byte;
-  res[(rate / 8) - 1] ^= 0x80;
+  res[res.size() - 1] ^= 0x80u;
 
   return res;
 }
@@ -67,14 +69,14 @@ absorb(uint64_t state[keccak::LANE_CNT],
        size_t& offset,
        std::span<const uint8_t> msg)
 {
-  constexpr size_t rbytes = rate >> 3;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+  constexpr size_t rbytes = rate >> 3u;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
 
   std::array<uint8_t, rbytes> blk_bytes{};
   std::array<uint64_t, rwords> blk_words{};
 
-  auto _blk_bytes = std::span(blk_bytes);
-  auto _blk_words = std::span(blk_words);
+  auto blk_bytes_span = std::span(blk_bytes);
+  auto blk_words_span = std::span(blk_words);
 
   const size_t mlen = msg.size();
   const size_t blk_cnt = (offset + mlen) / rbytes;
@@ -84,14 +86,14 @@ absorb(uint64_t state[keccak::LANE_CNT],
   for (size_t i = 0; i < blk_cnt; i++) {
     const size_t readable = rbytes - offset;
 
-    auto _msg = msg.subspan(moff, readable);
-    auto _blk = _blk_bytes.subspan(offset, readable);
+    auto msg_span = msg.subspan(moff, readable);
+    auto blk_span = blk_bytes_span.subspan(offset, readable);
 
-    std::copy(_msg.begin(), _msg.end(), _blk.begin());
-    sha3_utils::le_bytes_to_u64_words<rate>(_blk_bytes, _blk_words);
+    std::copy(msg_span.begin(), msg_span.end(), blk_span.begin());
+    sha3_utils::le_bytes_to_u64_words<rate>(blk_bytes_span, blk_words_span);
 
     for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= _blk_words[j];
+      state[j] ^= blk_words_span[j];
     }
 
     keccak::permute(state);
@@ -102,15 +104,15 @@ absorb(uint64_t state[keccak::LANE_CNT],
 
   const size_t rm_bytes = mlen - moff;
 
-  auto _msg = msg.subspan(moff, rm_bytes);
-  auto _blk = _blk_bytes.subspan(offset, rm_bytes);
+  auto msg_span = msg.subspan(moff, rm_bytes);
+  auto blk_span = blk_bytes_span.subspan(offset, rm_bytes);
 
   blk_bytes.fill(0x00);
-  std::copy(_msg.begin(), _msg.end(), _blk.begin());
-  sha3_utils::le_bytes_to_u64_words<rate>(_blk_bytes, _blk_words);
+  std::copy(msg_span.begin(), msg_span.end(), blk_span.begin());
+  sha3_utils::le_bytes_to_u64_words<rate>(blk_bytes_span, blk_words_span);
 
   for (size_t j = 0; j < rwords; j++) {
-    state[j] ^= _blk_words[j];
+    state[j] ^= blk_words_span[j];
   }
 
   offset += rm_bytes;
@@ -132,19 +134,19 @@ static inline constexpr void
 finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   requires(check_domain_separator(ds_bits))
 {
-  constexpr size_t rbytes = rate >> 3;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+  constexpr size_t rbytes = rate >> 3u;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
 
   const auto padb = pad10x1<domain_separator, ds_bits, rate>(offset);
   std::array<uint64_t, rwords> padw{};
 
-  auto _padb = std::span(padb);
-  auto _padw = std::span(padw);
+  auto padb_span = std::span(padb);
+  auto padw_span = std::span(padw);
 
-  sha3_utils::le_bytes_to_u64_words<rate>(_padb, _padw);
+  sha3_utils::le_bytes_to_u64_words<rate>(padb_span, padw_span);
 
   for (size_t j = 0; j < rwords; j++) {
-    state[j] ^= _padw[j];
+    state[j] ^= padw_span[j];
   }
 
   keccak::permute(state);
@@ -168,14 +170,14 @@ squeeze(uint64_t state[keccak::LANE_CNT],
         size_t& squeezable,
         std::span<uint8_t> out)
 {
-  constexpr size_t rbytes = rate >> 3;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3; // # -of 64 -bit words
+  constexpr size_t rbytes = rate >> 3u;   // # -of bytes
+  constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
 
   std::array<uint8_t, rbytes> blk_bytes{};
-  auto _blk_bytes = std::span(blk_bytes);
+  auto blk_bytes_span = std::span(blk_bytes);
 
   auto swords = std::span{ state, keccak::LANE_CNT };
-  auto _swords = swords.template subspan<0, rwords>();
+  auto swords_span = swords.template subspan<0, rwords>();
 
   const size_t olen = out.size();
   size_t off = 0;
@@ -184,12 +186,12 @@ squeeze(uint64_t state[keccak::LANE_CNT],
     const size_t read = std::min(squeezable, olen - off);
     const size_t soff = rbytes - squeezable;
 
-    sha3_utils::u64_words_to_le_bytes<rate>(_swords, _blk_bytes);
+    sha3_utils::u64_words_to_le_bytes<rate>(swords_span, blk_bytes_span);
 
-    auto _blk = _blk_bytes.subspan(soff, read);
-    auto _out = out.subspan(off, read);
+    auto blk_span = blk_bytes_span.subspan(soff, read);
+    auto out_span = out.subspan(off, read);
 
-    std::copy(_blk.begin(), _blk.end(), _out.begin());
+    std::copy(blk_span.begin(), blk_span.end(), out_span.begin());
 
     squeezable -= read;
     off += read;

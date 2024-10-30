@@ -1,20 +1,26 @@
 #pragma once
+#include "sha3/internals/keccak.hpp"
 #include "sha3/internals/sponge.hpp"
+#include <algorithm>
+#include <cstdint>
+#include <cstring>
+#include <iterator>
+#include <limits>
 
 // SHAKE128 Extendable Output Function : Keccak[256](M || 1111, d)
 namespace shake128 {
 
 // Width of capacity portion of the sponge, in bits.
-constexpr size_t CAPACITY = 256;
+static constexpr size_t CAPACITY = 256;
 
 // Width of rate portion of the sponge, in bits.
-constexpr size_t RATE = 1600 - CAPACITY;
+static constexpr size_t RATE = 1600 - CAPACITY;
 
 // Domain separator bits, used for finalization.
-constexpr uint8_t DOM_SEP = 0b00001111;
+static constexpr uint8_t DOM_SEP = 0b00001111;
 
 // Bit-width of domain separator, starting from least significant bit.
-constexpr size_t DOM_SEP_BW = 4;
+static constexpr size_t DOM_SEP_BW = 4;
 
 // SHAKE128 Extendable Output Function (Xof)
 //
@@ -30,6 +36,7 @@ private:
 
 public:
   inline constexpr shake128_t() = default;
+  inline constexpr size_t squeezable_num_bytes() const { return squeezable; }
 
   // Given N -many bytes input message, this routine consumes those into
   // keccak[256] sponge state.
@@ -58,7 +65,7 @@ public:
       sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
 
       finalized = true;
-      squeezable = RATE / 8;
+      squeezable = RATE / std::numeric_limits<uint8_t>::digits;
     }
   }
 
@@ -79,6 +86,19 @@ public:
     offset = 0;
     finalized = false;
     squeezable = 0;
+  }
+
+  // Given that sponge is already finalized, this routine can be used for
+  // zeroizing first n -bytes of permutation state s.t. n <= 200.
+  inline void ratchet(const size_t byte_len)
+  {
+    if (finalized) {
+      const auto ratchetable_portion_byte_len =
+        std::min(byte_len, keccak::STATE_BYTE_LEN);
+
+      auto state_as_bytes = reinterpret_cast<uint8_t*>(state);
+      std::memset(state_as_bytes, 0, ratchetable_portion_byte_len);
+    }
   }
 };
 
