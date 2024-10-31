@@ -1,4 +1,5 @@
 #pragma once
+#include "sha3/internals/force_inline.hpp"
 #include "sha3/internals/keccak.hpp"
 #include <cassert>
 #include <cstddef>
@@ -14,7 +15,7 @@ namespace sha3_utils {
 //
 // Collects inspiration from
 // https://github.com/itzmeanjan/ascon/blob/6160fee18814c7c313262e365c53de96ab6602b4/include/utils.hpp#L17-L43.
-static inline constexpr uint64_t
+static forceinline constexpr uint64_t
 bswap(const uint64_t a)
 {
 #if defined __GNUG__
@@ -29,7 +30,7 @@ bswap(const uint64_t a)
 
 // Given a byte array of length 8, this routine can be used for interpreting those 8 -bytes in little-endian order, as a
 // 64 -bit unsigned integer.
-static inline constexpr uint64_t
+static forceinline constexpr uint64_t
 le_bytes_to_u64(std::span<const uint8_t, sizeof(uint64_t)> bytes)
 {
   const uint64_t word = (static_cast<uint64_t>(bytes[7]) << 56u) | (static_cast<uint64_t>(bytes[6]) << 48u) |
@@ -47,7 +48,7 @@ le_bytes_to_u64(std::span<const uint8_t, sizeof(uint64_t)> bytes)
 // Given a byte array holding rate/8 -many bytes, this routine can be invoked for interpreting those bytes as rate/ 64
 // -many words ( each word is 64 -bit unsigned interger ) s.t. bytes in a word are placed in little-endian order.
 template<size_t rate>
-static inline constexpr void
+static forceinline constexpr void
 le_bytes_to_u64_words(std::span<const uint8_t, rate / std::numeric_limits<uint8_t>::digits> bytes,
                       std::span<uint64_t, rate / keccak::LANE_BW> words)
 {
@@ -63,7 +64,7 @@ le_bytes_to_u64_words(std::span<const uint8_t, rate / std::numeric_limits<uint8_
 
 // Given a 64 -bit unsigned integer as input, this routine can be used for interpreting those 8 -bytes in little-endian
 // byte order.
-static inline constexpr void
+static forceinline constexpr void
 u64_to_le_bytes(uint64_t word, std::span<uint8_t, sizeof(word)> bytes)
 {
   if constexpr (std::endian::native == std::endian::big) {
@@ -83,7 +84,7 @@ u64_to_le_bytes(uint64_t word, std::span<uint8_t, sizeof(word)> bytes)
 // Given an array of rate/64 -many 64 -bit unsigned integer words, this routine can be used for interpreting words in
 // little-endian byte-order, computing rate/8 -many bytes output.
 template<size_t rate>
-static inline constexpr void
+static forceinline constexpr void
 u64_words_to_le_bytes(std::span<const uint64_t, rate / keccak::LANE_BW> words,
                       std::span<uint8_t, rate / std::numeric_limits<uint8_t>::digits> bytes)
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include "sha3/internals/force_inline.hpp"
 #include <array>
 #include <bit>
 #include <cstddef>
@@ -57,7 +58,7 @@ static constexpr size_t PERM[LANE_CNT]{ 0,  6,  12, 18, 24, 3,  9,  10, 16, 22, 
 // See algorithm 5 in section 3.2.5 of http://dx.doi.org/10.6028/NIST.FIPS.202
 //
 // Taken from https://github.com/itzmeanjan/elephant/blob/2a21c7e/include/keccak.hpp#L24-L59
-consteval static bool
+static consteval bool
 rc(const size_t t)
 {
   // step 1 of algorithm 5
@@ -92,7 +93,7 @@ rc(const size_t t)
 // Keccak-p[1600, 24] permutation state
 //
 // Taken from https://github.com/itzmeanjan/elephant/blob/2a21c7e/include/keccak.hpp#L61-L74
-consteval static uint64_t
+static consteval uint64_t
 compute_rc(const size_t r_idx)
 {
   uint64_t tmp = 0;
@@ -106,7 +107,7 @@ compute_rc(const size_t r_idx)
 }
 
 // Compile-time evaluate Keccak-p[1600, 24] round constants.
-consteval std::array<uint64_t, LANE_CNT>
+static consteval std::array<uint64_t, LANE_CNT>
 compute_rcs()
 {
   std::array<uint64_t, LANE_CNT> res;
@@ -136,7 +137,7 @@ static constexpr auto RC = compute_rcs();
 //
 // This Keccak round function implementation is specifically targeting Apple Silicon CPUs. And this implementation
 // collects a lot of inspiration from https://github.com/bwesterb/armed-keccak.git.
-static inline constexpr void
+static forceinline constexpr void
 roundx4(uint64_t* const state, const size_t ridx)
 {
   std::array<uint64_t, 5> bc{}, d{};
@@ -585,7 +586,7 @@ roundx4(uint64_t* const state, const size_t ridx)
 
 // Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline constexpr void
+static forceinline constexpr void
 theta(uint64_t* const state)
 {
   uint64_t c[5]{};
@@ -632,7 +633,7 @@ theta(uint64_t* const state)
 
 // Keccak-p[1600, 24] step mapping function ρ, see section 3.2.2 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline constexpr void
+static forceinline constexpr void
 rho(uint64_t* const state)
 {
 #if defined __clang__
@@ -650,7 +651,7 @@ rho(uint64_t* const state)
 
 // Keccak-p[1600, 24] step mapping function π, see section 3.2.3 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline constexpr void
+static forceinline constexpr void
 pi(const uint64_t* const __restrict istate, // input permutation state
    uint64_t* const __restrict ostate        // output permutation state
 )
@@ -670,7 +671,7 @@ pi(const uint64_t* const __restrict istate, // input permutation state
 
 // Keccak-p[1600, 24] step mapping function χ, see section 3.2.4 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline constexpr void
+static forceinline constexpr void
 chi(uint64_t* const state)
 {
 #if defined __clang__
@@ -697,7 +698,7 @@ chi(uint64_t* const state)
 
 // Keccak-p[1600, 24] step mapping function ι, see section 3.2.5 of SHA3 specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline constexpr void
+static forceinline constexpr void
 iota(uint64_t* const state, const size_t ridx)
 {
   state[0] ^= RC[ridx];
@@ -708,7 +709,7 @@ iota(uint64_t* const state, const size_t ridx)
 // round `i` - it first applies round `i` and then round `i+1`.
 //
 // See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
-static inline constexpr void
+static forceinline constexpr void
 roundx2(uint64_t* const state, const size_t ridx)
 {
   uint64_t tmp[LANE_CNT]{};
@@ -732,7 +733,7 @@ roundx2(uint64_t* const state, const size_t ridx)
 
 // Keccak-p[1600, 24] permutation, applying 24 rounds of permutation on state of dimension 5 x 5 x 64 ( = 1600 ) -bits,
 // using algorithm 7 defined in section 3.3 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
-inline constexpr void
+forceinline constexpr void
 permute(uint64_t state[LANE_CNT])
 {
 #if defined __APPLE__ && defined __aarch64__ // On Apple Silicon

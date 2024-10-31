@@ -38,11 +38,11 @@ private:
 
 public:
   // Constructor
-  inline constexpr sha3_384_t() = default;
+  forceinline constexpr sha3_384_t() = default;
 
   // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary many times ( until the sponge is
   // finalized ), each time absorbing arbitrary many message bytes into RATE portion of the sponge.
-  inline constexpr void absorb(std::span<const uint8_t> msg)
+  forceinline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
       sponge::absorb<RATE>(state, offset, msg);
@@ -52,7 +52,7 @@ public:
   // Finalizes the sponge after all message bytes are absorbed into it, now it should be ready for squeezing message
   // digest bytes. Once finalized, you can't absorb any message bytes into sponge. After finalization, calling this
   // function again and again doesn't mutate anything.
-  inline constexpr void finalize()
+  forceinline constexpr void finalize()
   {
     if (!finalized) {
       sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
@@ -62,7 +62,7 @@ public:
 
   // After sponge state is finalized, 48 message digest bytes can be squeezed by calling this function. Once digest
   // bytes are squeezed, calling this function again and again returns nothing.
-  inline constexpr void digest(std::span<uint8_t, DIGEST_LEN> md)
+  forceinline constexpr void digest(std::span<uint8_t, DIGEST_LEN> md)
   {
     if (finalized && !squeezed) {
       size_t squeezable = RATE / std::numeric_limits<uint8_t>::digits;
@@ -74,7 +74,7 @@ public:
 
   // Reset the internal state of the SHA3-384 hasher, now it can again be used for another absorb->finalize->squeeze
   // cycle.
-  inline constexpr void reset()
+  forceinline constexpr void reset()
   {
     std::fill(std::begin(state), std::end(state), 0);
     offset = 0;

@@ -1,6 +1,7 @@
 #pragma once
-#include "keccak.hpp"
-#include "utils.hpp"
+#include "sha3/internals/force_inline.hpp"
+#include "sha3/internals/keccak.hpp"
+#include "sha3/internals/utils.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -32,7 +33,7 @@ check_domain_separator(const size_t dom_sep_bit_len)
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
 template<uint8_t domain_separator, size_t ds_bits, size_t rate>
-static inline constexpr std::array<uint8_t, rate / std::numeric_limits<uint8_t>::digits>
+static forceinline constexpr std::array<uint8_t, rate / std::numeric_limits<uint8_t>::digits>
 pad10x1(const size_t offset)
   requires(check_domain_separator(ds_bits))
 {
@@ -56,7 +57,7 @@ pad10x1(const size_t offset)
 // This function implementation collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
 template<size_t rate>
-static inline constexpr void
+static forceinline constexpr void
 absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t> msg)
 {
   constexpr size_t rbytes = rate >> 3u;   // # -of bytes
@@ -118,7 +119,7 @@ absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t
 // This function implementation collects some motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
 template<uint8_t domain_separator, size_t ds_bits, size_t rate>
-static inline constexpr void
+static forceinline constexpr void
 finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   requires(check_domain_separator(ds_bits))
 {
@@ -153,7 +154,7 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
 template<size_t rate>
-static inline constexpr void
+static forceinline constexpr void
 squeeze(uint64_t state[keccak::LANE_CNT], size_t& squeezable, std::span<uint8_t> out)
 {
   constexpr size_t rbytes = rate >> 3u;   // # -of bytes
