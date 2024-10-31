@@ -16,17 +16,17 @@ RELEASE_UBSAN_BUILD_DIR := $(UBSAN_BUILD_DIR)/release
 TEST_DIR := tests
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
-TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(TEST_SOURCES:.cpp=.o)))
 TEST_BINARY := $(TEST_BUILD_DIR)/test.out
 TEST_LINK_FLAGS := -lgtest -lgtest_main
 GTEST_PARALLEL := ./gtest-parallel/gtest-parallel
 
-DEBUG_ASAN_TEST_OBJECTS := $(addprefix $(DEBUG_ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
-RELEASE_ASAN_TEST_OBJECTS := $(addprefix $(RELEASE_ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+DEBUG_ASAN_TEST_OBJECTS := $(addprefix $(DEBUG_ASAN_BUILD_DIR)/, $(notdir $(TEST_SOURCES:.cpp=.o)))
+RELEASE_ASAN_TEST_OBJECTS := $(addprefix $(RELEASE_ASAN_BUILD_DIR)/, $(notdir $(TEST_SOURCES:.cpp=.o)))
 DEBUG_ASAN_TEST_BINARY := $(DEBUG_ASAN_BUILD_DIR)/test.out
 RELEASE_ASAN_TEST_BINARY := $(RELEASE_ASAN_BUILD_DIR)/test.out
-DEBUG_UBSAN_TEST_OBJECTS := $(addprefix $(DEBUG_UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
-RELEASE_UBSAN_TEST_OBJECTS := $(addprefix $(RELEASE_UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+DEBUG_UBSAN_TEST_OBJECTS := $(addprefix $(DEBUG_UBSAN_BUILD_DIR)/, $(notdir $(TEST_SOURCES:.cpp=.o)))
+RELEASE_UBSAN_TEST_OBJECTS := $(addprefix $(RELEASE_UBSAN_BUILD_DIR)/, $(notdir $(TEST_SOURCES:.cpp=.o)))
 DEBUG_UBSAN_TEST_BINARY := $(DEBUG_UBSAN_BUILD_DIR)/test.out
 RELEASE_UBSAN_TEST_BINARY := $(RELEASE_UBSAN_BUILD_DIR)/test.out
 

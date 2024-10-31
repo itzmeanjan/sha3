@@ -4,10 +4,10 @@ PERF_BUILD_DIR := $(BUILD_DIR)/perf
 BENCHMARK_DIR := benches
 BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
 BENCHMARK_HEADERS := $(wildcard $(BENCHMARK_DIR)/*.hpp)
-BENCHMARK_OBJECTS := $(addprefix $(BENCHMARK_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
+BENCHMARK_OBJECTS := $(addprefix $(BENCHMARK_BUILD_DIR)/, $(notdir $(BENCHMARK_SOURCES:.cpp=.o)))
 BENCHMARK_LINK_FLAGS := -lbenchmark -lbenchmark_main -lpthread
 BENCHMARK_BINARY := $(BENCHMARK_BUILD_DIR)/bench.out
-PERF_OBJECTS := $(addprefix $(PERF_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
+PERF_OBJECTS := $(addprefix $(PERF_BUILD_DIR)/, $(notdir $(BENCHMARK_SOURCES:.cpp=.o)))
 PERF_BINARY := $(PERF_BUILD_DIR)/perf.out
 PERF_LINK_FLAGS := -lbenchmark -lbenchmark_main -lpfm -lpthread
 BENCHMARK_OUT_FILE := bench_result_on_$(shell uname -s)_$(shell uname -r)_$(shell uname -m)_with_$(CXX)_$(shell $(CXX) -dumpversion).json
