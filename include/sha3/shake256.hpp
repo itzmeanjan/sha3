@@ -83,7 +83,7 @@ public:
   }
 
   // Given that sponge is already finalized, this routine can be used for zeroizing first n -bytes of permutation state
-  // s.t. n <= 200.
+  // s.t. n <= 200 and applying permutation.
   inline void ratchet(const size_t byte_len)
   {
     if (finalized) {
@@ -91,6 +91,8 @@ public:
 
       auto state_as_bytes = reinterpret_cast<uint8_t*>(state);
       std::memset(state_as_bytes, 0, ratchetable_portion_byte_len);
+
+      keccak::permute(state);
     }
   }
 };
