@@ -234,4 +234,4 @@ Output : be24aea2c7d7488d28d638ee46baba5474994171b6bc42fce59679f5578e57ac59f4521
 ```
 
 > [!NOTE]
-> This library doesn't expose any raw pointer + length -based interfaces, rather everything is wrapped under much safer `std::span`` - which one can easily create from `std::{array, vector}` or even raw pointers and length pair. See https://en.cppreference.com/w/cpp/container/span. I made this choice because this gives us much better type safety and compile-time error reporting.
+> This library doesn't expose any raw pointer + length -based interfaces, rather everything is wrapped under much safer `std::span` - which one can easily create from `std::{array, vector}` or even raw pointers and length pair. See https://en.cppreference.com/w/cpp/container/span. I made this choice because this gives us much better type safety and compile-time error reporting.
