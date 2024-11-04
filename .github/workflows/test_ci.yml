@@ -35,7 +35,7 @@ jobs:
     - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
       if: ${{matrix.test_type == 'standard'}}
       run: |
-        CXX=${{matrix.compiler}} make -j
+        CXX=${{matrix.compiler}} make test -j
         make clean
 
     - name: Execute Tests with ${{matrix.test_type}}, in ${{matrix.build_type}} mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
