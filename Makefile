@@ -1,7 +1,9 @@
 .DEFAULT_GOAL := help
 
+# Collects inspiration from https://github.com/0xPolygonMiden/crypto/blob/3909b0199368b13fdfa934a324f984572d521e39/Makefile#L1-L5
+# and https://github.com/gtramontina/sourcing/blob/853252ee184c16bc69dd53e8457107d718aca04f/Makefile#L68-L72
 .PHONY: help
-help: 
+help:
 	@for file in $(MAKEFILE_LIST); do \
 		grep -E '^[a-zA-Z_-]+:.*?## .*$$' $${file} | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}';\
 	done
