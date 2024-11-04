@@ -1,12 +1,13 @@
-#include "sha3_384.hpp"
+#include "sha3/sha3_384.hpp"
 #include "test_conf.hpp"
+#include "test_utils.hpp"
 #include <algorithm>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <numeric>
 #include <vector>
 
-// Eval SHA3-384 hash on statically defined input message during
-// compilation-time.
+// Eval SHA3-384 hash on statically defined input message during compilation-time.
 constexpr std::array<uint8_t, sha3_384::DIGEST_LEN>
 eval_sha3_384()
 {
@@ -34,18 +35,16 @@ TEST(Sha3Hashing, CompileTimeEvalSha3_384)
   // d6e266970a3fdcd4a833da861599179a060b576959e993b4698529304ee38c23c7102a7084c4d568b1d95523d14077e7
 
   constexpr auto md = eval_sha3_384();
-  static_assert(
-    md ==
-      std::array<uint8_t, sha3_384::DIGEST_LEN>{
-        214, 226, 102, 151, 10,  63,  220, 212, 168, 51,  218, 134,
-        21,  153, 23,  154, 6,   11,  87,  105, 89,  233, 147, 180,
-        105, 133, 41,  48,  78,  227, 140, 35,  199, 16,  42,  112,
-        132, 196, 213, 104, 177, 217, 85,  35,  209, 64,  119, 231 },
-    "Must be able to compute Sha3-384 hash during compile-time !");
+  static_assert(md == std::array<uint8_t, sha3_384::DIGEST_LEN>{ 214, 226, 102, 151, 10,  63,  220, 212, 168, 51,
+                                                                 218, 134, 21,  153, 23,  154, 6,   11,  87,  105,
+                                                                 89,  233, 147, 180, 105, 133, 41,  48,  78,  227,
+                                                                 140, 35,  199, 16,  42,  112, 132, 196, 213, 104,
+                                                                 177, 217, 85,  35,  209, 64,  119, 231 },
+                "Must be able to compute Sha3-384 hash during compile-time !");
 }
 
-// Test that absorbing same input message bytes using both incremental and
-// one-shot hashing, should yield same output bytes, for SHA3-384 hasher.
+// Test that absorbing same input message bytes using both incremental and one-shot hashing, should yield same output
+// bytes, for SHA3-384 hasher.
 TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
@@ -57,7 +56,7 @@ TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
     auto _out0 = std::span<uint8_t, sha3_384::DIGEST_LEN>(out0);
     auto _out1 = std::span<uint8_t, sha3_384::DIGEST_LEN>(out1);
 
-    sha3_utils::random_data(_msg);
+    sha3_test_utils::random_data(_msg);
 
     sha3_384::sha3_384_t hasher;
 
@@ -85,8 +84,7 @@ TEST(Sha3Hashing, Sha3_384IncrementalAbsorption)
   }
 }
 
-// Ensure that SHA3-384 implementation is conformant with FIPS 202 standard, by
-// using KAT file generated following
+// Ensure that SHA3-384 implementation is conformant with FIPS 202 standard, by using KAT file generated following
 // https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
 TEST(Sha3Hashing, Sha3_384KnownAnswerTests)
 {
@@ -111,8 +109,8 @@ TEST(Sha3Hashing, Sha3_384KnownAnswerTests)
       auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
       auto md2 = md1.substr(md1.find("="sv) + 2, md1.size());
 
-      auto msg = sha3_utils::from_hex(msg2);
-      auto md = sha3_utils::from_hex(md2);
+      auto msg = sha3_test_utils::from_hex(msg2);
+      auto md = sha3_test_utils::from_hex(md2);
 
       std::vector<uint8_t> digest(sha3_384::DIGEST_LEN);
       auto _digest = std::span<uint8_t, sha3_384::DIGEST_LEN>(digest);

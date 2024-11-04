@@ -1,12 +1,13 @@
-#include "sha3_512.hpp"
+#include "sha3/sha3_512.hpp"
 #include "test_conf.hpp"
+#include "test_utils.hpp"
 #include <algorithm>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <numeric>
 #include <vector>
 
-// Eval SHA3-512 hash on statically defined input message during
-// compilation-time.
+// Eval SHA3-512 hash on statically defined input message during compilation-time.
 constexpr std::array<uint8_t, sha3_512::DIGEST_LEN>
 eval_sha3_512()
 {
@@ -34,19 +35,17 @@ TEST(Sha3Hashing, CompileTimeEvalSha3_512)
   // 989c1995da9d2d341f993c2e2ca695f3477075061bfbd2cdf0be75cf7ba99fbe33d8d2c4dcc31fa89917786b883e6c9d5b02ed81b7483a4cb3ea98671588f745
 
   constexpr auto md = eval_sha3_512();
-  static_assert(md ==
-                  std::array<uint8_t, sha3_512::DIGEST_LEN>{
-                    152, 156, 25,  149, 218, 157, 45,  52,  31,  153, 60,
-                    46,  44,  166, 149, 243, 71,  112, 117, 6,   27,  251,
-                    210, 205, 240, 190, 117, 207, 123, 169, 159, 190, 51,
-                    216, 210, 196, 220, 195, 31,  168, 153, 23,  120, 107,
-                    136, 62,  108, 157, 91,  2,   237, 129, 183, 72,  58,
-                    76,  179, 234, 152, 103, 21,  136, 247, 69 },
+  static_assert(md == std::array<uint8_t, sha3_512::DIGEST_LEN>{ 152, 156, 25,  149, 218, 157, 45,  52,  31,  153, 60,
+                                                                 46,  44,  166, 149, 243, 71,  112, 117, 6,   27,  251,
+                                                                 210, 205, 240, 190, 117, 207, 123, 169, 159, 190, 51,
+                                                                 216, 210, 196, 220, 195, 31,  168, 153, 23,  120, 107,
+                                                                 136, 62,  108, 157, 91,  2,   237, 129, 183, 72,  58,
+                                                                 76,  179, 234, 152, 103, 21,  136, 247, 69 },
                 "Must be able to compute Sha3-512 hash during compile-time !");
 }
 
-// Test that absorbing same input message bytes using both incremental and
-// one-shot hashing, should yield same output bytes, for SHA3-512 hasher.
+// Test that absorbing same input message bytes using both incremental and one-shot hashing, should yield same output
+// bytes, for SHA3-512 hasher.
 TEST(Sha3Hashing, Sha3_512IncrementalAbsorption)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
@@ -58,7 +57,7 @@ TEST(Sha3Hashing, Sha3_512IncrementalAbsorption)
     auto _out0 = std::span<uint8_t, sha3_512::DIGEST_LEN>(out0);
     auto _out1 = std::span<uint8_t, sha3_512::DIGEST_LEN>(out1);
 
-    sha3_utils::random_data(_msg);
+    sha3_test_utils::random_data(_msg);
 
     sha3_512::sha3_512_t hasher;
 
@@ -86,8 +85,7 @@ TEST(Sha3Hashing, Sha3_512IncrementalAbsorption)
   }
 }
 
-// Ensure that SHA3-512 implementation is conformant with FIPS 202 standard, by
-// using KAT file generated following
+// Ensure that SHA3-512 implementation is conformant with FIPS 202 standard, by using KAT file generated following
 // https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
 TEST(Sha3Hashing, Sha3_512KnownAnswerTests)
 {
@@ -112,8 +110,8 @@ TEST(Sha3Hashing, Sha3_512KnownAnswerTests)
       auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
       auto md2 = md1.substr(md1.find("="sv) + 2, md1.size());
 
-      auto msg = sha3_utils::from_hex(msg2);
-      auto md = sha3_utils::from_hex(md2);
+      auto msg = sha3_test_utils::from_hex(msg2);
+      auto md = sha3_test_utils::from_hex(md2);
 
       std::vector<uint8_t> digest(sha3_512::DIGEST_LEN);
       auto _digest = std::span<uint8_t, sha3_512::DIGEST_LEN>(digest);
