@@ -135,6 +135,21 @@ Compiled with `g++ (Ubuntu 14.2.0-4ubuntu2) 14.2.0` while running on `Linux 6.11
 
 I maintain benchmark results in JSON format @ [bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14.json).
 
+### On Apple M1 Max
+
+Compiled with `Apple Clang version 16.0.0` while running kernel `Darwin 24.1.0 arm64`.
+
+Maintaining benchmark results in JSON format @ [bench_result_on_Darwin_24.1.0_arm64_with_c++_16.0.0](./bench_result_on_Darwin_24.1.0_arm64_with_c++_16.0.0.json).
+
+### On AWS EC2 Instance `c8g.medium` i.e. ARM Neoverse-V2
+
+Compiled with `g++ (Ubuntu 13.2.0-23ubuntu4) 13.2.0 ` while running on `Linux 6.8.0-1016-aws aarch64`.
+
+I maintain benchmark results in JSON format @ [bench_result_on_Linux_6.8.0-1016-aws_aarch64_with_g++_13](./bench_result_on_Linux_6.8.0-1016-aws_aarch64_with_g++_13.json).
+
+> [!NOTE]
+> More about AWS EC2 instances @ https://aws.amazon.com/ec2/instance-types/c8g.
+
 ## Usage
 
 `sha3` - C++ header-only library is written such that it's fairly easy for one to start using it in their project. All one needs to do
