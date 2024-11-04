@@ -75,17 +75,17 @@ $(DEBUG_UBSAN_TEST_BINARY): $(DEBUG_UBSAN_TEST_OBJECTS)
 $(RELEASE_UBSAN_TEST_BINARY): $(RELEASE_UBSAN_TEST_OBJECTS)
 	$(CXX) $(RELEASE_UBSAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-test: $(TEST_BINARY) $(GTEST_PARALLEL)
+test: $(TEST_BINARY) $(GTEST_PARALLEL) ## Build and run all tests in RELEASE mode
 	$(GTEST_PARALLEL) $< --print_test_times
 
-debug_asan_test: $(DEBUG_ASAN_TEST_BINARY) $(GTEST_PARALLEL)
+debug_asan_test: $(DEBUG_ASAN_TEST_BINARY) $(GTEST_PARALLEL) ## Build and run all tests in DEBUG mode, with Address Sanitizer
 	$(GTEST_PARALLEL) $< --print_test_times
 
-release_asan_test: $(RELEASE_ASAN_TEST_BINARY) $(GTEST_PARALLEL)
+release_asan_test: $(RELEASE_ASAN_TEST_BINARY) $(GTEST_PARALLEL) ## Build and run all tests in RELEASE mode, with Address Sanitizer
 	$(GTEST_PARALLEL) $< --print_test_times
 
-debug_ubsan_test: $(DEBUG_UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
+debug_ubsan_test: $(DEBUG_UBSAN_TEST_BINARY) $(GTEST_PARALLEL) ## Build and run all tests in DEBUG mode, with Undefined Behavior Sanitizer
 	$(GTEST_PARALLEL) $< --print_test_times
 
-release_ubsan_test: $(RELEASE_UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
+release_ubsan_test: $(RELEASE_UBSAN_TEST_BINARY) $(GTEST_PARALLEL) ## Build and run all tests in RELEASE mode, with Undefined Behavior Sanitizer
 	$(GTEST_PARALLEL) $< --print_test_times

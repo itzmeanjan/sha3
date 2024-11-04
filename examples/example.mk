@@ -11,5 +11,5 @@ $(EXAMPLE_BUILD_DIR):
 $(EXAMPLE_BUILD_DIR)/%.exe: $(EXAMPLE_DIR)/%.cpp $(EXAMPLE_BUILD_DIR)
 	$(CXX) $(CXX_DEFS) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_FLAGS) $(I_FLAGS) $< -o $@
 
-example: $(EXAMPLE_EXECS)
+example: $(EXAMPLE_EXECS) ## Build and run all example programs, demonstrating usage of SHA3 API
 	$(foreach exec,$^,./$(exec); echo "--- --- ---";)
