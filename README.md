@@ -77,11 +77,19 @@ Some compile-time executed tests ( using `static_assert` ) are also implemented,
 Issue following command for running all the test cases.
 
 ```bash
-make -j            # Run tests without any sort of sanitizers
-make asan_test -j  # Run tests with AddressSanitizer enabled
-make ubsan_test -j # Run tests with UndefinedBehaviourSanitizer enabled
+# Shows help message - which targets are available and what do each of them do
+make
+# or
+make help
 
-CXX=clang++ make -j # Specify which compiler to use
+make test -j
+make debug_asan_test -j
+make debug_ubsan_test -j
+make release_asan_test -j
+make release_ubsan_test -j
+
+# Specify which compiler to use
+CXX=clang++ make test -j
 ```
 
 ```bash
