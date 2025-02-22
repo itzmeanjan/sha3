@@ -122,8 +122,6 @@ compute_rcs()
 // https://dx.doi.org/10.s6028/NIST.FIPS.202
 static constexpr auto RC = compute_rcs();
 
-#if defined __APPLE__ && defined __aarch64__ // On Apple Silicon
-
 // Keccak-p[1600, 24] round function, applying all five step mapping functions, updating state array. Note this
 // implementation of round function applies four consecutive rounds in a single call i.e. if you invoke it to apply
 // round `i`
@@ -133,10 +131,8 @@ static constexpr auto RC = compute_rcs();
 // - and then round `i+2`
 // - and finally round `i+3`
 //
-// See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
-//
-// This Keccak round function implementation is specifically targeting Apple Silicon CPUs. And this implementation
-// collects a lot of inspiration from https://github.com/bwesterb/armed-keccak.git.
+// See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202.
+// This implementation collects a lot of inspiration from https://github.com/bwesterb/armed-keccak.git.
 static forceinline constexpr void
 roundx4(uint64_t* const state, const size_t ridx)
 {
@@ -582,169 +578,14 @@ roundx4(uint64_t* const state, const size_t ridx)
   state[24] = bc[4] ^ (bc[1] & ~bc[0]);
 }
 
-#else // On everywhere else
-
-// Keccak-p[1600, 24] step mapping function θ, see section 3.2.1 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
-static forceinline constexpr void
-theta(uint64_t* const state)
-{
-  uint64_t c[5]{};
-  uint64_t d[5];
-
-#if defined __clang__
-#pragma clang loop unroll(enable)
-#pragma clang loop vectorize(enable)
-#pragma clang loop interleave(enable)
-#elif defined __GNUG__
-#pragma GCC unroll 5
-#pragma GCC ivdep
-#endif
-  for (size_t i = 0; i < 25; i += 5) {
-    c[0] ^= state[i + 0];
-    c[1] ^= state[i + 1];
-    c[2] ^= state[i + 2];
-    c[3] ^= state[i + 3];
-    c[4] ^= state[i + 4];
-  }
-
-  d[0] = c[4] ^ std::rotl(c[1], 1);
-  d[1] = c[0] ^ std::rotl(c[2], 1);
-  d[2] = c[1] ^ std::rotl(c[3], 1);
-  d[3] = c[2] ^ std::rotl(c[4], 1);
-  d[4] = c[3] ^ std::rotl(c[0], 1);
-
-#if defined __clang__
-#pragma clang loop unroll(enable)
-#pragma clang loop vectorize(enable)
-#pragma clang loop interleave(enable)
-#elif defined __GNUG__
-#pragma GCC unroll 5
-#pragma GCC ivdep
-#endif
-  for (size_t i = 0; i < 25; i += 5) {
-    state[i + 0] ^= d[0];
-    state[i + 1] ^= d[1];
-    state[i + 2] ^= d[2];
-    state[i + 3] ^= d[3];
-    state[i + 4] ^= d[4];
-  }
-}
-
-// Keccak-p[1600, 24] step mapping function ρ, see section 3.2.2 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
-static forceinline constexpr void
-rho(uint64_t* const state)
-{
-#if defined __clang__
-#pragma clang loop unroll(enable)
-#pragma clang loop vectorize(enable)
-#pragma clang loop interleave(enable)
-#elif defined __GNUG__
-#pragma GCC unroll 25
-#pragma GCC ivdep
-#endif
-  for (size_t i = 0; i < 25; i++) {
-    state[i] = std::rotl(state[i], ROT[i]);
-  }
-}
-
-// Keccak-p[1600, 24] step mapping function π, see section 3.2.3 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
-static forceinline constexpr void
-pi(const uint64_t* const __restrict istate, // input permutation state
-   uint64_t* const __restrict ostate        // output permutation state
-)
-{
-#if defined __clang__
-#pragma clang loop unroll(enable)
-#pragma clang loop vectorize(enable)
-#pragma clang loop interleave(enable)
-#elif defined __GNUG__
-#pragma GCC unroll 25
-#pragma GCC ivdep
-#endif
-  for (size_t i = 0; i < 25; i++) {
-    ostate[i] = istate[PERM[i]];
-  }
-}
-
-// Keccak-p[1600, 24] step mapping function χ, see section 3.2.4 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
-static forceinline constexpr void
-chi(uint64_t* const state)
-{
-#if defined __clang__
-#pragma clang loop unroll(enable)
-#pragma clang loop vectorize(enable)
-#pragma clang loop interleave(enable)
-#elif defined __GNUG__
-#pragma GCC unroll 5
-#pragma GCC ivdep
-#endif
-  for (size_t i = 0; i < 5; i++) {
-    const size_t ix5 = i * 5;
-
-    const uint64_t t0 = state[ix5 + 0];
-    const uint64_t t1 = state[ix5 + 1];
-
-    state[ix5 + 0] ^= (~t1 & state[ix5 + 2]);
-    state[ix5 + 1] ^= (~state[ix5 + 2] & state[ix5 + 3]);
-    state[ix5 + 2] ^= (~state[ix5 + 3] & state[ix5 + 4]);
-    state[ix5 + 3] ^= (~state[ix5 + 4] & t0);
-    state[ix5 + 4] ^= (~t0 & t1);
-  }
-}
-
-// Keccak-p[1600, 24] step mapping function ι, see section 3.2.5 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
-static forceinline constexpr void
-iota(uint64_t* const state, const size_t ridx)
-{
-  state[0] ^= RC[ridx];
-}
-
-// Keccak-p[1600, 24] round function, which applies all five step mapping functions in order, updates state array. Note
-// this implementation of round function applies two consecutive rounds in a single call i.e. if you invoke it to apply
-// round `i` - it first applies round `i` and then round `i+1`.
-//
-// See section 3.3 of https://dx.doi.org/10.6028/NIST.FIPS.202
-static forceinline constexpr void
-roundx2(uint64_t* const state, const size_t ridx)
-{
-  uint64_t tmp[LANE_CNT]{};
-
-  // Applying round `ridx`
-  theta(state);
-  rho(state);
-  pi(state, tmp);
-  chi(tmp);
-  iota(tmp, ridx);
-
-  // Applying round `ridx + 1`
-  theta(tmp);
-  rho(tmp);
-  pi(tmp, state);
-  chi(state);
-  iota(state, ridx + 1);
-}
-
-#endif
-
 // Keccak-p[1600, 24] permutation, applying 24 rounds of permutation on state of dimension 5 x 5 x 64 ( = 1600 ) -bits,
 // using algorithm 7 defined in section 3.3 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
 forceinline constexpr void
 permute(uint64_t state[LANE_CNT])
 {
-#if defined __APPLE__ && defined __aarch64__ // On Apple Silicon
   for (size_t i = 0; i < ROUNDS; i += 4) {
     roundx4(state, i);
   }
-#else // On everywhere else
-  for (size_t i = 0; i < ROUNDS; i += 2) {
-    roundx2(state, i);
-  }
-#endif
 }
 
 }
