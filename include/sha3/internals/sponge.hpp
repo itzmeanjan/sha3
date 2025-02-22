@@ -12,6 +12,8 @@
 // Keccak family of sponge functions
 namespace sponge {
 
+static constexpr size_t KECCAK_WORD_BYTE_LEN = keccak::LANE_BW / std::numeric_limits<uint8_t>::digits;
+
 // Compile-time check to ensure that domain separator can only be 2/ 4 -bits wide.
 //
 // When used in context of extendable output functions ( SHAKE{128, 256} ) domain separator bits are 4 -bit wide.
@@ -51,62 +53,51 @@ pad10x1(const size_t offset)
 // Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c] permutation state s.t. `offset` ( second
 // parameter ) denotes how many bytes are already consumed into rate portion of the state.
 //
-// - `rate` portion of sponge will have bitwidth of 1600 - c.
-// - `offset` must ∈ [0, `rbytes`).
+// - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
+// - `offset` must ∈ [0, `num_bytes_in_rate`).
 //
 // This function implementation collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
-template<size_t rate>
+template<size_t num_bits_in_rate>
 static forceinline constexpr void
 absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t> msg)
 {
-  constexpr size_t rbytes = rate >> 3u;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
+  constexpr size_t num_bytes_in_rate = num_bits_in_rate / std::numeric_limits<uint8_t>::digits;
 
-  std::array<uint8_t, rbytes> blk_bytes{};
-  std::array<uint64_t, rwords> blk_words{};
+  std::array<uint8_t, num_bytes_in_rate> block{};
+  auto block_span = std::span(block);
 
-  auto blk_bytes_span = std::span(blk_bytes);
-  auto blk_words_span = std::span(blk_words);
+  size_t msg_offset = 0;
+  while (msg_offset < msg.size()) {
+    const size_t remaining_num_bytes = msg.size() - msg_offset;
+    const size_t absorbable_num_bytes = std::min(remaining_num_bytes, num_bytes_in_rate - offset);
+    const size_t effective_block_byte_len = offset + absorbable_num_bytes;
+    const size_t padded_effective_block_byte_len =
+      (effective_block_byte_len + (KECCAK_WORD_BYTE_LEN - 1)) & (-KECCAK_WORD_BYTE_LEN);
+    const size_t padded_effective_block_begins_at = offset & (-KECCAK_WORD_BYTE_LEN);
 
-  const size_t mlen = msg.size();
-  const size_t blk_cnt = (offset + mlen) / rbytes;
+    std::fill_n(block_span.subspan(padded_effective_block_begins_at).begin(),
+                padded_effective_block_byte_len - padded_effective_block_begins_at,
+                0x00);
+    std::copy_n(msg.subspan(msg_offset).begin(), absorbable_num_bytes, block_span.subspan(offset).begin());
 
-  size_t moff = 0;
+    size_t state_word_index = padded_effective_block_begins_at / KECCAK_WORD_BYTE_LEN;
+    for (size_t i = padded_effective_block_begins_at; i < padded_effective_block_byte_len; i += KECCAK_WORD_BYTE_LEN) {
+      auto msg_chunk = std::span<const uint8_t, KECCAK_WORD_BYTE_LEN>(block_span.subspan(i, KECCAK_WORD_BYTE_LEN));
+      auto msg_word = sha3_utils::le_bytes_to_u64(msg_chunk);
 
-  for (size_t i = 0; i < blk_cnt; i++) {
-    const size_t readable = rbytes - offset;
-
-    auto msg_span = msg.subspan(moff, readable);
-    auto blk_span = blk_bytes_span.subspan(offset, readable);
-
-    std::copy(msg_span.begin(), msg_span.end(), blk_span.begin());
-    sha3_utils::le_bytes_to_u64_words<rate>(blk_bytes_span, blk_words_span);
-
-    for (size_t j = 0; j < rwords; j++) {
-      state[j] ^= blk_words_span[j];
+      state[state_word_index] ^= msg_word;
+      state_word_index++;
     }
 
-    keccak::permute(state);
+    offset += absorbable_num_bytes;
+    msg_offset += absorbable_num_bytes;
 
-    moff += readable;
-    offset = 0;
+    if (offset == num_bytes_in_rate) {
+      keccak::permute(state);
+      offset = 0;
+    }
   }
-
-  const size_t rm_bytes = mlen - moff;
-
-  auto msg_span = msg.subspan(moff, rm_bytes);
-  auto blk_span = blk_bytes_span.subspan(offset, rm_bytes);
-
-  blk_bytes.fill(0x00);
-  std::copy(msg_span.begin(), msg_span.end(), blk_span.begin());
-  sha3_utils::le_bytes_to_u64_words<rate>(blk_bytes_span, blk_words_span);
-
-  for (size_t j = 0; j < rwords; j++) {
-    state[j] ^= blk_words_span[j];
-  }
-
-  offset += rm_bytes;
 }
 
 // Given that N message bytes are already consumed into Keccak[c] permutation state, this routine finalizes sponge state
