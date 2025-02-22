@@ -25,31 +25,6 @@ check_domain_separator(const size_t dom_sep_bit_len)
   return (dom_sep_bit_len == 2u) | (dom_sep_bit_len == 4u);
 }
 
-// Pad10*1 - generates a padding, while also considering domain separator bits ( which are either 2 or 4 -bit wide ),
-// such that when both domain separator bits and 10*1 padding is appended ( in order ) to actual message, total byte
-// length of message consumed into keccak-p[1600, 24] permutation becomes multiple of `rate` -bits. The only parameter
-// `offset` denotes how many bytes are already mixed with rate portion of permutation state meaning `offset` must ∈ [0,
-// `rate/ 8`). This routine returns a byte array of length `rate/ 8` -bytes which can safely be mixed into permutation
-// state duing sponge finalization phase.
-//
-// This function implementation collects motivation from
-// https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L70-L72
-template<uint8_t domain_separator, size_t ds_bits, size_t rate>
-static forceinline constexpr std::array<uint8_t, rate / std::numeric_limits<uint8_t>::digits>
-pad10x1(const size_t offset)
-  requires(check_domain_separator(ds_bits))
-{
-  std::array<uint8_t, rate / std::numeric_limits<uint8_t>::digits> res{};
-
-  constexpr uint8_t mask = (1u << ds_bits) - 1u;
-  constexpr uint8_t pad_byte = (1u << ds_bits) | (domain_separator & mask);
-
-  res[offset] = pad_byte;
-  res[res.size() - 1] ^= 0x80u;
-
-  return res;
-}
-
 // Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c] permutation state s.t. `offset` ( second
 // parameter ) denotes how many bytes are already consumed into rate portion of the state.
 //
@@ -104,30 +79,28 @@ absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t
 // and makes it ready for squeezing, by appending ( along with domain separation bits ) 10*1 padding bits to input
 // message s.t. total absorbed message byte length becomes multiple of `rate/ 8` -bytes.
 //
-// - `rate` portion of sponge will have bitwidth of 1600 - c.
-// - `offset` must ∈ [0, `rbytes`)
+// - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
+// - `offset` must ∈ [0, `num_bytes_in_rate`)
 //
 // This function implementation collects some motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
-template<uint8_t domain_separator, size_t ds_bits, size_t rate>
+template<uint8_t domain_separator, size_t ds_bit_len, size_t num_bits_in_rate>
 static forceinline constexpr void
 finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
-  requires(check_domain_separator(ds_bits))
+  requires(check_domain_separator(ds_bit_len))
 {
-  constexpr size_t rbytes = rate >> 3u;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
+  constexpr size_t num_bytes_in_rate = num_bits_in_rate / std::numeric_limits<uint8_t>::digits;
+  constexpr size_t num_words_in_rate = num_bytes_in_rate / std::numeric_limits<uint8_t>::digits;
 
-  const auto padb = pad10x1<domain_separator, ds_bits, rate>(offset);
-  std::array<uint64_t, rwords> padw{};
+  const auto state_word_index = offset / KECCAK_WORD_BYTE_LEN;
+  const auto byte_index_in_state_word = offset % KECCAK_WORD_BYTE_LEN;
+  const auto shl_bit_offset = byte_index_in_state_word * std::numeric_limits<uint8_t>::digits;
 
-  auto padb_span = std::span(padb);
-  auto padw_span = std::span(padw);
+  constexpr uint8_t mask = (1u << ds_bit_len) - 1u;
+  constexpr uint8_t pad_byte = (1u << ds_bit_len) | (domain_separator & mask);
 
-  sha3_utils::le_bytes_to_u64_words<rate>(padb_span, padw_span);
-
-  for (size_t j = 0; j < rwords; j++) {
-    state[j] ^= padw_span[j];
-  }
+  state[state_word_index] ^= static_cast<uint64_t>(pad_byte) << shl_bit_offset;
+  state[num_words_in_rate - 1] ^= UINT64_C(0x80) << 56;
 
   keccak::permute(state);
   offset = 0;
