@@ -581,7 +581,10 @@ roundx4(uint64_t* const state, const size_t ridx)
 forceinline constexpr void
 permute(uint64_t state[LANE_CNT])
 {
-  for (size_t i = 0; i < ROUNDS; i += 4) {
+  constexpr auto STEP_BY = 4;
+  static_assert(ROUNDS % STEP_BY == 0);
+
+  for (size_t i = 0; i < ROUNDS; i += STEP_BY) {
     roundx4(state, i);
   }
 }
