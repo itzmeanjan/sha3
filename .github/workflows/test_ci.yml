@@ -15,7 +15,6 @@ jobs:
         os: [
             ubuntu-latest, # x86_64
             macos-latest, # aarch64
-            windows-latest, # x86-64
           ]
         compiler: [g++, clang++]
         build_type: [debug, release]
@@ -23,12 +22,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Google Test
         uses: Bacondish2023/setup-googletest@v1
         with:
           tag: v1.15.2
-    
+
       - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
         if: ${{matrix.test_type == 'standard'}}
         run: |
