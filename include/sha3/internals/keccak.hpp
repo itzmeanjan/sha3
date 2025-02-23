@@ -33,11 +33,10 @@ static constexpr size_t ROUNDS = 12 + 2 * L;
 //
 // Note, following offsets are obtained by performing % 64 ( bit width of lane ) on offsets provided in above mentioned
 // link
-static constexpr size_t ROT[LANE_CNT]{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW,  91 % LANE_BW,
-                                       36 % LANE_BW,  300 % LANE_BW, 6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW,
-                                       3 % LANE_BW,   10 % LANE_BW,  171 % LANE_BW, 153 % LANE_BW, 231 % LANE_BW,
-                                       105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW,  21 % LANE_BW,  136 % LANE_BW,
-                                       210 % LANE_BW, 66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW };
+static constexpr size_t ROT[LANE_CNT]{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW, 91 % LANE_BW, 36 % LANE_BW,  300 % LANE_BW,
+                                       6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW, 3 % LANE_BW,  10 % LANE_BW, 171 % LANE_BW, 153 % LANE_BW,
+                                       231 % LANE_BW, 105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW, 21 % LANE_BW, 136 % LANE_BW, 210 % LANE_BW,
+                                       66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW };
 
 // Precomputed table used for looking up source index during application of π step mapping function on keccak-[1600, 24]
 // state
@@ -49,8 +48,7 @@ static constexpr size_t ROT[LANE_CNT]{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_
 //
 // Table generated using above Python code snippet. See section 3.2.3 of the specification
 // https://dx.doi.org/10.6028/NIST.FIPS.202
-static constexpr size_t PERM[LANE_CNT]{ 0,  6,  12, 18, 24, 3,  9,  10, 16, 22, 1,  7, 13,
-                                        19, 20, 4,  5,  11, 17, 23, 2,  8,  14, 15, 21 };
+static constexpr size_t PERM[LANE_CNT]{ 0, 6, 12, 18, 24, 3, 9, 10, 16, 22, 1, 7, 13, 19, 20, 4, 5, 11, 17, 23, 2, 8, 14, 15, 21 };
 
 // Computes single bit of Keccak-p[1600, 24] round constant ( at compile-time ), using binary LFSR, defined by primitive
 // polynomial x^8 + x^6 + x^5 + x^4 + 1

@@ -34,9 +34,8 @@ TEST(Sha3Hashing, CompileTimeEvalSha3_224)
   // Output = fc95d44e806cbbd484e379882238f555fda923878c443abe4ce4cdd6
 
   constexpr auto md = eval_sha3_224();
-  static_assert(md == std::array<uint8_t, sha3_224::DIGEST_LEN>{ 252, 149, 212, 78,  128, 108, 187, 212, 132, 227,
-                                                                 121, 136, 34,  56,  245, 85,  253, 169, 35,  135,
-                                                                 140, 68,  58,  190, 76,  228, 205, 214 },
+  static_assert(md == std::array<uint8_t, sha3_224::DIGEST_LEN>{ 252, 149, 212, 78,  128, 108, 187, 212, 132, 227, 121, 136, 34,  56,
+                                                                 245, 85,  253, 169, 35,  135, 140, 68,  58,  190, 76,  228, 205, 214 },
                 "Must be able to compute Sha3-224 hash during compile-time !");
 }
 

@@ -24,7 +24,4 @@ bench_keccak_permutation(benchmark::State& state)
 #endif
 }
 
-BENCHMARK(bench_keccak_permutation)
-  ->Name("keccak-p[1600, 24]")
-  ->ComputeStatistics("min", compute_min)
-  ->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_keccak_permutation)->Name("keccak-p[1600, 24]")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);

@@ -133,27 +133,7 @@ bench_sha3_512(benchmark::State& state)
 #endif
 }
 
-BENCHMARK(bench_sha3_224)
-  ->RangeMultiplier(4)
-  ->Range(64, 16384)
-  ->Name("sha3_224")
-  ->ComputeStatistics("min", compute_min)
-  ->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_sha3_256)
-  ->RangeMultiplier(4)
-  ->Range(64, 16384)
-  ->Name("sha3_256")
-  ->ComputeStatistics("min", compute_min)
-  ->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_sha3_384)
-  ->RangeMultiplier(4)
-  ->Range(64, 16384)
-  ->Name("sha3_384")
-  ->ComputeStatistics("min", compute_min)
-  ->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_sha3_512)
-  ->RangeMultiplier(4)
-  ->Range(64, 16384)
-  ->Name("sha3_512")
-  ->ComputeStatistics("min", compute_min)
-  ->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_sha3_224)->RangeMultiplier(4)->Range(64, 16384)->Name("sha3_224")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_sha3_256)->RangeMultiplier(4)->Range(64, 16384)->Name("sha3_256")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_sha3_384)->RangeMultiplier(4)->Range(64, 16384)->Name("sha3_384")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_sha3_512)->RangeMultiplier(4)->Range(64, 16384)->Name("sha3_512")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
