@@ -19,7 +19,7 @@ Few of those places, where I've already used `sha3` as ( git submodule based ) d
 > [!WARNING]
 > Above list may not be up-to-date !
 
-Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202. 
+Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202.
 
 > [!NOTE]
 > All Sha3 hash functions and xofs are implemented as `constexpr` functions - meaning for any statically defined input message these functions can be evaluated in compile-time in constant-expression context. See [tests](./tests).
@@ -34,6 +34,39 @@ SHA3-384 | N ( >=0 ) -bytes message | 48 -bytes digest | Given N -bytes input me
 SHA3-512 | N ( >=0 ) -bytes message | 64 -bytes digest | Given N -bytes input message, this routine computes 64 -bytes sha3-512 digest, while *(incrementally)* consuming message into Keccak[1024] sponge. | [`sha3_512::sha3_512_t`](./include/sha3/sha3_512.hpp)
 SHAKE-128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake128::shake128_t`](./include/sha3/shake128.hpp)
 SHAKE-256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake256::shake256_t`](./include/sha3/shake256.hpp)
+
+Performance of SHA3 hash and extendable output functions on a `12th Gen Intel(R) Core(TM) i7-1260P`, running `Linux 6.11.0-18-generic` kernel, compiled with `GCC-14.2.0` with optimization options `-O3 -march=native -flto`.
+
+**SHA3 Hash Functions**
+
+| Algorithm    | Input Size (bytes) | MB/s (Median) |
+|--------------|--------------------|---------------|
+| SHA3-256     | 64                  | 483          |
+| SHA3-256     | 256                 | 700          |
+| SHA3-256     | 1024                | 644          |
+| SHA3-256     | 4096                | 642          |
+| SHA3-256     | 16384               | 655          |
+| SHA3-512     | 64                  | 602          |
+| SHA3-512     | 256                 | 367          |
+| SHA3-512     | 1024                | 330          |
+| SHA3-512     | 4096                | 335          |
+| SHA3-512     | 16384               | 339          |
+
+**SHA3 Extendable Output Functions**
+
+| Algorithm    | Input Size (bytes) | Output Size (bytes) | MB/s (Median) |
+|--------------|--------------------|----------------------|--------------|
+| SHAKE128     | 64                  | 64                    | 465        |
+| SHAKE128     | 256                 | 64                    | 698        |
+| SHAKE128     | 1024                | 64                    | 663        |
+| SHAKE128     | 4096                | 64                    | 706        |
+| SHAKE128     | 16384               | 64                    | 717        |
+| - | - | - | - |
+| SHAKE256     | 64                  | 64                    | 464        |
+| SHAKE256     | 256                 | 64                    | 699        |
+| SHAKE256     | 1024                | 64                    | 672        |
+| SHAKE256     | 4096                | 64                    | 638        |
+| SHAKE256     | 16384               | 64                    | 642        |
 
 ## Prerequisites
 
@@ -94,24 +127,24 @@ CXX=clang++ make test -j
 
 ```bash
 PASSED TESTS (18/18):
-       3 ms: build/test/test.out Sha3Xof.CompileTimeEvalShake256
+       1 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_384
+       1 ms: build/test/test.out Sha3Xof.CompileTimeEvalShake256
+       1 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_512
+       2 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_256
+       2 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_224
        4 ms: build/test/test.out Sha3Xof.CompileTimeEvalShake128
-      12 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_224
-      13 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_256
-      13 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_512
-      16 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_384
-      18 ms: build/test/test.out Sha3Hashing.Sha3_224IncrementalAbsorption
-      18 ms: build/test/test.out Sha3Hashing.Sha3_256IncrementalAbsorption
-      19 ms: build/test/test.out Sha3Hashing.Sha3_384IncrementalAbsorption
-      19 ms: build/test/test.out Sha3Hashing.Sha3_512IncrementalAbsorption
-      21 ms: build/test/test.out Sha3Hashing.Sha3_384KnownAnswerTests
-      21 ms: build/test/test.out Sha3Hashing.Sha3_224KnownAnswerTests
-      21 ms: build/test/test.out Sha3Xof.Shake128KnownAnswerTests
-      21 ms: build/test/test.out Sha3Hashing.Sha3_256KnownAnswerTests
-      22 ms: build/test/test.out Sha3Hashing.Sha3_512KnownAnswerTests
-      22 ms: build/test/test.out Sha3Xof.Shake256KnownAnswerTests
-    1078 ms: build/test/test.out Sha3Xof.Shake128IncrementalAbsorptionAndSqueezing
-    1159 ms: build/test/test.out Sha3Xof.Shake256IncrementalAbsorptionAndSqueezing
+       5 ms: build/test/test.out Sha3Hashing.Sha3_256KnownAnswerTests
+       6 ms: build/test/test.out Sha3Hashing.Sha3_224IncrementalAbsorption
+       7 ms: build/test/test.out Sha3Hashing.Sha3_512KnownAnswerTests
+       7 ms: build/test/test.out Sha3Xof.Shake128KnownAnswerTests
+       7 ms: build/test/test.out Sha3Hashing.Sha3_224KnownAnswerTests
+       7 ms: build/test/test.out Sha3Hashing.Sha3_512IncrementalAbsorption
+       7 ms: build/test/test.out Sha3Hashing.Sha3_256IncrementalAbsorption
+       7 ms: build/test/test.out Sha3Hashing.Sha3_384KnownAnswerTests
+       8 ms: build/test/test.out Sha3Xof.Shake256KnownAnswerTests
+       8 ms: build/test/test.out Sha3Hashing.Sha3_384IncrementalAbsorption
+    1028 ms: build/test/test.out Sha3Xof.Shake128IncrementalAbsorptionAndSqueezing
+    1112 ms: build/test/test.out Sha3Xof.Shake256IncrementalAbsorptionAndSqueezing
 ```
 
 ## Benchmarking
@@ -131,24 +164,15 @@ make benchmark -j # Else you have to issue this one.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
 
-Compiled with `g++ (Ubuntu 14.2.0-4ubuntu2) 14.2.0` while running on `Linux 6.11.0-9-generic x86_64`.
+Compiled with `g++ (Ubuntu 14.2.0-4ubuntu2) 14.2.0` while running on `Linux 6.11.0-18-generic x86_64`.
 
-I maintain benchmark results in JSON format @ [bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14.json).
+I maintain benchmark results in JSON format @ [bench_result_on_Linux_6.11.0-18-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-18-generic_x86_64_with_g++_14.json).
 
 ### On Apple M1 Max
 
 Compiled with `Apple Clang version 16.0.0` while running kernel `Darwin 24.1.0 arm64`.
 
-Maintaining benchmark results in JSON format @ [bench_result_on_Darwin_24.1.0_arm64_with_c++_16.0.0](./bench_result_on_Darwin_24.1.0_arm64_with_c++_16.0.0.json).
-
-### On AWS EC2 Instance `c8g.medium` i.e. ARM Neoverse-V2
-
-Compiled with `g++ (Ubuntu 13.2.0-23ubuntu4) 13.2.0 ` while running on `Linux 6.8.0-1016-aws aarch64`.
-
-I maintain benchmark results in JSON format @ [bench_result_on_Linux_6.8.0-1016-aws_aarch64_with_g++_13](./bench_result_on_Linux_6.8.0-1016-aws_aarch64_with_g++_13.json).
-
-> [!NOTE]
-> More about AWS EC2 instances @ https://aws.amazon.com/ec2/instance-types/c8g.
+Maintaining benchmark results in JSON format @ [bench_result_on_Darwin_24.3.0_arm64_with_c++_16.0.0](./bench_result_on_Darwin_24.3.0_arm64_with_c++_16.0.0.json).
 
 ## Usage
 
