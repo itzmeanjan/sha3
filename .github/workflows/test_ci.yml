@@ -3,48 +3,52 @@ name: Test SHA3 Hash and Extendable Output Functions
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [
+            ubuntu-latest, # x86_64
+            macos-latest, # aarch64
+            windows-latest, # x86-64
+          ]
         compiler: [g++, clang++]
         build_type: [debug, release]
         test_type: [standard, asan, ubsan]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Google-Test
-      run: |
-        pushd ~
-        git clone https://github.com/google/googletest.git -b v1.15.2
-        pushd googletest
-        mkdir build
-        pushd build
-        cmake .. -DBUILD_GMOCK=OFF
-        make -j
-        sudo make -j install
-        popd
-        popd
-        popd
-    - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
-      if: ${{matrix.test_type == 'standard'}}
-      run: |
-        CXX=${{matrix.compiler}} make test -j
-        make clean
+      - uses: actions/checkout@v4
+      - name: Setup Google-Test
+        run: |
+          pushd ~
+          git clone https://github.com/google/googletest.git -b v1.15.2
+          pushd googletest
+          mkdir build
+          pushd build
+          cmake .. -DBUILD_GMOCK=OFF
+          make -j
+          sudo make -j install
+          popd
+          popd
+          popd
+      - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+        if: ${{matrix.test_type == 'standard'}}
+        run: |
+          CXX=${{matrix.compiler}} make test -j
+          make clean
 
-    - name: Execute Tests with ${{matrix.test_type}}, in ${{matrix.build_type}} mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
-      if: ${{matrix.test_type != 'standard'}}
-      run: |
-        CXX=${{matrix.compiler}} make ${{matrix.build_type}}_${{matrix.test_type}}_test -j
-        make clean
+      - name: Execute Tests with ${{matrix.test_type}}, in ${{matrix.build_type}} mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+        if: ${{matrix.test_type != 'standard'}}
+        run: |
+          CXX=${{matrix.compiler}} make ${{matrix.build_type}}_${{matrix.test_type}}_test -j
+          make clean
 
-    - name: Build and run examples
-      run: |
-        make example -j
-        make clean
+      - name: Build and run examples
+        run: |
+          make example -j
+          make clean
