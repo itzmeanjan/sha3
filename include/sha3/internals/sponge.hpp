@@ -64,7 +64,7 @@ absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t
     offset += absorbable_num_bytes;
     msg_offset += absorbable_num_bytes;
 
-    if (offset == num_bytes_in_rate) {
+    if (offset == num_bytes_in_rate) [[unlikely]] {
       keccak::permute(state);
       offset = 0;
     }
@@ -139,7 +139,7 @@ squeeze(uint64_t state[keccak::LANE_CNT], size_t& squeezable, std::span<uint8_t>
     squeezable -= squeezable_num_bytes;
     out_offset += squeezable_num_bytes;
 
-    if (squeezable == 0) {
+    if (squeezable == 0) [[unlikely]] {
       keccak::permute(state);
       squeezable = num_bytes_in_rate;
     }
