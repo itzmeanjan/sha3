@@ -23,19 +23,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Google-Test
-        run: |
-          pushd ~
-          git clone https://github.com/google/googletest.git -b v1.15.2
-          pushd googletest
-          mkdir build
-          pushd build
-          cmake .. -DBUILD_GMOCK=OFF
-          make -j
-          sudo make -j install
-          popd
-          popd
-          popd
+      
+      - name: Setup Google Test
+        uses: Bacondish2023/setup-googletest@v1
+        with:
+          tag: v1.15.2
+    
       - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
         if: ${{matrix.test_type == 'standard'}}
         run: |
