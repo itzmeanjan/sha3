@@ -109,47 +109,50 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
 // Given that Keccak[c] permutation state is finalized, this routine can be invoked for squeezing `olen` -bytes out of
 // rate portion of the state.
 //
-// - `rate` portion of sponge will have bitwidth of 1600 - c.
+// - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
 // - `squeezable` denotes how many bytes can be squeezed without permutating the
 // sponge state.
 // - When `squeezable` becomes 0, state needs to be permutated again, after
-// which `rbytes` can again be squeezed from rate portion of the state.
+// which `num_bytes_in_rate` can again be squeezed from rate portion of the state.
 //
 // This function implementation collects motivation from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
-template<size_t rate>
+template<size_t num_bits_in_rate>
 static forceinline constexpr void
 squeeze(uint64_t state[keccak::LANE_CNT], size_t& squeezable, std::span<uint8_t> out)
 {
-  constexpr size_t rbytes = rate >> 3u;   // # -of bytes
-  constexpr size_t rwords = rbytes >> 3u; // # -of 64 -bit words
+  constexpr size_t num_bytes_in_rate = num_bits_in_rate / std::numeric_limits<uint8_t>::digits;
 
-  std::array<uint8_t, rbytes> blk_bytes{};
+  std::array<uint8_t, num_bytes_in_rate> blk_bytes{};
   auto blk_bytes_span = std::span(blk_bytes);
 
-  auto swords = std::span{ state, keccak::LANE_CNT };
-  auto swords_span = swords.template subspan<0, rwords>();
+  size_t out_offset = 0;
+  while (out_offset < out.size()) {
+    const size_t state_byte_offset = num_bytes_in_rate - squeezable;
+    const size_t remaining_num_bytes = out.size() - out_offset;
+    const size_t squeezable_num_bytes = std::min(remaining_num_bytes, squeezable);
+    const size_t effective_block_byte_len = state_byte_offset + squeezable_num_bytes;
+    const size_t padded_effective_block_byte_len =
+      (effective_block_byte_len + (KECCAK_WORD_BYTE_LEN - 1)) & (-KECCAK_WORD_BYTE_LEN);
+    const size_t padded_effective_block_begins_at = state_byte_offset & (-KECCAK_WORD_BYTE_LEN);
 
-  const size_t olen = out.size();
-  size_t off = 0;
+    size_t state_word_index = padded_effective_block_begins_at / KECCAK_WORD_BYTE_LEN;
+    for (size_t i = padded_effective_block_begins_at; i < padded_effective_block_byte_len; i += KECCAK_WORD_BYTE_LEN) {
+      auto chunk_bytes = std::span<uint8_t, KECCAK_WORD_BYTE_LEN>(blk_bytes_span.subspan(i, KECCAK_WORD_BYTE_LEN));
+      sha3_utils::u64_to_le_bytes(state[state_word_index], chunk_bytes);
 
-  while (off < olen) {
-    const size_t read = std::min(squeezable, olen - off);
-    const size_t soff = rbytes - squeezable;
+      state_word_index++;
+    }
 
-    sha3_utils::u64_words_to_le_bytes<rate>(swords_span, blk_bytes_span);
+    std::copy_n(
+      blk_bytes_span.subspan(state_byte_offset).begin(), squeezable_num_bytes, out.subspan(out_offset).begin());
 
-    auto blk_span = blk_bytes_span.subspan(soff, read);
-    auto out_span = out.subspan(off, read);
-
-    std::copy(blk_span.begin(), blk_span.end(), out_span.begin());
-
-    squeezable -= read;
-    off += read;
+    squeezable -= squeezable_num_bytes;
+    out_offset += squeezable_num_bytes;
 
     if (squeezable == 0) {
       keccak::permute(state);
-      squeezable = rbytes;
+      squeezable = num_bytes_in_rate;
     }
   }
 }
