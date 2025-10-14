@@ -21,12 +21,12 @@ jobs:
         test_type: [standard, asan, ubsan]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Google Test
         uses: Bacondish2023/setup-googletest@v1
         with:
-          tag: v1.15.2
+          tag: v1.17.0
 
       - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
         if: ${{matrix.test_type == 'standard'}}
