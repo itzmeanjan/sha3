@@ -19,10 +19,10 @@ Few of those places, where I've already used `sha3` as ( git submodule based ) d
 > [!WARNING]
 > Above list may not be up-to-date !
 
-Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy-to-use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) i.e. NIST FIPS PUB 202.
+Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy to use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) NIST FIPS PUB 202.
 
 > [!NOTE]
-> All Sha3 hash functions and xofs are implemented as `constexpr` functions - meaning for any statically defined input message these functions can be evaluated in compile-time in constant-expression context. See [tests](./tests).
+> All SHA3 hash functions and xofs are implemented as `constexpr` functions - meaning for any statically defined input message these functions can be evaluated in compile-time in constant-expression context. See [tests](./tests).
 
 Following algorithms ( with flexible interfaces ) are implemented in `sha3` library.
 
@@ -105,7 +105,7 @@ I also test correctness of
 - Incremental message absorption property of SHA3 hash functions and Xofs.
 - Incremental output squeezing property of SHA3 Xofs.
 
-Some compile-time executed tests ( using `static_assert` ) are also implemented, which ensure that all Sha3 hash functions and xofs are `constexpr` - meaning they can be evaluated during compilation-time for any statically defined input message.
+Some compile-time executed tests ( using `static_assert` ) are also implemented, which ensure that all SHA3 hash functions and xofs are `constexpr` - meaning they can be evaluated during compilation-time for any statically defined input message.
 
 Issue following command for running all the test cases.
 
