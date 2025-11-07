@@ -14,15 +14,10 @@ namespace sponge {
 
 static constexpr size_t KECCAK_WORD_BYTE_LEN = keccak::LANE_BW / std::numeric_limits<uint8_t>::digits;
 
-// Compile-time check to ensure that domain separator can only be 2/ 4 -bits wide.
-//
-// When used in context of extendable output functions ( SHAKE{128, 256} ) domain separator bits are 4 -bit wide.
-//
-// See section 6.{1, 2} of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202
 constexpr bool
 check_domain_separator(const size_t dom_sep_bit_len)
 {
-  return (dom_sep_bit_len == 2u) | (dom_sep_bit_len == 4u);
+  return dom_sep_bit_len <= 6u;
 }
 
 // Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c] permutation state s.t. `offset` ( second parameter ) denotes how many bytes are

@@ -2,7 +2,6 @@
 #include "sha3/internals/force_inline.hpp"
 #include <cassert>
 #include <cstdint>
-#include <cstring>
 #include <span>
 
 // Utility ( or commonly used ) functions for SHA3 implementation
