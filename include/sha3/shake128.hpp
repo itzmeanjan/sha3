@@ -10,6 +10,9 @@
 // SHAKE128 Extendable Output Function : Keccak[256](M || 1111, d)
 namespace shake128 {
 
+// Number of rounds keccak-p[1600] is applied.
+static constexpr size_t NUM_KECCAK_ROUNDS = keccak::MAX_NUM_ROUNDS;
+
 // Width of capacity portion of the sponge, in bits.
 static constexpr size_t CAPACITY = 256;
 
@@ -46,7 +49,7 @@ public:
   forceinline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
-      sponge::absorb<RATE>(state, offset, msg);
+      sponge::absorb<RATE, NUM_KECCAK_ROUNDS>(state, offset, msg);
     }
   }
 
@@ -59,7 +62,7 @@ public:
   forceinline constexpr void finalize()
   {
     if (!finalized) {
-      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
+      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE, NUM_KECCAK_ROUNDS>(state, offset);
 
       finalized = true;
       squeezable = RATE / std::numeric_limits<uint8_t>::digits;
@@ -71,7 +74,7 @@ public:
   forceinline constexpr void squeeze(std::span<uint8_t> dig)
   {
     if (finalized) {
-      sponge::squeeze<RATE>(state, squeezable, dig);
+      sponge::squeeze<RATE, NUM_KECCAK_ROUNDS>(state, squeezable, dig);
     }
   }
 
@@ -95,7 +98,7 @@ public:
       auto state_as_bytes = reinterpret_cast<uint8_t*>(state);
       std::memset(state_as_bytes, 0, ratchetable_portion_byte_len);
 
-      keccak::permute(state);
+      keccak::permute<NUM_KECCAK_ROUNDS>(state);
     }
   }
 };

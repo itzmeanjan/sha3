@@ -6,6 +6,9 @@
 // SHA3-256 Hash Function : Keccak[512](M || 01, 256)
 namespace sha3_256 {
 
+// Number of rounds keccak-p[1600] is applied.
+static constexpr size_t NUM_KECCAK_ROUNDS = keccak::MAX_NUM_ROUNDS;
+
 // Bit length of SHA3-256 message digest.
 static constexpr size_t DIGEST_BIT_LEN = 256;
 
@@ -45,7 +48,7 @@ public:
   forceinline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
-      sponge::absorb<RATE>(state, offset, msg);
+      sponge::absorb<RATE, NUM_KECCAK_ROUNDS>(state, offset, msg);
     }
   }
 
@@ -55,7 +58,7 @@ public:
   forceinline constexpr void finalize()
   {
     if (!finalized) {
-      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
+      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE, NUM_KECCAK_ROUNDS>(state, offset);
       finalized = true;
     }
   }
@@ -66,7 +69,7 @@ public:
   {
     if (finalized && !squeezed) {
       size_t squeezable = RATE / std::numeric_limits<uint8_t>::digits;
-      sponge::squeeze<RATE>(state, squeezable, md);
+      sponge::squeeze<RATE, NUM_KECCAK_ROUNDS>(state, squeezable, md);
 
       squeezed = true;
     }
