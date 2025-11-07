@@ -2,7 +2,8 @@
 #include "sha3/internals/keccak.hpp"
 #include <benchmark/benchmark.h>
 
-// Benchmarks Keccak-p[1600, 24] permutation.
+// Benchmarks Keccak-p[1600, 12] or Keccak-p[1600, 24] permutation.
+template<size_t num_rounds>
 void
 bench_keccak_permutation(benchmark::State& state)
 {
@@ -10,7 +11,7 @@ bench_keccak_permutation(benchmark::State& state)
   random_data<uint64_t>(st);
 
   for (auto _ : state) {
-    keccak::permute(st);
+    keccak::permute<num_rounds>(st);
 
     benchmark::DoNotOptimize(st);
     benchmark::ClobberMemory();
@@ -24,4 +25,5 @@ bench_keccak_permutation(benchmark::State& state)
 #endif
 }
 
-BENCHMARK(bench_keccak_permutation)->Name("keccak-p[1600, 24]")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_keccak_permutation<12>)->Name("keccak-p[1600, 12]")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_keccak_permutation<24>)->Name("keccak-p[1600, 24]")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
