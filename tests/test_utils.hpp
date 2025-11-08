@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cassert>
 #include <charconv>
 #include <random>
@@ -45,6 +46,40 @@ from_hex(std::string_view hex)
     std::from_chars(sstr.data(), sstr.data() + 2, byte, 16);
 
     res[i] = byte;
+  }
+
+  return res;
+}
+
+/// Generates static byte pattern of length 251, following https://www.rfc-editor.org/rfc/rfc9861.html#name-test-vectors.
+static inline std::array<uint8_t, 251>
+pattern()
+{
+  std::array<uint8_t, 251> pattern{};
+  for (uint8_t i = 0; i < pattern.size(); i++) {
+    pattern[i] = i;
+  }
+
+  return pattern;
+}
+
+/// Generates bytearray of length n by repeating static byte pattern returned by `pattern()`,
+/// following https://www.ietf.org/archive/id/draft-irtf-cfrg-kangarootwelve-09.html#name-test-vectors
+static inline std::vector<uint8_t>
+ptn(const size_t n)
+{
+  std::vector<uint8_t> res(n, 0);
+  auto res_span = std::span(res);
+
+  size_t off = 0;
+  while (off < n) {
+    const auto read = std::min<size_t>(n - off, 251);
+
+    auto static_pattern = pattern();
+    auto static_pattern_span = std::span(static_pattern);
+
+    std::copy_n(static_pattern_span.subspan(0, read).begin(), read, res_span.subspan(off, read).begin());
+    off += read;
   }
 
   return res;

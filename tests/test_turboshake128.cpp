@@ -108,40 +108,6 @@ TEST(Sha3XOF, TurboSHAKE128IncrementalAbsorptionAndSqueezing)
   }
 }
 
-/// Generates static byte pattern of length 251, following https://www.rfc-editor.org/rfc/rfc9861.html#name-test-vectors.
-std::array<uint8_t, 251>
-pattern()
-{
-  std::array<uint8_t, 251> pattern{};
-  for (uint8_t i = 0; i < pattern.size(); i++) {
-    pattern[i] = i;
-  }
-
-  return pattern;
-}
-
-/// Generates bytearray of length n by repeating static byte pattern returned by `pattern()`,
-/// following https://www.ietf.org/archive/id/draft-irtf-cfrg-kangarootwelve-09.html#name-test-vectors
-std::vector<uint8_t>
-ptn(const size_t n)
-{
-  std::vector<uint8_t> res(n, 0);
-  auto res_span = std::span(res);
-
-  size_t off = 0;
-  while (off < n) {
-    const auto read = std::min<size_t>(n - off, 251);
-
-    auto static_pattern = pattern();
-    auto static_pattern_span = std::span(static_pattern);
-
-    std::copy_n(static_pattern_span.subspan(0, read).begin(), read, res_span.subspan(off, read).begin());
-    off += read;
-  }
-
-  return res;
-}
-
 template<uint8_t domain_separator>
 std::vector<uint8_t>
 compute_turboshake128_output(const std::vector<uint8_t> msg, const size_t out_byte_len)
@@ -175,20 +141,20 @@ TEST(Sha3XOF, TurboSHAKE128KnownAnswerTests)
   EXPECT_EQ(compute_turboshake128_output<0x01>({}, 64), sha3_test_utils::from_hex("868cbd53b078205abb85815d941f7d0376bff5b8888a6a2d03483afbaf83967f226e2cad5e7b1ec4ca72236f076462199fea48c93438ad4c49c767f9417be7c5"));
   EXPECT_EQ(compute_turboshake128_output<0x1f>({}, 64), sha3_test_utils::from_hex("1E415F1C5983AFF2169217277D17BB538CD945A397DDEC541F1CE41AF2C1B74C3E8CCAE2A4DAE56C84A04C2385C03C15E8193BDF58737363321691C05462C8DF"));
  
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(1), 32), sha3_test_utils::from_hex("55cedd6f60af7bb29a4042ae832ef3f58db7299f893ebb9247247d856958daa9"));
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(17), 32), sha3_test_utils::from_hex("9c97d036a3bac819db70ede0ca554ec6e4c2a1a4ffbfd9ec269ca6a111161233"));
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(17 * 17), 32), sha3_test_utils::from_hex("96c77c279e0126f7fc07c9b07f5cdae1e0be60bdbe10620040e75d7223a624d2"));
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(17 * 17 * 17), 32), sha3_test_utils::from_hex("d4976eb56bcf118520582b709f73e1d6853e001fdaf80e1b13e0d0599d5fb372"));
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("DA67C7039E98BF530CF7A37830C6664E14CBAB7F540F58403B1B82951318EE5C"));
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(17 * 17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("B97A906FBF83EF7C812517ABF3B2D0AEA0C4F60318CE11CF103925127F59EECD"));
-  EXPECT_EQ(compute_turboshake128_output<0x1f>(ptn(17 * 17 * 17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("35CD494ADEDED2F25239AF09A7B8EF0C4D1CA4FE2D1AC370FA63216FE7B4C2B1"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(1), 32), sha3_test_utils::from_hex("55cedd6f60af7bb29a4042ae832ef3f58db7299f893ebb9247247d856958daa9"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(17), 32), sha3_test_utils::from_hex("9c97d036a3bac819db70ede0ca554ec6e4c2a1a4ffbfd9ec269ca6a111161233"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(17 * 17), 32), sha3_test_utils::from_hex("96c77c279e0126f7fc07c9b07f5cdae1e0be60bdbe10620040e75d7223a624d2"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(17 * 17 * 17), 32), sha3_test_utils::from_hex("d4976eb56bcf118520582b709f73e1d6853e001fdaf80e1b13e0d0599d5fb372"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("DA67C7039E98BF530CF7A37830C6664E14CBAB7F540F58403B1B82951318EE5C"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(17 * 17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("B97A906FBF83EF7C812517ABF3B2D0AEA0C4F60318CE11CF103925127F59EECD"));
+  EXPECT_EQ(compute_turboshake128_output<0x1f>(sha3_test_utils::ptn(17 * 17 * 17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("35CD494ADEDED2F25239AF09A7B8EF0C4D1CA4FE2D1AC370FA63216FE7B4C2B1"));
 
-  EXPECT_EQ(compute_turboshake128_output<0x01>(ptn(1), 32), sha3_test_utils::from_hex("0fc5bb1616bfd8121beb8cd6cde167ffbe4b11e51d9bc9a6a92c34ed3e46f4e1"));
-  EXPECT_EQ(compute_turboshake128_output<0x01>(ptn(17), 32), sha3_test_utils::from_hex("6f0f5f330a7114ed345b97d012f8a8bac5ba32f1c0aafab22ef880737bf0c103"));
-  EXPECT_EQ(compute_turboshake128_output<0x01>(ptn(17 * 17), 32), sha3_test_utils::from_hex("6232caa37353b5adb0e16e5beb97928110c5b837531339a2c9eb08014faa8ef6"));
-  EXPECT_EQ(compute_turboshake128_output<0x01>(ptn(17 * 17 * 17), 32), sha3_test_utils::from_hex("668105870786e2aa80718487563aa06824eabc1d3a8e8b642f6d9996244fe8cf"));
-  EXPECT_EQ(compute_turboshake128_output<0x01>(ptn(17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("795de7dd0ec596c20145d1784ac2acd625b4f62653872a06d8a8b9a0543aa863"));
-  EXPECT_EQ(compute_turboshake128_output<0x01>(ptn(17 * 17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("4185e05262bcbcf7f74f50f08a710791ea0a12fba13c3a23ff07c33c0110bd20"));
+  EXPECT_EQ(compute_turboshake128_output<0x01>(sha3_test_utils::ptn(1), 32), sha3_test_utils::from_hex("0fc5bb1616bfd8121beb8cd6cde167ffbe4b11e51d9bc9a6a92c34ed3e46f4e1"));
+  EXPECT_EQ(compute_turboshake128_output<0x01>(sha3_test_utils::ptn(17), 32), sha3_test_utils::from_hex("6f0f5f330a7114ed345b97d012f8a8bac5ba32f1c0aafab22ef880737bf0c103"));
+  EXPECT_EQ(compute_turboshake128_output<0x01>(sha3_test_utils::ptn(17 * 17), 32), sha3_test_utils::from_hex("6232caa37353b5adb0e16e5beb97928110c5b837531339a2c9eb08014faa8ef6"));
+  EXPECT_EQ(compute_turboshake128_output<0x01>(sha3_test_utils::ptn(17 * 17 * 17), 32), sha3_test_utils::from_hex("668105870786e2aa80718487563aa06824eabc1d3a8e8b642f6d9996244fe8cf"));
+  EXPECT_EQ(compute_turboshake128_output<0x01>(sha3_test_utils::ptn(17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("795de7dd0ec596c20145d1784ac2acd625b4f62653872a06d8a8b9a0543aa863"));
+  EXPECT_EQ(compute_turboshake128_output<0x01>(sha3_test_utils::ptn(17 * 17 * 17 * 17 * 17), 32), sha3_test_utils::from_hex("4185e05262bcbcf7f74f50f08a710791ea0a12fba13c3a23ff07c33c0110bd20"));
 
   EXPECT_EQ(compute_turboshake128_output<0x01>({ 0xff, 0xff, 0xff }, 32), sha3_test_utils::from_hex("BF323F940494E88EE1C540FE660BE8A0C93F43D15EC006998462FA994EED5DAB"));
   EXPECT_EQ(compute_turboshake128_output<0x06>({ 0xff }, 32), sha3_test_utils::from_hex("8EC9C66465ED0D4A6C35D13506718D687A25CB05C74CCA1E42501ABD83874A67"));
