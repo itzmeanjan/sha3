@@ -7,7 +7,7 @@
 #include <numeric>
 #include <vector>
 
-// Eval Shake128 Xof on statically defined input message during compilation-time.
+// Eval SHAKE128 XOF on statically defined input message during compilation-time.
 constexpr std::array<uint8_t, 256>
 eval_shake128()
 {
@@ -26,8 +26,8 @@ eval_shake128()
   return md;
 }
 
-// Ensure that Shake128 Xof implementation is compile-time evaluable.
-TEST(Sha3Xof, CompileTimeEvalShake128)
+// Ensure that SHAKE128 XOF implementation is compile-time evaluable.
+TEST(Sha3XOF, CompileTimeEvalSHAKE128)
 {
   // Input  =
   // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff
@@ -50,12 +50,11 @@ TEST(Sha3Xof, CompileTimeEvalShake128)
                 "Must be able to compute Shake128 Xof during compile-time !");
 }
 
-// Test that absorbing same message bytes using both incremental and one-shot hashing, should yield same output bytes,
-// for SHAKE128 XOF.
+// Test that absorbing same message bytes using both incremental and one-shot hashing, should yield same output bytes, for SHAKE128 XOF.
 //
 // This test collects inspiration from
 // https://github.com/itzmeanjan/turboshake/blob/e1a6b950c5374aff49f04f6d51d807e68077ab25/src/tests.rs#L372-L415
-TEST(Sha3Xof, Shake128IncrementalAbsorptionAndSqueezing)
+TEST(Sha3XOF, SHAKE128IncrementalAbsorptionAndSqueezing)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
     for (size_t olen = MIN_OUT_LEN; olen < MAX_OUT_LEN; olen++) {
@@ -108,9 +107,9 @@ TEST(Sha3Xof, Shake128IncrementalAbsorptionAndSqueezing)
   }
 }
 
-// Ensure that Shake128 Xof implementation is conformant with FIPS 202 standard, by using KAT file generated following
+// Ensure that SHAKE128 XOF implementation is conformant with FIPS 202 standard, by using KAT file generated following
 // https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
-TEST(Sha3Xof, Shake128KnownAnswerTests)
+TEST(Sha3XOF, SHAKE128KnownAnswerTests)
 {
   using namespace std::literals;
 

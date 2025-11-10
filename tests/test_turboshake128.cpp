@@ -126,6 +126,7 @@ compute_turboshake128_output(const std::vector<uint8_t> msg, const size_t out_by
 // Ensure that TurboSHAKE128 XOF implementation is conformant with RFC 9861 https://datatracker.ietf.org/doc/rfc9861, by using test vectors defined there.
 TEST(Sha3XOF, TurboSHAKE128KnownAnswerTests)
 {
+  // clang-format off
   EXPECT_EQ(compute_turboshake128_output<0x01>({}, 32), sha3_test_utils::from_hex("868cbd53b078205abb85815d941f7d0376bff5b8888a6a2d03483afbaf83967f"));
   EXPECT_EQ(compute_turboshake128_output<0x02>({}, 32), sha3_test_utils::from_hex("8bcf8b0266eb3ef49e2b1df2eb627021d86281801116761f44efc976444f021b"));
   EXPECT_EQ(compute_turboshake128_output<0x03>({}, 32), sha3_test_utils::from_hex("a0347b35a7fa3d2f8561b3a4648de357be6762a6b76d5b2c1119cda104688192"));
@@ -137,7 +138,6 @@ TEST(Sha3XOF, TurboSHAKE128KnownAnswerTests)
   EXPECT_EQ(compute_turboshake128_output<0x68>({}, 32), sha3_test_utils::from_hex("2e1c136a8af2e8b4c4cf9a7bca593d798f61bd1f153cd08483447a5de4369b1e"));
   EXPECT_EQ(compute_turboshake128_output<0x7f>({}, 32), sha3_test_utils::from_hex("e4e1fd449c36ef25256c896e1907af3f458253d4a0bd820a6fef83377ae031f9"));
 
-  // clang-format off
   EXPECT_EQ(compute_turboshake128_output<0x01>({}, 64), sha3_test_utils::from_hex("868cbd53b078205abb85815d941f7d0376bff5b8888a6a2d03483afbaf83967f226e2cad5e7b1ec4ca72236f076462199fea48c93438ad4c49c767f9417be7c5"));
   EXPECT_EQ(compute_turboshake128_output<0x1f>({}, 64), sha3_test_utils::from_hex("1E415F1C5983AFF2169217277D17BB538CD945A397DDEC541F1CE41AF2C1B74C3E8CCAE2A4DAE56C84A04C2385C03C15E8193BDF58737363321691C05462C8DF"));
  
@@ -162,23 +162,19 @@ TEST(Sha3XOF, TurboSHAKE128KnownAnswerTests)
   EXPECT_EQ(compute_turboshake128_output<0x0b>({ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, 32), sha3_test_utils::from_hex("8DEEAA1AEC47CCEE569F659C21DFA8E112DB3CEE37B18178B2ACD805B799CC37"));
   EXPECT_EQ(compute_turboshake128_output<0x30>({ 0xff }, 32), sha3_test_utils::from_hex("553122E2135E363C3292BED2C6421FA232BAB03DAA07C7D6636603286506325B"));
   EXPECT_EQ(compute_turboshake128_output<0x7f>({ 0xff, 0xff, 0xff }, 32), sha3_test_utils::from_hex("16274CC656D44CEFD422395D0F9053BDA6D28E122ABA15C765E5AD0E6EAF26F9"));
-  // clang-format on
-
+  
   {
     auto out_bytes = compute_turboshake128_output<0x01>({}, 10032);
     auto out_bytes_span = std::span(out_bytes);
-
-    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(),
-                           out_bytes_span.last<32>().end(),
-                           sha3_test_utils::from_hex("fa09df77a17a33fe098328ba02786ac770301386f77d0731f2b866bd0140b412").begin()));
+    
+    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(), out_bytes_span.last<32>().end(), sha3_test_utils::from_hex("fa09df77a17a33fe098328ba02786ac770301386f77d0731f2b866bd0140b412").begin()));
   }
-
+  
   {
     auto out_bytes = compute_turboshake128_output<0x1f>({}, 10032);
     auto out_bytes_span = std::span(out_bytes);
-
-    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(),
-                           out_bytes_span.last<32>().end(),
-                           sha3_test_utils::from_hex("A3B9B0385900CE761F22AED548E754DA10A5242D62E8C658E3F3A923A7555607").begin()));
+    
+    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(), out_bytes_span.last<32>().end(), sha3_test_utils::from_hex("A3B9B0385900CE761F22AED548E754DA10A5242D62E8C658E3F3A923A7555607").begin()));
   }
+  // clang-format on
 }

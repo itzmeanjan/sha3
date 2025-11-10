@@ -162,23 +162,19 @@ TEST(Sha3XOF, TurboSHAKE256KnownAnswerTests)
   EXPECT_EQ(compute_turboshake256_output<0x0b>({ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, 64), sha3_test_utils::from_hex("BB36764951EC97E9D85F7EE9A67A7718FC005CF42556BE79CE12C0BDE50E5736D6632B0D0DFB202D1BBB8FFE3DD74CB00834FA756CB03471BAB13A1E2C16B3C0"));
   EXPECT_EQ(compute_turboshake256_output<0x30>({ 0xff }, 64), sha3_test_utils::from_hex("F3FE12873D34BCBB2E608779D6B70E7F86BEC7E90BF113CBD4FDD0C4E2F4625E148DD7EE1A52776CF77F240514D9CCFC3B5DDAB8EE255E39EE389072962C111A"));
   EXPECT_EQ(compute_turboshake256_output<0x7f>({ 0xff, 0xff, 0xff }, 64), sha3_test_utils::from_hex("ABE569C1F77EC340F02705E7D37C9AB7E155516E4A6A150021D70B6FAC0BB40C069F9A9828A0D575CD99F9BAE435AB1ACF7ED9110BA97CE0388D074BAC768776"));
-  // clang-format on
-
+  
   {
     auto out_bytes = compute_turboshake256_output<0x01>({}, 10032);
     auto out_bytes_span = std::span(out_bytes);
-
-    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(),
-                           out_bytes_span.last<32>().end(),
-                           sha3_test_utils::from_hex("b021b244dcd9599966d7742225fc7372639233f0ff0863fa79683ebf1f57114f").begin()));
+    
+    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(), out_bytes_span.last<32>().end(), sha3_test_utils::from_hex("b021b244dcd9599966d7742225fc7372639233f0ff0863fa79683ebf1f57114f").begin()));
   }
-
+  
   {
     auto out_bytes = compute_turboshake256_output<0x1f>({}, 10032);
     auto out_bytes_span = std::span(out_bytes);
-
-    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(),
-                           out_bytes_span.last<32>().end(),
-                           sha3_test_utils::from_hex("ABEFA11630C661269249742685EC082F207265DCCF2F43534E9C61BA0C9D1D75").begin()));
+    
+    EXPECT_TRUE(std::equal(out_bytes_span.last<32>().begin(), out_bytes_span.last<32>().end(), sha3_test_utils::from_hex("ABEFA11630C661269249742685EC082F207265DCCF2F43534E9C61BA0C9D1D75").begin()));
   }
+  // clang-format on
 }
