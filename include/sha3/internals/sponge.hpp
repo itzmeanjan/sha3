@@ -14,19 +14,22 @@ namespace sponge {
 
 static constexpr size_t KECCAK_WORD_BYTE_LEN = keccak::LANE_BW / std::numeric_limits<uint8_t>::digits;
 
+// Compile-time check domain separator bit length.
 constexpr bool
 check_domain_separator(const size_t dom_sep_bit_len)
 {
   return dom_sep_bit_len <= 6u;
 }
 
-// Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c] permutation state s.t. `offset` ( second parameter ) denotes how many bytes are
-// already consumed into rate portion of the state.
-//
-// - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
-// - `offset` must ∈ [0, `num_bytes_in_rate`).
-//
-// This function implementation collects inspiration from https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56
+/**
+ * Given `mlen` (>=0) -bytes message, this routine consumes it into Keccak[c] permutation state s.t. `offset` ( second parameter ) denotes how many bytes are
+ * already consumed into rate portion of the state.
+ *
+ * - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
+ * - `offset` must ∈ [0, `num_bytes_in_rate`).
+ *
+ * This function implementation collects inspiration from https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L4-L56.
+ */
 template<size_t num_bits_in_rate, size_t num_rounds>
 static forceinline constexpr void
 absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t> msg)
@@ -66,14 +69,16 @@ absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t
   }
 }
 
-// Given that N message bytes are already consumed into Keccak[c] permutation state, this routine finalizes sponge state and makes it ready for squeezing, by
-// appending ( along with domain separation bits ) 10*1 padding bits to input message s.t. total absorbed message byte length becomes multiple of `rate/ 8`
-// -bytes.
-//
-// - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
-// - `offset` must ∈ [0, `num_bytes_in_rate`)
-//
-// This function implementation collects some motivation from https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81
+/**
+ * Given that N message bytes are already consumed into Keccak[c] permutation state, this routine finalizes sponge state and makes it ready for squeezing, by
+ * appending (along with domain separation bits) `10*1` padding bits to input message s.t. total absorbed message byte length becomes multiple of `rate/ 8`
+ * -bytes.
+ *
+ * - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
+ * - `offset` must ∈ [0, `num_bytes_in_rate`)
+ *
+ * This function implementation collects some motivation from https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L58-L81.
+ */
 template<uint8_t domain_separator, size_t ds_bit_len, size_t num_bits_in_rate, size_t num_rounds>
 static forceinline constexpr void
 finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
@@ -96,13 +101,15 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   offset = 0;
 }
 
-// Given that Keccak[c] permutation state is finalized, this routine can be invoked for squeezing `olen` -bytes out of rate portion of the state.
-//
-// - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
-// - `squeezable` denotes how many bytes can be squeezed without permutating the sponge state.
-// - When `squeezable` becomes 0, state needs to be permutated again, after which `num_bytes_in_rate` can again be squeezed from rate portion of the state.
-//
-// This function implementation collects motivation from https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118
+/**
+ * Given that Keccak[c] permutation state is finalized, this routine can be invoked for squeezing `olen` -bytes out of rate portion of the state.
+ *
+ * - `num_bits_in_rate` portion of sponge will have bitwidth of 1600 - c.
+ * - `squeezable` denotes how many bytes can be squeezed without permutating the sponge state.
+ * - When `squeezable` becomes 0, state needs to be permutated again, after which `num_bytes_in_rate` can again be squeezed from rate portion of the state.
+ *
+ * This function implementation collects motivation from https://github.com/itzmeanjan/turboshake/blob/e1a6b950/src/sponge.rs#L83-L118.
+ */
 template<size_t num_bits_in_rate, size_t num_rounds>
 static forceinline constexpr void
 squeeze(uint64_t state[keccak::LANE_CNT], size_t& squeezable, std::span<uint8_t> out)

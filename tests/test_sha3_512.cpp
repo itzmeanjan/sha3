@@ -15,15 +15,8 @@ eval_sha3_512()
   std::array<uint8_t, sha3_512::DIGEST_LEN * 2> data{};
   std::iota(data.begin(), data.end(), 0);
 
-  // To be computed output.
-  std::array<uint8_t, sha3_512::DIGEST_LEN> md{};
-
-  sha3_512::sha3_512_t hasher;
-  hasher.absorb(data);
-  hasher.finalize();
-  hasher.digest(md);
-
-  return md;
+  // Compute output message digest.
+  return sha3_512::sha3_512_t::hash(data);
 }
 
 // Ensure that SHA3-512 implementation is compile-time evaluable.
@@ -42,49 +35,42 @@ TEST(Sha3Hashing, CompileTimeEvalSha3_512)
                 "Must be able to compute Sha3-512 hash during compile-time !");
 }
 
-// Test that absorbing same input message bytes using both incremental and one-shot hashing, should yield same output
-// bytes, for SHA3-512 hasher.
+// Test that absorbing same input message bytes using both incremental and one-shot hashing, should yield same output bytes, for SHA3-512 hasher.
 TEST(Sha3Hashing, Sha3_512IncrementalAbsorption)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
     std::vector<uint8_t> msg(mlen);
-    std::vector<uint8_t> out0(sha3_512::DIGEST_LEN);
-    std::vector<uint8_t> out1(sha3_512::DIGEST_LEN);
+    auto msg_span = std::span(msg);
 
-    auto _msg = std::span(msg);
-    auto _out0 = std::span<uint8_t, sha3_512::DIGEST_LEN>(out0);
-    auto _out1 = std::span<uint8_t, sha3_512::DIGEST_LEN>(out1);
-
-    sha3_test_utils::random_data(_msg);
-
-    sha3_512::sha3_512_t hasher;
+    sha3_test_utils::random_data(msg_span);
 
     // Oneshot Hashing
-    hasher.absorb(_msg);
-    hasher.finalize();
-    hasher.digest(_out0);
-
-    hasher.reset();
+    auto oneshot_out = sha3_512::sha3_512_t::hash(msg_span);
 
     // Incremental Hashing
+    std::array<uint8_t, sha3_512::DIGEST_LEN> multishot_out{ 0 };
+    sha3_512::sha3_512_t hasher;
+
     size_t off = 0;
     while (off < mlen) {
       // because we don't want to be stuck in an infinite loop if msg[off] = 0 !
       auto elen = std::min<size_t>(std::max<uint8_t>(msg[off], 1), mlen - off);
 
-      hasher.absorb(_msg.subspan(off, elen));
+      hasher.absorb(msg_span.subspan(off, elen));
       off += elen;
     }
 
     hasher.finalize();
-    hasher.digest(_out1);
+    hasher.digest(multishot_out);
 
-    EXPECT_EQ(out0, out1);
+    EXPECT_EQ(oneshot_out, multishot_out);
   }
 }
 
-// Ensure that SHA3-512 implementation is conformant with FIPS 202 standard, by using KAT file generated following
-// https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
+/**
+ * Ensure that SHA3-512 implementation is conformant with FIPS 202 standard, by using KAT file generated following
+ * https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
+ */
 TEST(Sha3Hashing, Sha3_512KnownAnswerTests)
 {
   using namespace std::literals;
@@ -108,19 +94,12 @@ TEST(Sha3Hashing, Sha3_512KnownAnswerTests)
       auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
       auto md2 = md1.substr(md1.find("="sv) + 2, md1.size());
 
-      auto msg = sha3_test_utils::from_hex(msg2);
-      auto md = sha3_test_utils::from_hex(md2);
+      auto msg = sha3_test_utils::parse_dynamic_sized_hex_string(msg2);
 
-      std::vector<uint8_t> digest(sha3_512::DIGEST_LEN);
-      auto _digest = std::span<uint8_t, sha3_512::DIGEST_LEN>(digest);
+      auto expected_md = sha3_test_utils::parse_static_sized_hex_string<sha3_512::DIGEST_LEN>(md2);
+      auto computed_md = sha3_512::sha3_512_t::hash(msg);
 
-      sha3_512::sha3_512_t hasher;
-
-      hasher.absorb(msg);
-      hasher.finalize();
-      hasher.digest(_digest);
-
-      EXPECT_EQ(digest, md);
+      EXPECT_EQ(computed_md, expected_md);
 
       std::string empty_line;
       std::getline(file, empty_line);

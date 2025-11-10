@@ -1,6 +1,9 @@
 #pragma once
+#include "sha3/internals/force_inline.hpp"
 #include "sha3/internals/keccak.hpp"
 #include "sha3/internals/sponge.hpp"
+#include <array>
+#include <bit>
 #include <cstdint>
 #include <limits>
 
@@ -14,7 +17,7 @@ static constexpr size_t NUM_KECCAK_ROUNDS = keccak::MAX_NUM_ROUNDS;
 static constexpr size_t DIGEST_BIT_LEN = 224;
 
 // Byte length of SHA3-224 message digest.
-static constexpr size_t DIGEST_LEN = DIGEST_BIT_LEN / 8;
+static constexpr size_t DIGEST_LEN = DIGEST_BIT_LEN / std::numeric_limits<uint8_t>::digits;
 
 // Width of capacity portion of the sponge, in bits.
 static constexpr size_t CAPACITY = 2 * DIGEST_BIT_LEN;
@@ -26,12 +29,13 @@ static constexpr size_t RATE = 1600 - CAPACITY;
 static constexpr uint8_t DOM_SEP = 0b00000010;
 
 // Bit-width of domain separator, starting from least significant bit.
-static constexpr size_t DOM_SEP_BW = 2;
+static constexpr size_t DOM_SEP_BW = std::bit_width(DOM_SEP);
 
-// Given arbitrary many input message bytes, this routine consumes it into keccak[448] sponge state and squeezes out 28
-// -bytes digest.
-//
-// See SHA3 hash function definition in section 6.1 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202.
+/**
+ * Given arbitrary many input message bytes, this routine consumes it into keccak[448] sponge state and squeezes out 28 -bytes digest.
+ *
+ * See SHA3 hash function definition in section 6.1 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202.
+ */
 struct sha3_224_t
 {
 private:
@@ -44,8 +48,26 @@ public:
   // Constructor
   forceinline constexpr sha3_224_t() = default;
 
-  // Given N(>=0) -bytes message as input, this routine can be invoked arbitrary many times ( until the sponge is
-  // finalized ), each time absorbing arbitrary many message bytes into RATE portion of the sponge.
+  /**
+   * Given an arbitrary length message, absorbs it all in the SHA3_224 hasher and returns a 28 -bytes message digest.
+   * This is the oneshot hashing API. For working with longer message stream, prefer using `absorb() -> finalize() -> digest()`.
+   */
+  forceinline static constexpr std::array<uint8_t, DIGEST_LEN> hash(std::span<const uint8_t> msg)
+  {
+    std::array<uint8_t, DIGEST_LEN> md{ 0 };
+
+    sha3_224_t hasher;
+    hasher.absorb(msg);
+    hasher.finalize();
+    hasher.digest(md);
+
+    return md;
+  }
+
+  /**
+   * Given N (>=0) -bytes message as input, this routine can be invoked arbitrary many times ( until the sponge is
+   * finalized ), each time absorbing arbitrary many message bytes into RATE portion of the sponge.
+   */
   forceinline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
@@ -53,9 +75,11 @@ public:
     }
   }
 
-  // Finalizes the sponge after all message bytes are absorbed into it, now it should be ready for squeezing message
-  // digest bytes. Once finalized, you can't absorb any message bytes into sponge. After finalization, calling this
-  // function again and again doesn't mutate anything.
+  /**
+   * Finalizes the sponge after all message bytes are absorbed into it, now it should be ready for squeezing message
+   * digest bytes. Once finalized, you can't absorb any message bytes into sponge. After finalization, calling this
+   * function again and again doesn't mutate anything.
+   */
   forceinline constexpr void finalize()
   {
     if (!finalized) {
@@ -64,8 +88,10 @@ public:
     }
   }
 
-  // After sponge state is finalized, 28 message digest bytes can be squeezed by calling this function. Once digest
-  // bytes are squeezed, calling this function again and again returns nothing.
+  /**
+   * After sponge state is finalized, 28 message digest (MD) bytes can be squeezed by calling this function.
+   * Once digest bytes are squeezed, calling this function again and again returns nothing.
+   */
   forceinline constexpr void digest(std::span<uint8_t, DIGEST_LEN> md)
   {
     if (finalized && !squeezed) {
@@ -76,8 +102,10 @@ public:
     }
   }
 
-  // Reset the internal state of the SHA3-224 hasher, now it can again be used for another absorb->finalize->squeeze
-  // cycle.
+  /**
+   * Reset the internal state of the SHA3-224 hasher.
+   * Now it can again be used for another `absorb() -> finalize() -> digest()` cycle.
+   */
   forceinline constexpr void reset()
   {
     std::fill(std::begin(state), std::end(state), 0);

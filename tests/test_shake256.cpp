@@ -50,30 +50,31 @@ TEST(Sha3XOF, CompileTimeEvalSHAKE256)
                 "Must be able to compute Shake256 Xof during compile-time !");
 }
 
-// Test that absorbing same message bytes using both incremental and one-shot hashing, should yield same output bytes, for SHAKE256 XOF.
-//
-// This test collects inspiration from
-// https://github.com/itzmeanjan/turboshake/blob/e1a6b950c5374aff49f04f6d51d807e68077ab25/src/tests.rs#L372-L415
+/**
+ * Test that absorbing same message bytes using both incremental and one-shot hashing, should yield same output bytes, for SHAKE256 XOF.
+ *
+ * This test collects inspiration from https://github.com/itzmeanjan/turboshake/blob/e1a6b950c5374aff49f04f6d51d807e68077ab25/src/tests.rs#L372-L415
+ */
 TEST(Sha3XOF, SHAKE256IncrementalAbsorptionAndSqueezing)
 {
   for (size_t mlen = MIN_MSG_LEN; mlen < MAX_MSG_LEN; mlen++) {
     for (size_t olen = MIN_OUT_LEN; olen < MAX_OUT_LEN; olen++) {
       std::vector<uint8_t> msg(mlen);
-      std::vector<uint8_t> out0(olen);
-      std::vector<uint8_t> out1(olen);
+      std::vector<uint8_t> oneshot_out(olen);
+      std::vector<uint8_t> multishot_out(olen);
 
-      auto _msg = std::span(msg);
-      auto _out0 = std::span(out0);
-      auto _out1 = std::span(out1);
+      auto msg_span = std::span(msg);
+      auto oneshot_out_span = std::span(oneshot_out);
+      auto multishot_out_span = std::span(multishot_out);
 
-      sha3_test_utils::random_data(_msg);
+      sha3_test_utils::random_data(msg_span);
 
       shake256::shake256_t hasher;
 
       // Oneshot absorption and squeezing
-      hasher.absorb(_msg);
+      hasher.absorb(msg_span);
       hasher.finalize();
-      hasher.squeeze(_out0);
+      hasher.squeeze(oneshot_out_span);
 
       hasher.reset();
 
@@ -84,7 +85,7 @@ TEST(Sha3XOF, SHAKE256IncrementalAbsorptionAndSqueezing)
         auto tmp = std::max<uint8_t>(msg[off], 1);
         auto elen = std::min<size_t>(tmp, mlen - off);
 
-        hasher.absorb(_msg.subspan(off, elen));
+        hasher.absorb(msg_span.subspan(off, elen));
         off += elen;
       }
 
@@ -93,22 +94,24 @@ TEST(Sha3XOF, SHAKE256IncrementalAbsorptionAndSqueezing)
       // squeeze message bytes in many iterations
       off = 0;
       while (off < olen) {
-        hasher.squeeze(_out1.subspan(off, 1));
+        hasher.squeeze(multishot_out_span.subspan(off, 1));
 
-        auto elen = std::min<size_t>(out1[off], olen - (off + 1));
+        auto elen = std::min<size_t>(multishot_out[off], olen - (off + 1));
 
         off += 1;
-        hasher.squeeze(_out1.subspan(off, elen));
+        hasher.squeeze(multishot_out_span.subspan(off, elen));
         off += elen;
       }
 
-      EXPECT_EQ(out0, out1);
+      EXPECT_EQ(oneshot_out, multishot_out);
     }
   }
 }
 
-// Ensure that SHAKE256 XOF implementation is conformant with FIPS 202 standard, by using KAT file generated following
-// https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
+/**
+ * Ensure that SHAKE256 XOF implementation is conformant with FIPS 202 standard, by using KAT file generated following
+ * https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
+ */
 TEST(Sha3XOF, SHAKE256KnownAnswerTests)
 {
   using namespace std::literals;
@@ -132,18 +135,17 @@ TEST(Sha3XOF, SHAKE256KnownAnswerTests)
       auto msg2 = msg1.substr(msg1.find("="sv) + 2, msg1.size());
       auto out2 = out1.substr(out1.find("="sv) + 2, out1.size());
 
-      auto msg = sha3_test_utils::from_hex(msg2);
-      auto out = sha3_test_utils::from_hex(out2);
+      auto msg = sha3_test_utils::parse_dynamic_sized_hex_string(msg2);
+      auto expected_out = sha3_test_utils::parse_dynamic_sized_hex_string(out2);
 
-      std::vector<uint8_t> squeezed(out.size());
-
+      std::vector<uint8_t> computed_out(expected_out.size());
       shake256::shake256_t hasher;
 
       hasher.absorb(msg);
       hasher.finalize();
-      hasher.squeeze(squeezed);
+      hasher.squeeze(computed_out);
 
-      EXPECT_EQ(squeezed, out);
+      EXPECT_EQ(computed_out, expected_out);
 
       std::string empty_line;
       std::getline(file, empty_line);

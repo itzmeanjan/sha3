@@ -74,7 +74,10 @@ public:
     }
   }
 
-  // After sponge state is finalized, arbitrary many output bytes can be squeezed by calling this function any number of times required.
+  /**
+   * After sponge state is finalized, arbitrary many output bytes can be squeezed by calling this function
+   * any number of times required.
+   */
   forceinline constexpr void squeeze(std::span<uint8_t> dig)
   {
     if (finalized) {
@@ -82,7 +85,10 @@ public:
     }
   }
 
-  // Reset the internal state of the TurboSHAKE128 XOF hasher, now it can again be used for another absorb->finalize->squeeze cycle.
+  /**
+   * Reset the internal state of the TurboSHAKE128 XOF hasher.
+   * Now it can again be used for another `absorb() -> finalize() -> squeeze()` cycle.
+   */
   forceinline constexpr void reset()
   {
     std::fill(std::begin(state), std::end(state), 0);
@@ -91,7 +97,10 @@ public:
     squeezable = 0;
   }
 
-  // Given that sponge is already finalized, this routine can be used for zeroizing first n -bytes of permutation state s.t. n <= 200 and applying permutation.
+  /**
+   * Given that sponge is already finalized, this routine can be used for zeroizing first n -bytes of
+   * permutation state s.t. n <= 200 and applying permutation.
+   */
   forceinline void ratchet(const size_t byte_len)
   {
     if (finalized) {
