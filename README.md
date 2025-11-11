@@ -1,30 +1,17 @@
 # sha3
-`constexpr` ( i.e. **Compile-time Evaluable** ) SHA3: Permutation-Based Hash and Extendable-Output Functions.
+
+`constexpr` SHA3: Keccak Permutation-based Hash and Extendable-Output Functions.
+
+> [!NOTE]
+> `constexpr`? Yes, you can evaluate message digest (MD) of any message, during program compilation time itself, given that the message is known at compile-time. This can be useful if you have to embed a message digest in program as a constant. Instead of hardcoding the MD as constant, the compiler can compute it for you. And you can run a `static_assert` against the computed value.
 
 ## Overview
 
-SHA3 standard by NIST ( i.e. NIST FIPS PUB 202 ) specifies four ( of different digest length ) permutation-based hash functions and two extendable-output functions, which are built on top of keccak-p[1600, 24] permutation.
+SHA3 standard i.e. NIST FIPS 202, specifies four permutation-based hash functions and two eXtendable Output Functions (XOF), which are built on top of 24-rounds keccak-p[1600, 24] permutation. In IETF RFC 9861, two additional XOFs are defined based on 12-rounds keccak-p[1600, 12] permutation. The round reduced keccak permutation almost doubles the performance of TurboSHAKE compared to the original SHAKE XOFs.
 
-These hash functions and extendable output functions are pretty commonly used in various post-quantum cryptography algorithms ( those used for public key encryption, key establishment mechanism & digital signature ), some of which are already declared as selected candidates ( e.g. Kyber, Falcon, Dilithium, SPHINCS+ etc. ) of NIST PQC standardization effort - waiting to be standardized or some are still competing. I decided to implement SHA3 specification as a **header-only C++ library**, so that I can make use of it as a modular dependency ( say pinned to specific commit using git submodule ) in libraries where I implement various PQC schemes.
+These hash functions and extendable output functions are commonly used in various post-quantum cryptography algorithms (i.e. those used for public key encryption, key establishment mechanism and digital signature). Some of which are already standardized (e.g. ML-KEM, ML-DSA, SLH-DSA etc.) by NIST, some are waiting to be standardized (e.g. FN-DSA) or some are still competing. We implement SHA3 specification as a **header-only fully constexpr C++ library**, so that we can use it as a modular dependency (say pinned to a specific commit using git submodule) in libraries, where we implement various PQC schemes. We follow NIST FIPS 202 @ <https://dx.doi.org/10.6028/NIST.FIPS.202> and RFC 9861 @ <https://datatracker.ietf.org/doc/rfc9861>.
 
-Few of those places, where I've already used `sha3` as ( git submodule based ) dependency
-
-- [Kyber: Post-Quantum Public-key Encryption & Key-establishment Algorithm](https://github.com/itzmeanjan/kyber)
-- [Dilithium: Post-Quantum Digital Signature Algorithm](https://github.com/itzmeanjan/dilithium)
-- [SPHINCS+: Stateless Hash-based Digital Signature Algorithm](https://github.com/itzmeanjan/sphincs)
-- [Falcon: Fast-Fourier Lattice-based Compact Signatures over NTRU](https://github.com/itzmeanjan/falcon)
-- [FrodoKEM: Practical Quantum-secure Key Encapsulation from Generic Lattices](https://github.com/itzmeanjan/frodokem)
-- [Saber: Post-Quantum Key Encapsulation Mechanism](https://github.com/itzmeanjan/saber)
-
-> [!WARNING]
-> Above list may not be up-to-date !
-
-Here I'm maintaining a zero-dependency, header-only C++ library, using modern C++ features ( such as C++{>=11} ), which is fairly easy to use in your project, implementing SHA3 [specification](https://dx.doi.org/10.6028/NIST.FIPS.202) NIST FIPS PUB 202.
-
-> [!NOTE]
-> All SHA3 hash functions and xofs are implemented as `constexpr` functions - meaning for any statically defined input message these functions can be evaluated in compile-time in constant-expression context. See [tests](./tests).
-
-Following algorithms ( with flexible interfaces ) are implemented in `sha3` library.
+Following algorithms (with flexible interfaces) are implemented in `sha3` library.
 
 Algorithm | Input | Output | Behaviour | Namespace + Header
 --- | :-: | :-: | :-: | --:
@@ -32,41 +19,56 @@ SHA3-224 | N ( >=0 ) -bytes message | 28 -bytes digest | Given N -bytes input me
 SHA3-256 | N ( >=0 ) -bytes message | 32 -bytes digest | Given N -bytes input message, this routine computes 32 -bytes sha3-256 digest, while *(incrementally)* consuming message into Keccak[512] sponge. | [`sha3_256::sha3_256_t`](./include/sha3/sha3_256.hpp)
 SHA3-384 | N ( >=0 ) -bytes message | 48 -bytes digest | Given N -bytes input message, this routine computes 48 -bytes sha3-384 digest, while *(incrementally)* consuming message into Keccak[768] sponge. | [`sha3_384::sha3_384_t`](./include/sha3/sha3_384.hpp)
 SHA3-512 | N ( >=0 ) -bytes message | 64 -bytes digest | Given N -bytes input message, this routine computes 64 -bytes sha3-512 digest, while *(incrementally)* consuming message into Keccak[1024] sponge. | [`sha3_512::sha3_512_t`](./include/sha3/sha3_512.hpp)
-SHAKE-128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake128::shake128_t`](./include/sha3/shake128.hpp)
-SHAKE-256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake256::shake256_t`](./include/sha3/shake256.hpp)
+SHAKE128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake128::shake128_t`](./include/sha3/shake128.hpp)
+SHAKE256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already *(incrementally)* absorbed input bytes. | [`shake256::shake256_t`](./include/sha3/shake256.hpp)
+TurboSHAKE128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already *(incrementally)* absorbed input bytes. **It is faster than SHAKE128, because it is powered by 12-rounds keccak permutation.** | [`turboshake128::turboshake128_t`](./include/sha3/turboshake128.hpp)
+TurboSHAKE256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already *(incrementally)* absorbed input bytes. **It is faster than SHAKE256, because it is powered by 12-rounds keccak permutation.** | [`turboshake256::turboshake256_t`](./include/sha3/turboshake256.hpp)
 
-Performance of SHA3 hash and extendable output functions on a `12th Gen Intel(R) Core(TM) i7-1260P`, running `Linux 6.11.0-18-generic` kernel, compiled with `GCC-14.2.0` with optimization options `-O3 -march=native -flto`.
+XKCP is the state-of-the-art C library implementation, for all common constructions based on keccak permutation. It is available @ <https://github.com/XKCP/XKCP>. Following screen capture shows a performance comparison of generic and portable TurboSHAKE128 XOF, implemented in this library, against the baseline of XKCP's optimized TurboSHAKE128 implementation. To compare performance of TurboSHAKE128, for both short and long messages, we absorb messages of variable length, starting from 32B to 1GB, with a multiplicative jump factor of 32, while squeezing a fixed length output of 64B.
 
-**SHA3 Hash Functions**
+Benchmark comparison shows a clear and consistent trend of this portable implementation taking ~(10-15)% more time compared to XKCP.
 
-| Algorithm    | Input Size (bytes) | MB/s (Median) |
-|--------------|--------------------|---------------|
-| SHA3-256     | 64                  | 483          |
-| SHA3-256     | 256                 | 700          |
-| SHA3-256     | 1024                | 644          |
-| SHA3-256     | 4096                | 642          |
-| SHA3-256     | 16384               | 655          |
-| SHA3-512     | 64                  | 602          |
-| SHA3-512     | 256                 | 367          |
-| SHA3-512     | 1024                | 330          |
-| SHA3-512     | 4096                | 335          |
-| SHA3-512     | 16384               | 339          |
+> [!IMPORTANT]
+> This performance comparison was carried out on a `12th Gen Intel(R) Core(TM) i7-1260P` machine, running `Linux 6.17.0-6-generic` kernel. The benchmark executable was compiled using `GCC-15.2.0`, with optimization options `-O3 -march=native -flto`. For XKCP, we built the library at git commit `e7a08f7baa3d43d64f5c21e641cb18fe292f2b75`. We used google-benchmark's benchmark comparison tool @ <https://github.com/google/benchmark/blob/v1.9.4/docs/tools.md> for easily comparing JSON dump.
 
-**SHA3 Extendable Output Functions**
+![benchcmp_with_xkcp_turboshake128_on_x86_64.png](./benchcmp_with_xkcp_turboshake128_on_x86_64.png)
 
-| Algorithm    | Input Size (bytes) | Output Size (bytes) | MB/s (Median) |
-|--------------|--------------------|----------------------|--------------|
-| SHAKE128     | 64                  | 64                    | 465        |
-| SHAKE128     | 256                 | 64                    | 698        |
-| SHAKE128     | 1024                | 64                    | 663        |
-| SHAKE128     | 4096                | 64                    | 706        |
-| SHAKE128     | 16384               | 64                    | 717        |
-| - | - | - | - |
-| SHAKE256     | 64                  | 64                    | 464        |
-| SHAKE256     | 256                 | 64                    | 699        |
-| SHAKE256     | 1024                | 64                    | 672        |
-| SHAKE256     | 4096                | 64                    | 638        |
-| SHAKE256     | 16384               | 64                    | 642        |
+Ideally, one should just go ahead with XKCP. Though, one edge this portable implementation of `sha3` has over XKCP - it is fully `constexpr`. In following code snippet, we compute SHA3-256 message digest (MD) of a compile-time known string, in program compilation time itself. The MD is checked using a static assertion. This header-only lightweight library allows you to embed SHA3-256 `MD` as a constant, which is computed by the compiler. It's not hard-coded.
+
+```cpp
+#include "sha3/sha3_256.hpp"
+#include <array>
+#include <cstdint>
+#include <cstdlib>
+#include <string_view>
+
+template<size_t L>
+constexpr std::array<uint8_t, L>
+string_to_bytes(std::string_view sv)
+{
+  std::array<uint8_t, L> arr{};
+
+  for (size_t i = 0; i < sv.size(); i++) {
+    arr[i] = static_cast<uint8_t>(sv[i]);
+  }
+
+  return arr;
+}
+
+constexpr std::string_view MSG = "keccak permutation rocks!";
+constexpr auto MSG_bytes = string_to_bytes<MSG.size()>(MSG);
+constexpr auto MD = sha3_256::sha3_256_t::hash(MSG_bytes);
+
+int
+main()
+{
+  // 4edc60a9ffe739ce44252716483a529e8a859a5a75cbf69d494037e914bac16b
+  constexpr std::array<uint8_t, sha3_256::DIGEST_LEN> expected_md = { 78,  220, 96,  169, 255, 231, 57,  206, 68, 37, 39, 22,  72, 58,  82,  158, 138, 133, 154, 90,  117, 203, 246, 157, 73, 64, 55, 233, 20, 186, 193, 107 };
+  static_assert(MD == expected_md, "Must compute SHA3-256 message digest in program compile-time!");
+
+  return EXIT_SUCCESS;
+}
+```
 
 ## Prerequisites
 
@@ -74,38 +76,38 @@ Performance of SHA3 hash and extendable output functions on a `12th Gen Intel(R)
 
 ```bash
 $ g++ --version
-g++ (Ubuntu 14.2.0-4ubuntu2) 14.2.0
+g++ (Ubuntu 15.2.0-4ubuntu4) 15.2.0
 ```
 
 - Build tools such as `cmake` and `make`.
 
 ```bash
 $ make --version
-GNU Make 4.3
+GNU Make 4.4.1
 
 $ cmake --version
-cmake version 3.25.1
+cmake version 3.31.6
 ```
 
 - For testing SHA3 algorithms, you need to globally install `google-test` library and headers. Follow [this](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project) guide if you haven't installed it yet.
 - For benchmarking SHA3 algorithms, targeting CPU systems, `google-benchmark` library and headers are required to be installed system-wide. Follow [this](https://github.com/google/benchmark#installation) guide if you don't have it installed yet.
 
 > [!NOTE]
-> If you are on a machine running GNU/Linux kernel and you want to obtain CPU cycles or Cycles/ byte or instruction/ cycle etc., when benchmarking SHA3 algorithms, you should consider building `google-benchmark` library yourself with `libPFM` support, following the step-by-step guide @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7. Find more about libPFM @ https://perfmon2.sourceforge.net.
+> If you are on a machine running GNU/Linux kernel and you want to obtain CPU cycles or Cycles/ byte or instruction/ cycle etc., when benchmarking SHA3 algorithms, you should consider building `google-benchmark` library yourself with `libPFM` support, following the step-by-step guide @ <https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7>. Find more about libPFM @ <https://perfmon2.sourceforge.net>.
 
 > [!TIP]
 > Git submodule based dependencies will generally be imported automatically, but in case that doesn't work, you can manually bring them in by issuing `$ git submodule update --init` from inside the root of this repository.
 
 ## Testing
 
-For ensuring that SHA3 hash function and extendable output function implementations are correct & conformant to the NIST standard ( see https://dx.doi.org/10.6028/NIST.FIPS.202 ), I make use of K(nown) A(nswer) T(ests), generated following the gist @ https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364.
+For ensuring that SHA3 hash function and extendable output function implementations are correct & conformant to the NIST FIPS 202, we make use of K(nown) A(nswer) T(ests), generated following the gist @ <https://gist.github.com/itzmeanjan/448f97f9c49d781a5eb3ddd6ea6e7364>. For TurboSHAKE, we use test vectors defined in IETF RFC 9861.
 
-I also test correctness of
+We also test correctness of
 
-- Incremental message absorption property of SHA3 hash functions and Xofs.
-- Incremental output squeezing property of SHA3 Xofs.
+- Incremental message absorption property of SHA3 hash functions and XOFs.
+- Incremental output squeezing property of SHA3 XOFs.
 
-Some compile-time executed tests ( using `static_assert` ) are also implemented, which ensure that all SHA3 hash functions and xofs are `constexpr` - meaning they can be evaluated during compilation-time for any statically defined input message.
+Some compile-time executed tests ( using `static_assert` ) are also implemented, which ensure that all SHA3 hash functions and XOFs are `constexpr` - meaning they can be evaluated during compilation-time for any statically defined input message.
 
 Issue following command for running all the test cases.
 
@@ -126,25 +128,31 @@ CXX=clang++ make test -j
 ```
 
 ```bash
-PASSED TESTS (18/18):
-       1 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_384
-       1 ms: build/test/test.out Sha3Xof.CompileTimeEvalShake256
-       1 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_512
-       2 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_256
-       2 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_224
-       4 ms: build/test/test.out Sha3Xof.CompileTimeEvalShake128
-       5 ms: build/test/test.out Sha3Hashing.Sha3_256KnownAnswerTests
-       6 ms: build/test/test.out Sha3Hashing.Sha3_224IncrementalAbsorption
-       7 ms: build/test/test.out Sha3Hashing.Sha3_512KnownAnswerTests
-       7 ms: build/test/test.out Sha3Xof.Shake128KnownAnswerTests
-       7 ms: build/test/test.out Sha3Hashing.Sha3_224KnownAnswerTests
-       7 ms: build/test/test.out Sha3Hashing.Sha3_512IncrementalAbsorption
-       7 ms: build/test/test.out Sha3Hashing.Sha3_256IncrementalAbsorption
-       7 ms: build/test/test.out Sha3Hashing.Sha3_384KnownAnswerTests
-       8 ms: build/test/test.out Sha3Xof.Shake256KnownAnswerTests
-       8 ms: build/test/test.out Sha3Hashing.Sha3_384IncrementalAbsorption
-    1028 ms: build/test/test.out Sha3Xof.Shake128IncrementalAbsorptionAndSqueezing
-    1112 ms: build/test/test.out Sha3Xof.Shake256IncrementalAbsorptionAndSqueezing
+PASSED TESTS (24/24):
+       3 ms: build/test/test.out Sha3XOF.CompileTimeEvalTurboSHAKE128
+       3 ms: build/test/test.out Sha3XOF.CompileTimeEvalTurboSHAKE256
+       4 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_224
+       4 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_512
+       4 ms: build/test/test.out Sha3XOF.CompileTimeEvalSHAKE128
+       4 ms: build/test/test.out Sha3XOF.CompileTimeEvalSHAKE256
+       5 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_384
+       6 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_256
+      12 ms: build/test/test.out Sha3Hashing.Sha3_256IncrementalAbsorption
+      12 ms: build/test/test.out Sha3Hashing.Sha3_512IncrementalAbsorption
+      12 ms: build/test/test.out Sha3Hashing.Sha3_384IncrementalAbsorption
+      15 ms: build/test/test.out Sha3Hashing.Sha3_224IncrementalAbsorption
+      20 ms: build/test/test.out Sha3XOF.SHAKE128KnownAnswerTests
+      20 ms: build/test/test.out Sha3XOF.SHAKE256KnownAnswerTests
+      21 ms: build/test/test.out Sha3Hashing.Sha3_256KnownAnswerTests
+      23 ms: build/test/test.out Sha3Hashing.Sha3_224KnownAnswerTests
+      23 ms: build/test/test.out Sha3Hashing.Sha3_384KnownAnswerTests
+      28 ms: build/test/test.out Sha3Hashing.Sha3_512KnownAnswerTests
+      99 ms: build/test/test.out Sha3XOF.TurboSHAKE256KnownAnswerTests
+     103 ms: build/test/test.out Sha3XOF.TurboSHAKE128KnownAnswerTests
+    1840 ms: build/test/test.out Sha3XOF.TurboSHAKE128IncrementalAbsorptionAndSqueezing
+    1894 ms: build/test/test.out Sha3XOF.TurboSHAKE256IncrementalAbsorptionAndSqueezing
+    2054 ms: build/test/test.out Sha3XOF.SHAKE128IncrementalAbsorptionAndSqueezing
+    2193 ms: build/test/test.out Sha3XOF.SHAKE256IncrementalAbsorptionAndSqueezing
 ```
 
 ## Benchmarking
@@ -155,7 +163,7 @@ For benchmarking SHA3 hash and extendable output functions, targeting CPU system
 > You must disable CPU frequency scaling during benchmarking, following [this](https://github.com/google/benchmark/blob/4931aefb51d1e5872b096a97f43e13fa0fc33c8c/docs/reducing_variance.md) guide.
 
 > [!NOTE]
-> When benchmarking extendable output functions ( Xofs ), fixed length output of 32/ 64 -bytes are squeezed from sponge ( s.t. all output bytes are requested in a single call to the `squeeze` function ), for input message byte array of length N s.t. N = 2^i (i.e. power of 2).
+> When benchmarking extendable output functions ( XOFs ), fixed length output of 32/ 64 -bytes are squeezed from sponge ( s.t. all output bytes are requested in a single call to the `squeeze` function ), for input message byte array of length N s.t. N = 2^i (i.e. power of 2).
 
 ```bash
 make perf -j      # You must issue this if you built your google-benchmark library with libPFM support.
@@ -164,9 +172,9 @@ make benchmark -j # Else you have to issue this one.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
 
-Compiled with `g++ (Ubuntu 14.2.0-4ubuntu2) 14.2.0` while running on `Linux 6.11.0-18-generic x86_64`.
+Compiled with `g++ (Ubuntu 15.2.0-4ubuntu4) 15.2.0` while running on `Linux 6.17.0-6-generic x86_64`.
 
-I maintain benchmark results in JSON format @ [bench_result_on_Linux_6.11.0-18-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-18-generic_x86_64_with_g++_14.json).
+We maintain benchmark results in JSON format @ [bench_result_at_commit_79994d4_on_Linux_6.17.0-6-generic_x86_64_with_g++_15](./bench_result_at_commit_79994d4_on_Linux_6.17.0-6-generic_x86_64_with_g++_15.json).
 
 ### On Apple M1 Max
 
@@ -176,10 +184,10 @@ Maintaining benchmark results in JSON format @ [bench_result_on_Darwin_24.3.0_ar
 
 ## Usage
 
-`sha3` - C++ header-only library is written such that it's fairly easy for one to start using it in their project. All one needs to do
+`sha3` - C++ header-only library is written such that it's very easy to get started with. All one needs to do
 
-- Include proper header files ( select which scheme you need by name ).
-- Use proper struct(s)/ API(s)/ constant(s) ( see [usage examples](./examples) or [test cases](./tests/) ).
+- Include proper header files (select which scheme you need by name).
+- Use proper struct(s)/ API(s)/ constant(s) (see [usage examples](./examples) or [test cases](./tests/)).
 - When compiling, let your compiler know where it can find respective header files, which is `./include` directory.
 
 Scheme | Header | Namespace | Example
@@ -190,51 +198,10 @@ SHA3-384 | ./include/sha3/sha3_384.hpp | `sha3_384::` | [examples/sha3_384.cpp](
 SHA3-512 | ./include/sha3/sha3_512.hpp | `sha3_512::` | [examples/sha3_512.cpp](./examples/sha3_512.cpp)
 SHAKE128 | ./include/sha3/shake128.hpp | `shake128::` | [examples/shake128.cpp](./examples/shake128.cpp)
 SHAKE256 | ./include/sha3/shake256.hpp | `shake256::` | [examples/shake256.cpp](./examples/shake256.cpp)
+TurboSHAKE128 | ./include/sha3/turboshake128.hpp | `turboshake128::` | [examples/turboshake128.cpp](./examples/turboshake128.cpp)
+TurboSHAKE256 | ./include/sha3/turboshake256.hpp | `turboshake256::` | [examples/turboshake256.cpp](./examples/turboshake256.cpp)
 
-As this library implements all Sha3 hash functions and xofs as `constexpr` - one can evaluate, say Sha3-256 digest of some statically defined input message, during program compilation time. Let's see how to do that and for ensuring that it computes correct message digest, we'll use static assertions.
-
-```cpp
-#include "sha3/sha3_256.hpp"
-#include <numeric>
-
-// Eval SHA3-256 hash on statically defined input message during compilation-time.
-constexpr std::array<uint8_t, sha3_256::DIGEST_LEN>
-eval_sha3_256()
-{
-  // Statically defined input.
-  std::array<uint8_t, sha3_256::DIGEST_LEN * 2> data{};
-  std::iota(data.begin(), data.end(), 0);
-
-  // To be computed output.
-  std::array<uint8_t, sha3_256::DIGEST_LEN> md{};
-
-  sha3_256::sha3_256_t hasher;
-  hasher.absorb(data);
-  hasher.finalize();
-  hasher.digest(md);
-
-  return md;
-}
-
-int
-main()
-{
-
-  // Input  = 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f
-  // Output = c8ad478f4e1dd9d47dfc3b985708d92db1f8db48fe9cddd459e63c321f490402
-  constexpr auto md = eval_sha3_256();
-  static_assert(md ==
-                  std::array<uint8_t, sha3_256::DIGEST_LEN>{
-                    200, 173, 71, 143, 78, 29,  217, 212, 125, 252, 59,
-                    152, 87,  8,  217, 45, 177, 248, 219, 72,  254, 156,
-                    221, 212, 89, 230, 60, 50,  31,  73,  4,   2 },
-                "Must be able to compute Sha3-256 hash during compile-time !");
-
-  return 0;
-}
-```
-
-I maintain examples of using Sha3 hash function and xof API, inside [examples](./examples/) directory. Run them all by issuing
+We maintain couple of examples, showing how to use SHA3 hash functions and XOF API, inside [examples](./examples/) directory. Run them all by issuing.
 
 ```bash
 make example -j
@@ -243,35 +210,45 @@ make example -j
 ```bash
 SHA3-224
 
-Input  : 2c85bd27e447424ffecd668a690d385304553230e898e50e1bbda2035a852a3c
-Output : a39d989bab91337bcc2af474aa6235a3ab05680c0d4cd02e5243b7cd
+Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Message Digest : bfc9c1e8939aee953ca0d425a2f0cbdd2d18025d5d6b798f1c8150b9
 --- --- ---
 SHA3-256
 
-Input  : 5753f01c245b2cc4417850703e6cbeed822870a2b8f8144c2c30b35d2f9be2db
-Output : c54d90ded2536dce8a73d06f474cdfd3cf14ddaaf54c0c2598347304e5fcb208
+Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Message Digest : 050a48733bd5c2756ba95c5828cc83ee16fabcd3c086885b7744f84a0f9e0d94
 --- --- ---
 SHA3-384
 
-Input  : 0633acdbe5f78361622e4fefa816a41af0705f0d6e5e14cf339127e035275e11
-Output : 18094d6c42a25e8f64357f834f8f7d64ac456b32fc1bc09fd3084565f7b4e9eae8ada85adb6be35f89effedcdf84831a
+Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Message Digest : e086a2b6a69bb6fae37caa70735723e7cc8ae2183788fbb4a5f1ccacd83226852ca6faff503e12ff95423f94f872dda3
 --- --- ---
 SHA3-512
 
-Input  : 9c3679d1a7ba47a5fb7cd05fa60fe05939e6bf267b7e4b95c1b7a306ee83d5d0
-Output : 31e4c24bf38c287ba66f992b7bddebf99bfe6dca03830e9845880af5019a02aa32e1e5aef47cec902731d0b83815a5faed3ecabc44b68082bbd199a12b40579c
+Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Message Digest : cbd3f6eeba676b21e0f2c47522292482fd830f330c1d84a794bb94728b2d93febe4c18eae5a7e017e35fa090de24262e70951ad1d7dfb3a8c96d1134fb1879f2
 --- --- ---
-SHAKE-128
+SHAKE128
 
-Input  : 09ad8b662f1e7c1fc151f2b896a33d22695a6e1e67e316bd4953c3475a8bd6b3
-Output : b7e3784fa89e4c9edd7eacd6e3ffa67c7032b22fbf31c58a7f0b268b0040c9099607a7ac68cc8722
+Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Output   : 066a361dc675f856cecdc02b25218a10cec0cecf79859ec0fec3d409e5847a92ba9d4e33d16a3a44
 --- --- ---
-SHAKE-256
+SHAKE256
 
-Input  : 5f6b6c5c905cca71d9f83cd90b7db3a4f4ca5303e97e25e343e2c829ae0ce7c3
-Output : be24aea2c7d7488d28d638ee46baba5474994171b6bc42fce59679f5578e57ac59f4521cbeb88bd5
+Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Output   : 69f07c8840ce80024db30939882c3d5bbc9c98b3e31e4513ebd2ca9b4503cdd3c9c90742452c7173
+--- --- ---
+TurboSHAKE128
+
+Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Output   : f433704a62d1b17fd5ad80e9ba281fbdf2579b84bd941ea2748c10973d7458a212c4ab868d09af4f
+--- --- ---
+TurboSHAKE256
+
+Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Output   : 4d5596cae904a6171715e08defa88f81dc7676c9f63b48740bcfbb6d932b1377a1414490f39cfcf1
 --- --- ---
 ```
 
 > [!NOTE]
-> This library doesn't expose any raw pointer + length -based interfaces, rather everything is wrapped under much safer `std::span` - which one can easily create from `std::{array, vector}` or even raw pointers and length pair. See https://en.cppreference.com/w/cpp/container/span. I made this choice because this gives us much better type safety and compile-time error reporting.
+> This library doesn't expose any raw pointer + length -based interface, rather everything is wrapped under much safer `std::span` - which one can easily create from `std::{array, vector}` or even raw pointers and length pair. See <https://en.cppreference.com/w/cpp/container/span>. We made this choice because this gives us much better type safety and compile-time error reporting.
