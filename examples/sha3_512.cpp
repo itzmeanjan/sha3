@@ -1,6 +1,7 @@
 #include "sha3/sha3_512.hpp"
 #include "example_helper.hpp"
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 // Compile it using
@@ -9,23 +10,25 @@
 int
 main()
 {
-  constexpr size_t ilen = 32;
-  constexpr size_t olen = sha3_512::DIGEST_LEN;
+  constexpr size_t msg_len = 32;
 
-  std::vector<uint8_t> msg(ilen, 0);
-  std::vector<uint8_t> dig(olen, 0);
-  auto _dig = std::span<uint8_t, olen>(dig);
+  std::vector<uint8_t> msg(msg_len, 0);
+  std::iota(msg.begin(), msg.end(), 0);
 
-  random_data<uint8_t>(msg);
+  auto md = sha3_512::sha3_512_t::hash(msg);
 
-  sha3_512::sha3_512_t hasher;
-  hasher.absorb(msg);
-  hasher.finalize();
-  hasher.digest(_dig);
+  // Or do following, if you want to absorb message in multiple calls.
+  //
+  // std::array<uint8_t, sha3_512::DIGEST_LEN> md{};
+  // sha3_512::sha3_512_t hasher;
+  //
+  // hasher.absorb(msg);
+  // hasher.finalize();
+  // hasher.digest(md);
 
   std::cout << "SHA3-512" << std::endl << std::endl;
-  std::cout << "Input  : " << to_hex(msg) << "\n";
-  std::cout << "Output : " << to_hex(dig) << "\n";
+  std::cout << "Message        : " << to_hex(msg) << "\n";
+  std::cout << "Message Digest : " << to_hex(md) << "\n";
 
   return EXIT_SUCCESS;
 }

@@ -2,10 +2,9 @@
 #include "sha3/internals/force_inline.hpp"
 #include <cassert>
 #include <cstdint>
-#include <cstring>
 #include <span>
 
-// Utility ( or commonly used ) functions for SHA3 implementation
+// Commonly used functions for SHA3 implementation
 namespace sha3_utils {
 
 // Given a byte array of length 8, this routine can be used for interpreting those 8 -bytes in little-endian order, as a 64 -bit unsigned integer.

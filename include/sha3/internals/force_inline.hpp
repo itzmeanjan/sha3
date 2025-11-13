@@ -1,7 +1,9 @@
 #pragma once
 
-// Following content is taken from
-// https://github.com/itzmeanjan/ml-kem/blob/b43b819e880a6b1e4e165211060ef8fc030b9b6d/include/ml_kem/internals/utility/force_inline.hpp
+/**
+ * Following content is taken from
+ * https://github.com/itzmeanjan/ml-kem/blob/b43b819e880a6b1e4e165211060ef8fc030b9b6d/include/ml_kem/internals/utility/force_inline.hpp
+ */
 
 #ifdef _MSC_VER
 // MSVC

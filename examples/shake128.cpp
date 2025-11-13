@@ -1,6 +1,7 @@
 #include "sha3/shake128.hpp"
 #include "example_helper.hpp"
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 // Compile it using
@@ -9,16 +10,16 @@
 int
 main()
 {
-  constexpr size_t ilen = 32;
-  constexpr size_t olen = 40;
+  constexpr size_t msg_len = 32;
+  constexpr size_t out_len = 40;
 
-  std::vector<uint8_t> msg(ilen, 0);
-  std::vector<uint8_t> dig(olen, 0);
-  auto _dig = std::span(dig);
+  std::vector<uint8_t> msg(msg_len, 0);
+  std::iota(msg.begin(), msg.end(), 0);
 
-  random_data<uint8_t>(msg);
+  std::vector<uint8_t> out(out_len, 0);
+  auto out_span = std::span(out);
 
-  // Create shake128 hasher
+  // Create SHAKE128 hasher
   shake128::shake128_t hasher;
 
   // Absorb message bytes into sponge state
@@ -26,16 +27,16 @@ main()
   // Finalize sponge state
   hasher.finalize();
 
-  // Squeeze total `olen` -bytes out of sponge, a single byte at a time.
-  // One can request arbitrary many bytes of output, by calling `squeeze`
-  // arbitrary many times.
-  for (size_t i = 0; i < olen; i++) {
-    hasher.squeeze(_dig.subspan(i, 1));
+  // Squeeze total `out_len` -bytes out of sponge, a single byte at a time.
+  // One can request arbitrary many bytes of output, by calling `squeeze` arbitrary
+  // many times, after it has been finalized.
+  for (size_t i = 0; i < out_len; i++) {
+    hasher.squeeze(out_span.subspan(i, 1));
   }
 
-  std::cout << "SHAKE-128" << std::endl << std::endl;
-  std::cout << "Input  : " << to_hex(msg) << "\n";
-  std::cout << "Output : " << to_hex(dig) << "\n";
+  std::cout << "SHAKE128" << std::endl << std::endl;
+  std::cout << "Message  : " << to_hex(msg) << "\n";
+  std::cout << "Output   : " << to_hex(out) << "\n";
 
   return EXIT_SUCCESS;
 }

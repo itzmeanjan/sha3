@@ -1,5 +1,6 @@
 #pragma once
 #include "sha3/internals/sponge.hpp"
+#include <bit>
 #include <cstdint>
 #include <limits>
 #include <sys/types.h>
@@ -7,8 +8,14 @@
 // SHAKE256 Extendable Output Function : Keccak[512](M || 1111, d)
 namespace shake256 {
 
+// Number of rounds keccak-p[1600] is applied.
+static constexpr size_t NUM_KECCAK_ROUNDS = keccak::MAX_NUM_ROUNDS;
+
+// SHAKE256 XOF offers at max 256-bits of security.
+static constexpr size_t TARGET_BIT_SECURITY_LEVEL = 256;
+
 // Width of capacity portion of the sponge, in bits.
-static constexpr size_t CAPACITY = 512;
+static constexpr size_t CAPACITY = 2 * TARGET_BIT_SECURITY_LEVEL;
 
 // Width of rate portion of the sponge, in bits.
 static constexpr size_t RATE = 1600 - CAPACITY;
@@ -17,12 +24,13 @@ static constexpr size_t RATE = 1600 - CAPACITY;
 static constexpr uint8_t DOM_SEP = 0b00001111;
 
 // Bit-width of domain separator, starting from least significant bit.
-static constexpr size_t DOM_SEP_BW = 4;
+static constexpr size_t DOM_SEP_BW = std::bit_width(DOM_SEP);
 
-// SHAKE256 Extendable Output Function (Xof)
-//
-// See SHA3 extendable output function definition in section 6.2 of SHA3 specification
-// https://dx.doi.org/10.6028/NIST.FIPS.202
+/**
+ * SHAKE256 eXtendable Output Function (XOF).
+ *
+ * See SHA3 extendable output function definition in section 6.2 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202.
+ */
 struct shake256_t
 {
 private:
@@ -35,45 +43,53 @@ public:
   forceinline constexpr shake256_t() = default;
   forceinline constexpr size_t squeezable_num_bytes() const { return squeezable; }
 
-  // Given N -many bytes input message, this routine consumes those into keccak[512] sponge state.
-  //
-  // Note, this routine can be called arbitrary number of times, each time with arbitrary bytes of input message, until
-  // keccak[512] state is finalized ( by calling routine with similar name ). Once the sponge is finalized, it can't
-  // absorb any more message bytes.
+  /**
+   * Given N -many bytes input message, this routine consumes those into keccak[512] sponge state.
+   *
+   * Note, this routine can be called arbitrary number of times, each time with arbitrary bytes of input message, until
+   * keccak[512] state is finalized ( by calling routine with the same name ). Once the sponge is finalized, it can't
+   * absorb any more message bytes.
+   */
   forceinline constexpr void absorb(std::span<const uint8_t> msg)
   {
     if (!finalized) {
-      sponge::absorb<RATE>(state, offset, msg);
+      sponge::absorb<RATE, NUM_KECCAK_ROUNDS>(state, offset, msg);
     }
   }
 
-  // After consuming arbitrary many input bytes, this routine is invoked when no more input bytes remaining to be
-  // consumed by keccak[512] state.
-  //
-  // Note, once this routine is called, calling absorb() or finalize() again, on same SHAKE256 object, doesn't do
-  // anything. After finalization, one might intend to read arbitrary many bytes by squeezing sponge, which is done by
-  // calling read() function, as many times required.
+  /**
+   * After consuming arbitrary many input bytes, this routine is invoked when no more input bytes remaining to be
+   * consumed by keccak[512] state.
+   *
+   * Note, once this routine is called, calling absorb() or finalize() again, on same SHAKE256 object, doesn't do
+   * anything. After finalization, one might intend to read arbitrary many bytes by squeezing sponge, which is done by
+   * calling read() function, as many times required.
+   */
   forceinline constexpr void finalize()
   {
     if (!finalized) {
-      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE>(state, offset);
+      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE, NUM_KECCAK_ROUNDS>(state, offset);
 
       finalized = true;
       squeezable = RATE / std::numeric_limits<uint8_t>::digits;
     }
   }
 
-  // After sponge state is finalized, arbitrary many output bytes can be squeezed by calling this function any number of
-  // times required.
+  /**
+   * After sponge state is finalized, arbitrary many output bytes can be squeezed by calling this function
+   * any number of times required.
+   */
   forceinline constexpr void squeeze(std::span<uint8_t> dig)
   {
     if (finalized) {
-      sponge::squeeze<RATE>(state, squeezable, dig);
+      sponge::squeeze<RATE, NUM_KECCAK_ROUNDS>(state, squeezable, dig);
     }
   }
 
-  // Reset the internal state of the Shake256-Xof hasher, now it can again be used for another absorb->finalize->squeeze
-  // cycle.
+  /**
+   * Reset the internal state of the SHAKE256 XOF hasher.
+   * Now it can again be used for another `absorb() -> finalize() -> squeeze()` cycle.
+   */
   forceinline constexpr void reset()
   {
     std::fill(std::begin(state), std::end(state), 0);
@@ -82,8 +98,10 @@ public:
     squeezable = 0;
   }
 
-  // Given that sponge is already finalized, this routine can be used for zeroizing first n -bytes of permutation state
-  // s.t. n <= 200 and applying permutation.
+  /**
+   * Given that sponge is already finalized, this routine can be used for zeroizing first n -bytes of
+   * permutation state s.t. n <= 200 and applying permutation.
+   */
   forceinline void ratchet(const size_t byte_len)
   {
     if (finalized) {
@@ -92,7 +110,7 @@ public:
       auto state_as_bytes = reinterpret_cast<uint8_t*>(state);
       std::memset(state_as_bytes, 0, ratchetable_portion_byte_len);
 
-      keccak::permute(state);
+      keccak::permute<NUM_KECCAK_ROUNDS>(state);
     }
   }
 };

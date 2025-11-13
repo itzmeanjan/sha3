@@ -1,4 +1,4 @@
-#include "sha3/shake256.hpp"
+#include "sha3/turboshake256.hpp"
 #include "example_helper.hpp"
 #include <iostream>
 #include <numeric>
@@ -6,7 +6,7 @@
 
 // Compile it using
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I include example/shake256.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I include example/turboshake256.cpp
 int
 main()
 {
@@ -19,8 +19,8 @@ main()
   std::vector<uint8_t> out(out_len, 0);
   auto out_span = std::span(out);
 
-  // Create SHAKE256 hasher
-  shake256::shake256_t hasher;
+  // Create TurboSHAKE256 hasher
+  turboshake256::turboshake256_t hasher;
 
   // Absorb message bytes into sponge state
   hasher.absorb(msg);
@@ -34,7 +34,7 @@ main()
     hasher.squeeze(out_span.subspan(i, 1));
   }
 
-  std::cout << "SHAKE256" << std::endl << std::endl;
+  std::cout << "TurboSHAKE256" << std::endl << std::endl;
   std::cout << "Message  : " << to_hex(msg) << "\n";
   std::cout << "Output   : " << to_hex(out) << "\n";
 

@@ -8,13 +8,13 @@
 #include <iterator>
 #include <limits>
 
-// SHAKE128 Extendable Output Function : Keccak[256](M || 1111, d)
-namespace shake128 {
+// TurboSHAKE128 eXtendable Output Function
+namespace turboshake128 {
 
-// Number of rounds keccak-p[1600] is applied.
-static constexpr size_t NUM_KECCAK_ROUNDS = keccak::MAX_NUM_ROUNDS;
+// 12 -rounds Keccak-p[1600, 12] is applied.
+static constexpr size_t NUM_KECCAK_ROUNDS = keccak::MAX_NUM_ROUNDS / 2;
 
-// SHAKE128 XOF offers at max 128-bits of security.
+// TurboSHAKE128 XOF offers at max 128-bits of security.
 static constexpr size_t TARGET_BIT_SECURITY_LEVEL = 128;
 
 // Width of capacity portion of the sponge, in bits.
@@ -23,34 +23,28 @@ static constexpr size_t CAPACITY = 2 * TARGET_BIT_SECURITY_LEVEL;
 // Width of rate portion of the sponge, in bits.
 static constexpr size_t RATE = 1600 - CAPACITY;
 
-// Domain separator bits, used for finalization.
-static constexpr uint8_t DOM_SEP = 0b00001111;
-
-// Bit-width of domain separator, starting from least significant bit.
-static constexpr size_t DOM_SEP_BW = std::bit_width(DOM_SEP);
-
 /**
- * SHAKE128 eXtendable Output Function (XOF).
+ * TurboSHAKE128 eXtendable Output Function (XOF).
  *
- * See SHA3 extendable output function definition in section 6.2 of SHA3 specification https://dx.doi.org/10.6028/NIST.FIPS.202.
+ * See TurboSHAKE extendable output function definition in section 2 of RFC 9861 https://datatracker.ietf.org/doc/rfc9861.
  */
-struct shake128_t
+struct turboshake128_t
 {
 private:
   uint64_t state[keccak::LANE_CNT]{};
   size_t offset = 0;
-  alignas(4) bool finalized = false; // All message bytes absorbed?
+  alignas(4) bool finalized = false; // all message bytes absorbed ?
   size_t squeezable = 0;
 
 public:
-  forceinline constexpr shake128_t() = default;
+  forceinline constexpr turboshake128_t() = default;
   forceinline constexpr size_t squeezable_num_bytes() const { return squeezable; }
 
   /**
    * Given N -many bytes input message, this routine consumes those into keccak[256] sponge state.
    *
    * Note, this routine can be called arbitrary number of times, each time with arbitrary bytes of input message, until
-   * keccak[256] state is finalized ( by calling routine with the same name ). Once the sponge is finalized, it can't
+   * keccak[256] state is finalized ( by calling routine with similar name ). Once the sponge is finalized, it can't
    * absorb any more message bytes.
    */
   forceinline constexpr void absorb(std::span<const uint8_t> msg)
@@ -61,17 +55,19 @@ public:
   }
 
   /**
-   * After consuming arbitrary many input bytes, this routine is invoked when no more input bytes remaining to be
-   * consumed by keccak[256] state.
+   * After consuming arbitrary many input bytes, this routine is invoked when no more input bytes remaining to be consumed by keccak[256] state.
+   * This function expects a domain separator byte ∈ [0x01, 0x7f]. If not supplied, it will take 0x1f as default value.
    *
-   * Note, once this routine is called, calling absorb() or finalize() again, on same SHAKE128 object, doesn't do
+   * Note, once this routine is called, calling absorb() or finalize() again, on same TurboSHAKE128 object, doesn't do
    * anything. After finalization, one might intend to read arbitrary many bytes by squeezing sponge, which is done by
-   * calling read() function, as many times required.
+   * calling squeeze() function, as many times required.
    */
+  template<uint8_t dom_sep = 0x1f>
   forceinline constexpr void finalize()
+    requires((dom_sep >= 0x01) && (dom_sep <= 0x7f))
   {
     if (!finalized) {
-      sponge::finalize<DOM_SEP, DOM_SEP_BW, RATE, NUM_KECCAK_ROUNDS>(state, offset);
+      sponge::finalize<dom_sep, std::bit_width(dom_sep) - 1, RATE, NUM_KECCAK_ROUNDS>(state, offset);
 
       finalized = true;
       squeezable = RATE / std::numeric_limits<uint8_t>::digits;
@@ -90,7 +86,7 @@ public:
   }
 
   /**
-   * Reset the internal state of the SHAKE128 XOF hasher.
+   * Reset the internal state of the TurboSHAKE128 XOF hasher.
    * Now it can again be used for another `absorb() -> finalize() -> squeeze()` cycle.
    */
   forceinline constexpr void reset()
