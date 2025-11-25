@@ -21,7 +21,7 @@ jobs:
         test_type: [standard, asan, ubsan]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Google Test
         uses: Bacondish2023/setup-googletest@v1
