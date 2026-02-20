@@ -1,0 +1,36 @@
+---
+Checks: '
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-fuchsia.*,
+  -clang-analyzer-osx.*,
+  -clang-analyzer-optin.mpi.*,
+  -clang-analyzer-optin.osx.*,
+  -clang-analyzer-optin.performance.GCDAntipattern,
+  -clang-analyzer-webkit.*,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -hicpp-use-auto,
+  -hicpp-signed-bitwise,
+  -misc-include-cleaner,
+  -modernize-use-trailing-return-type,
+  -modernize-use-auto,
+  -modernize-use-ranges,
+  -readability-magic-numbers
+'
+CheckOptions:
+  readability-identifier-length.MinimumLoopCounterLength: 1
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'include/sha3/.*'
+...
