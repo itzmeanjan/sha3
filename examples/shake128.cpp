@@ -1,7 +1,11 @@
 #include "sha3/shake128.hpp"
 #include "example_helper.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <numeric>
+#include <span>
 #include <vector>
 
 // Compile it using
