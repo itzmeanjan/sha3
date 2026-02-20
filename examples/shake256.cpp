@@ -6,7 +6,7 @@
 
 // Compile it using
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I include example/shake256.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I include examples/shake256.cpp
 int
 main()
 {
@@ -34,7 +34,7 @@ main()
     hasher.squeeze(out_span.subspan(i, 1));
   }
 
-  std::cout << "SHAKE256" << std::endl << std::endl;
+  std::cout << "SHAKE256\n\n";
   std::cout << "Message  : " << to_hex(msg) << "\n";
   std::cout << "Output   : " << to_hex(out) << "\n";
 

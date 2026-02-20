@@ -6,7 +6,7 @@
 
 // Compile it using
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I include example/turboshake256.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I include examples/turboshake256.cpp
 int
 main()
 {
@@ -34,7 +34,7 @@ main()
     hasher.squeeze(out_span.subspan(i, 1));
   }
 
-  std::cout << "TurboSHAKE256" << std::endl << std::endl;
+  std::cout << "TurboSHAKE256\n\n";
   std::cout << "Message  : " << to_hex(msg) << "\n";
   std::cout << "Output   : " << to_hex(out) << "\n";
 
