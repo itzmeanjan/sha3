@@ -39,7 +39,7 @@ static constexpr size_t DOM_SEP_BW = std::bit_width(DOM_SEP);
 struct sha3_224_t
 {
 private:
-  uint64_t state[keccak::LANE_CNT]{};
+  std::array<uint64_t, keccak::LANE_CNT> state{};
   size_t offset = 0;
   alignas(4) bool finalized = false;
   alignas(4) bool squeezed = false;
@@ -108,7 +108,7 @@ public:
    */
   forceinline constexpr void reset()
   {
-    std::fill(std::begin(state), std::end(state), 0);
+    state.fill(0);
     offset = 0;
     finalized = false;
     squeezed = false;

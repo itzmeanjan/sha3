@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <span>
 
 // Keccak-p[1600, 12] and Keccak-p[1600, 24] (aka Keccak-f[1600]) permutation
 namespace keccak {
@@ -13,7 +14,7 @@ namespace keccak {
 static constexpr size_t L = 6;
 
 // Bit width of each lane of Keccak-f[1600] state
-static constexpr size_t LANE_BW = 1ul << L;
+static constexpr size_t LANE_BW = 1UL << L;
 
 // Bit length of Keccak-f[1600] permutation state
 static constexpr size_t STATE_BIT_LEN = 1600;
@@ -25,7 +26,7 @@ static constexpr size_t STATE_BYTE_LEN = STATE_BIT_LEN / std::numeric_limits<uin
 static constexpr size_t LANE_CNT = STATE_BIT_LEN / LANE_BW;
 
 // Maximum number of rounds Keccak-p[b, nr] permutation can be applied s.t. b = 1600, w = b/ 25, l = log2(w), nr = 12 + 2l.
-static constexpr size_t MAX_NUM_ROUNDS = 12 + 2 * L;
+static constexpr size_t MAX_NUM_ROUNDS = 12 + (2 * L);
 
 /**
  * Leftwards circular rotation offset of 25 lanes ( each lane is 64 -bit wide ) of state array, as provided in table 2
@@ -33,10 +34,10 @@ static constexpr size_t MAX_NUM_ROUNDS = 12 + 2 * L;
  *
  * Note, following offsets are obtained by performing % 64 (bit width of lane) on offsets provided in above mentioned link.
  */
-static constexpr size_t ROT[LANE_CNT]{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW, 91 % LANE_BW, 36 % LANE_BW,  300 % LANE_BW,
-                                       6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW, 3 % LANE_BW,  10 % LANE_BW, 171 % LANE_BW, 153 % LANE_BW,
-                                       231 % LANE_BW, 105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW, 21 % LANE_BW, 136 % LANE_BW, 210 % LANE_BW,
-                                       66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW };
+static constexpr std::array<size_t, LANE_CNT> ROT{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW, 91 % LANE_BW, 36 % LANE_BW,  300 % LANE_BW,
+                                                   6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW, 3 % LANE_BW,  10 % LANE_BW, 171 % LANE_BW, 153 % LANE_BW,
+                                                   231 % LANE_BW, 105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW, 21 % LANE_BW, 136 % LANE_BW, 210 % LANE_BW,
+                                                   66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW };
 
 /**
  * Precomputed table used for looking up source index during application of `π` step mapping function on Keccak-f[1600] state.
@@ -47,7 +48,7 @@ static constexpr size_t ROT[LANE_CNT]{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_
  *
  * Table generated using above Python code snippet. See section 3.2.3 of the specification https://dx.doi.org/10.6028/NIST.FIPS.202.
  */
-static constexpr size_t PERM[LANE_CNT]{ 0, 6, 12, 18, 24, 3, 9, 10, 16, 22, 1, 7, 13, 19, 20, 4, 5, 11, 17, 23, 2, 8, 14, 15, 21 };
+static constexpr std::array<size_t, LANE_CNT> PERM{ 0, 6, 12, 18, 24, 3, 9, 10, 16, 22, 1, 7, 13, 19, 20, 4, 5, 11, 17, 23, 2, 8, 14, 15, 21 };
 
 /**
  * Computes single bit of Keccak-f[1600] round constant (at compile-time), using binary LFSR, defined by primitive polynomial `x^8 + x^6 + x^5 + x^4 + 1`.
@@ -61,7 +62,7 @@ rc(const size_t t)
 {
   // Step 1 of algorithm 5
   if (t % 255 == 0) {
-    return 1;
+    return true;
   }
 
   // Step 2 of algorithm 5
@@ -99,7 +100,7 @@ compute_rc(const size_t r_idx)
 
   for (size_t j = 0; j < (L + 1); j++) {
     const size_t boff = (1 << j) - 1;
-    tmp |= static_cast<uint64_t>(rc(j + 7 * r_idx)) << boff;
+    tmp |= static_cast<uint64_t>(rc(j + (7 * r_idx))) << boff;
   }
 
   return tmp;
@@ -134,9 +135,10 @@ static constexpr std::array<uint64_t, MAX_NUM_ROUNDS> RC = compute_rcs();
  * This implementation collects a lot of inspiration from https://github.com/bwesterb/armed-keccak.git.
  */
 static forceinline constexpr void
-roundx4(uint64_t* const state, const size_t ridx)
+roundx4(std::span<uint64_t, LANE_CNT> state, const size_t ridx)
 {
-  std::array<uint64_t, 5> bc{}, d{};
+  std::array<uint64_t, 5> bc{};
+  std::array<uint64_t, 5> d{};
   uint64_t t = 0;
 
 // Round ridx + 0
@@ -584,7 +586,7 @@ roundx4(uint64_t* const state, const size_t ridx)
  */
 template<size_t num_rounds>
 forceinline constexpr void
-permute(uint64_t state[LANE_CNT])
+permute(std::array<uint64_t, LANE_CNT>& state)
   requires((num_rounds == 12) || (num_rounds == MAX_NUM_ROUNDS))
 {
   constexpr size_t start_at_round = MAX_NUM_ROUNDS - num_rounds;
