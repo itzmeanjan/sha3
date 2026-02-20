@@ -20,6 +20,7 @@ Checks: '
   -clang-analyzer-webkit.*,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-avoid-magic-numbers,
   -hicpp-use-auto,
   -hicpp-signed-bitwise,
@@ -30,7 +31,9 @@ Checks: '
   -readability-magic-numbers
 '
 CheckOptions:
-  readability-identifier-length.MinimumLoopCounterLength: 1
+  readability-identifier-length.MinimumLoopCounterNameLength: 1
+  readability-identifier-length.MinimumVariableNameLength: 1
+  readability-identifier-length.MinimumParameterNameLength: 1
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'include/sha3/.*'
 ...
