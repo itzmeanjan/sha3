@@ -13,9 +13,9 @@ le_bytes_to_u64(std::span<const uint8_t, sizeof(uint64_t)> bytes)
 {
   static_assert(std::endian::native == std::endian::little);
 
-  return (static_cast<uint64_t>(bytes[7]) << 56u) | (static_cast<uint64_t>(bytes[6]) << 48u) | (static_cast<uint64_t>(bytes[5]) << 40u) |
-         (static_cast<uint64_t>(bytes[4]) << 32u) | (static_cast<uint64_t>(bytes[3]) << 24u) | (static_cast<uint64_t>(bytes[2]) << 16u) |
-         (static_cast<uint64_t>(bytes[1]) << 8u) | (static_cast<uint64_t>(bytes[0]) << 0u);
+  return (static_cast<uint64_t>(bytes[7]) << 56U) | (static_cast<uint64_t>(bytes[6]) << 48U) | (static_cast<uint64_t>(bytes[5]) << 40U) |
+         (static_cast<uint64_t>(bytes[4]) << 32U) | (static_cast<uint64_t>(bytes[3]) << 24U) | (static_cast<uint64_t>(bytes[2]) << 16U) |
+         (static_cast<uint64_t>(bytes[1]) << 8U) | (static_cast<uint64_t>(bytes[0]) << 0U);
 }
 
 // Given a 64 -bit unsigned integer as input, this routine can be used for interpreting those 8 -bytes in little-endian byte order.
@@ -24,14 +24,14 @@ u64_to_le_bytes(uint64_t word, std::span<uint8_t, sizeof(word)> bytes)
 {
   static_assert(std::endian::native == std::endian::little);
 
-  bytes[0] = static_cast<uint8_t>(word >> 0u);
-  bytes[1] = static_cast<uint8_t>(word >> 8u);
-  bytes[2] = static_cast<uint8_t>(word >> 16u);
-  bytes[3] = static_cast<uint8_t>(word >> 24u);
-  bytes[4] = static_cast<uint8_t>(word >> 32u);
-  bytes[5] = static_cast<uint8_t>(word >> 40u);
-  bytes[6] = static_cast<uint8_t>(word >> 48u);
-  bytes[7] = static_cast<uint8_t>(word >> 56u);
+  bytes[0] = static_cast<uint8_t>(word >> 0U);
+  bytes[1] = static_cast<uint8_t>(word >> 8U);
+  bytes[2] = static_cast<uint8_t>(word >> 16U);
+  bytes[3] = static_cast<uint8_t>(word >> 24U);
+  bytes[4] = static_cast<uint8_t>(word >> 32U);
+  bytes[5] = static_cast<uint8_t>(word >> 40U);
+  bytes[6] = static_cast<uint8_t>(word >> 48U);
+  bytes[7] = static_cast<uint8_t>(word >> 56U);
 }
 
 }

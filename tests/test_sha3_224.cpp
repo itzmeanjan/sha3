@@ -4,31 +4,16 @@
 #include <algorithm>
 #include <fstream>
 #include <gtest/gtest.h>
-#include <numeric>
 #include <vector>
-
-// Eval SHA3-224 hash on statically defined input message during compilation-time.
-constexpr std::array<uint8_t, sha3_224::DIGEST_LEN>
-eval_sha3_224()
-{
-  // Statically defined input.
-  std::array<uint8_t, sha3_224::DIGEST_LEN * 2> data{};
-  std::iota(data.begin(), data.end(), 0);
-
-  // Computed output message digest.
-  return sha3_224::sha3_224_t::hash(data);
-}
 
 // Ensure that SHA3-224 implementation is compile-time evaluable.
 TEST(Sha3Hashing, CompileTimeEvalSha3_224)
 {
-  // Input  =
-  // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637
-  // Output = fc95d44e806cbbd484e379882238f555fda923878c443abe4ce4cdd6
+  constexpr auto input = sha3_test_utils::from_hex<sha3_224::DIGEST_LEN * 2>(
+    "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f3031323334353637");
+  constexpr auto digest = sha3_224::sha3_224_t::hash(input);
 
-  constexpr auto md = eval_sha3_224();
-  static_assert(md == std::array<uint8_t, sha3_224::DIGEST_LEN>{ 252, 149, 212, 78,  128, 108, 187, 212, 132, 227, 121, 136, 34,  56,
-                                                                 245, 85,  253, 169, 35,  135, 140, 68,  58,  190, 76,  228, 205, 214 },
+  static_assert(digest == sha3_test_utils::from_hex<sha3_224::DIGEST_LEN>("fc95d44e806cbbd484e379882238f555fda923878c443abe4ce4cdd6"),
                 "Must be able to compute Sha3-224 hash during compile-time !");
 }
 
@@ -93,7 +78,7 @@ TEST(Sha3Hashing, Sha3_224KnownAnswerTests)
 
       auto msg = sha3_test_utils::parse_dynamic_sized_hex_string(msg2);
 
-      auto expected_md = sha3_test_utils::parse_static_sized_hex_string<sha3_224::DIGEST_LEN>(md2);
+      auto expected_md = sha3_test_utils::from_hex<sha3_224::DIGEST_LEN>(md2);
       auto computed_md = sha3_224::sha3_224_t::hash(msg);
 
       EXPECT_EQ(computed_md, expected_md);

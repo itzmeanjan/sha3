@@ -1,9 +1,11 @@
 #pragma once
 #include "sha3/internals/sponge.hpp"
+#include <algorithm>
 #include <bit>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <sys/types.h>
+#include <span>
 
 // SHAKE256 Extendable Output Function : Keccak[512](M || 1111, d)
 namespace shake256 {
@@ -34,14 +36,14 @@ static constexpr size_t DOM_SEP_BW = std::bit_width(DOM_SEP);
 struct shake256_t
 {
 private:
-  uint64_t state[keccak::LANE_CNT]{};
+  std::array<uint64_t, keccak::LANE_CNT> state{};
   size_t offset = 0;
   alignas(4) bool finalized = false; // all message bytes absorbed ?
   size_t squeezable = 0;
 
 public:
   forceinline constexpr shake256_t() = default;
-  forceinline constexpr size_t squeezable_num_bytes() const { return squeezable; }
+  [[nodiscard]] forceinline constexpr size_t squeezable_num_bytes() const { return squeezable; }
 
   /**
    * Given N -many bytes input message, this routine consumes those into keccak[512] sponge state.
@@ -92,7 +94,7 @@ public:
    */
   forceinline constexpr void reset()
   {
-    std::fill(std::begin(state), std::end(state), 0);
+    state.fill(0);
     offset = 0;
     finalized = false;
     squeezable = 0;
@@ -107,8 +109,8 @@ public:
     if (finalized) {
       const auto ratchetable_portion_byte_len = std::min(byte_len, keccak::STATE_BYTE_LEN);
 
-      auto state_as_bytes = reinterpret_cast<uint8_t*>(state);
-      std::memset(state_as_bytes, 0, ratchetable_portion_byte_len);
+      auto state_bytes = std::as_writable_bytes(std::span(state));
+      std::fill_n(state_bytes.begin(), ratchetable_portion_byte_len, std::byte{0});
 
       keccak::permute<NUM_KECCAK_ROUNDS>(state);
     }

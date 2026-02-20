@@ -1,0 +1,27 @@
+---
+Checks: '
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -hicpp-signed-bitwise,
+  -modernize-use-trailing-return-type,
+  -modernize-use-ranges,
+  -readability-magic-numbers
+'
+CheckOptions:
+  readability-identifier-length.MinimumLoopCounterNameLength: 1
+  readability-identifier-length.MinimumVariableNameLength: 1
+  readability-identifier-length.MinimumParameterNameLength: 1
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'include/sha3/.*'
+...

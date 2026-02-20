@@ -1,5 +1,4 @@
-# Collects inspiration from https://github.com/itzmeanjan/frodoPIR/blob/aa654db3d11384fce73086cbbd37c63e0cb30e33/.github/workflows/test_ci.yml
-name: Test SHA3 Hash and Extendable Output Functions
+name: Test SHA3 FIPS 202
 
 on:
   push:
@@ -8,39 +7,77 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
-    runs-on: ${{matrix.os}}
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      LLVM_VERSION: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install LLVM ${{ env.LLVM_VERSION }}
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{ env.LLVM_VERSION }} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-${{ env.LLVM_VERSION }} clang-tidy-${{ env.LLVM_VERSION }}
+
+      - name: Configure
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_COMPILER=clang++-${{ env.LLVM_VERSION }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DSHA3_BUILD_TESTS=ON
+          -DSHA3_BUILD_EXAMPLES=ON
+          -DSHA3_FETCH_DEPS=ON
+          -DCLANG_TIDY_EXE=clang-tidy-${{ env.LLVM_VERSION }}
+
+      - name: clang-tidy
+        run: cmake --build build --target tidy
+
+  test:
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
+      max-parallel: 2
       matrix:
         os: [
-            ubuntu-latest, # x86_64
-            macos-latest, # aarch64
-          ]
+          ubuntu-latest # x86_64
+        ]
         compiler: [g++, clang++]
-        build_type: [debug, release]
-        test_type: [standard, asan, ubsan]
+        sanitizer: [none, asan, ubsan]
+        build_type: [Debug, Release]
+        include:
+          - os: macos-latest # aarch64
+            compiler: clang++
+            sanitizer: none
+            build_type: Release
+        exclude:
+          - sanitizer: none
+            build_type: Debug
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Google Test
-        uses: Bacondish2023/setup-googletest@v1
-        with:
-          tag: v1.17.0
+      - name: Configure
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DSHA3_BUILD_TESTS=ON
+          -DSHA3_BUILD_EXAMPLES=ON
+          -DSHA3_FETCH_DEPS=ON
+          -DSHA3_ASAN=${{ matrix.sanitizer == 'asan' && 'ON' || 'OFF' }}
+          -DSHA3_UBSAN=${{ matrix.sanitizer == 'ubsan' && 'ON' || 'OFF' }}
 
-      - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
-        if: ${{matrix.test_type == 'standard'}}
-        run: |
-          CXX=${{matrix.compiler}} make test -j
-          make clean
+      - name: Build
+        run: cmake --build build -j
 
-      - name: Execute Tests with ${{matrix.test_type}}, in ${{matrix.build_type}} mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
-        if: ${{matrix.test_type != 'standard'}}
-        run: |
-          CXX=${{matrix.compiler}} make ${{matrix.build_type}}_${{matrix.test_type}}_test -j
-          make clean
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -j
 
-      - name: Build and run examples
+      - name: Run Examples
+        if: ${{ matrix.sanitizer == 'none' && matrix.build_type == 'Release' }}
         run: |
-          make example -j
-          make clean
+          for exe in build/sha3_224 build/sha3_256 build/sha3_384 build/sha3_512 build/shake128 build/shake256 build/turboshake128 build/turboshake256; do
+            ./$exe
+          done

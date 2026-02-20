@@ -42,16 +42,37 @@ Ideally, one should just go ahead with XKCP. Though, one edge this portable impl
 #include <cstdlib>
 #include <string_view>
 
+// Compile-time hex character to nibble conversion.
+constexpr uint8_t
+hex_digit(char chr)
+{
+  if (chr >= '0' && chr <= '9') return static_cast<uint8_t>(chr - '0');
+  if (chr >= 'a' && chr <= 'f') return static_cast<uint8_t>(chr - 'a' + 10);
+  if (chr >= 'A' && chr <= 'F') return static_cast<uint8_t>(chr - 'A' + 10);
+  return 0;
+}
+
+// Given a hex encoded string of length 2*L, parse it as a byte array of length L.
+template<size_t L>
+constexpr std::array<uint8_t, L>
+from_hex(std::string_view hex)
+{
+  std::array<uint8_t, L> res{};
+  for (size_t i = 0; i < L; i++) {
+    res[i] = static_cast<uint8_t>((hex_digit(hex[2 * i]) << 4) | hex_digit(hex[(2 * i) + 1]));
+  }
+  return res;
+}
+
+// Given a string_view, interpret its raw bytes as a uint8_t array.
 template<size_t L>
 constexpr std::array<uint8_t, L>
 string_to_bytes(std::string_view sv)
 {
   std::array<uint8_t, L> arr{};
-
   for (size_t i = 0; i < sv.size(); i++) {
     arr[i] = static_cast<uint8_t>(sv[i]);
   }
-
   return arr;
 }
 
@@ -62,8 +83,7 @@ constexpr auto MD = sha3_256::sha3_256_t::hash(MSG_bytes);
 int
 main()
 {
-  // 4edc60a9ffe739ce44252716483a529e8a859a5a75cbf69d494037e914bac16b
-  constexpr std::array<uint8_t, sha3_256::DIGEST_LEN> expected_md = { 78,  220, 96,  169, 255, 231, 57,  206, 68, 37, 39, 22,  72, 58,  82,  158, 138, 133, 154, 90,  117, 203, 246, 157, 73, 64, 55, 233, 20, 186, 193, 107 };
+  constexpr auto expected_md = from_hex<sha3_256::DIGEST_LEN>("4edc60a9ffe739ce44252716483a529e8a859a5a75cbf69d494037e914bac16b");
   static_assert(MD == expected_md, "Must compute SHA3-256 message digest in program compile-time!");
 
   return EXIT_SUCCESS;
@@ -73,30 +93,11 @@ main()
 ## Prerequisites
 
 - A C++ compiler such as `g++`/ `clang++`, with support for C++20 standard library.
-
-```bash
-$ g++ --version
-g++ (Ubuntu 15.2.0-4ubuntu4) 15.2.0
-```
-
-- Build tools such as `cmake` and `make`.
-
-```bash
-$ make --version
-GNU Make 4.4.1
-
-$ cmake --version
-cmake version 3.31.6
-```
-
-- For testing SHA3 algorithms, you need to globally install `google-test` library and headers. Follow [this](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project) guide if you haven't installed it yet.
-- For benchmarking SHA3 algorithms, targeting CPU systems, `google-benchmark` library and headers are required to be installed system-wide. Follow [this](https://github.com/google/benchmark#installation) guide if you don't have it installed yet.
+- CMake (>= 3.28).
+- `google-test` and `google-benchmark` can either be installed system-wide, or fetched automatically by CMake (pass `-DSHA3_FETCH_DEPS=ON`).
 
 > [!NOTE]
 > If you are on a machine running GNU/Linux kernel and you want to obtain CPU cycles or Cycles/ byte or instruction/ cycle etc., when benchmarking SHA3 algorithms, you should consider building `google-benchmark` library yourself with `libPFM` support, following the step-by-step guide @ <https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7>. Find more about libPFM @ <https://perfmon2.sourceforge.net>.
-
-> [!TIP]
-> Git submodule based dependencies will generally be imported automatically, but in case that doesn't work, you can manually bring them in by issuing `$ git submodule update --init` from inside the root of this repository.
 
 ## Testing
 
@@ -109,50 +110,25 @@ We also test correctness of
 
 Some compile-time executed tests ( using `static_assert` ) are also implemented, which ensure that all SHA3 hash functions and XOFs are `constexpr` - meaning they can be evaluated during compilation-time for any statically defined input message.
 
-Issue following command for running all the test cases.
+Issue following commands for running all the test cases.
 
 ```bash
-# Shows help message - which targets are available and what do each of them do
-make
-# or
-make help
-
-make test -j
-make debug_asan_test -j
-make debug_ubsan_test -j
-make release_asan_test -j
-make release_ubsan_test -j
-
-# Specify which compiler to use
-CXX=clang++ make test -j
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DSHA3_BUILD_TESTS=ON -DSHA3_FETCH_DEPS=ON
+cmake --build build -j
+ctest --test-dir build --output-on-failure -j
 ```
 
+To enable sanitizers or specify a compiler:
+
 ```bash
-PASSED TESTS (24/24):
-       3 ms: build/test/test.out Sha3XOF.CompileTimeEvalTurboSHAKE128
-       3 ms: build/test/test.out Sha3XOF.CompileTimeEvalTurboSHAKE256
-       4 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_224
-       4 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_512
-       4 ms: build/test/test.out Sha3XOF.CompileTimeEvalSHAKE128
-       4 ms: build/test/test.out Sha3XOF.CompileTimeEvalSHAKE256
-       5 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_384
-       6 ms: build/test/test.out Sha3Hashing.CompileTimeEvalSha3_256
-      12 ms: build/test/test.out Sha3Hashing.Sha3_256IncrementalAbsorption
-      12 ms: build/test/test.out Sha3Hashing.Sha3_512IncrementalAbsorption
-      12 ms: build/test/test.out Sha3Hashing.Sha3_384IncrementalAbsorption
-      15 ms: build/test/test.out Sha3Hashing.Sha3_224IncrementalAbsorption
-      20 ms: build/test/test.out Sha3XOF.SHAKE128KnownAnswerTests
-      20 ms: build/test/test.out Sha3XOF.SHAKE256KnownAnswerTests
-      21 ms: build/test/test.out Sha3Hashing.Sha3_256KnownAnswerTests
-      23 ms: build/test/test.out Sha3Hashing.Sha3_224KnownAnswerTests
-      23 ms: build/test/test.out Sha3Hashing.Sha3_384KnownAnswerTests
-      28 ms: build/test/test.out Sha3Hashing.Sha3_512KnownAnswerTests
-      99 ms: build/test/test.out Sha3XOF.TurboSHAKE256KnownAnswerTests
-     103 ms: build/test/test.out Sha3XOF.TurboSHAKE128KnownAnswerTests
-    1840 ms: build/test/test.out Sha3XOF.TurboSHAKE128IncrementalAbsorptionAndSqueezing
-    1894 ms: build/test/test.out Sha3XOF.TurboSHAKE256IncrementalAbsorptionAndSqueezing
-    2054 ms: build/test/test.out Sha3XOF.SHAKE128IncrementalAbsorptionAndSqueezing
-    2193 ms: build/test/test.out Sha3XOF.SHAKE256IncrementalAbsorptionAndSqueezing
+# With AddressSanitizer
+cmake -B build -DSHA3_BUILD_TESTS=ON -DSHA3_FETCH_DEPS=ON -DSHA3_ASAN=ON -DCMAKE_BUILD_TYPE=Release # Should be run in Debug too
+
+# With UndefinedBehaviorSanitizer
+cmake -B build -DSHA3_BUILD_TESTS=ON -DSHA3_FETCH_DEPS=ON -DSHA3_UBSAN=ON -DCMAKE_BUILD_TYPE=Release
+
+# Specify compiler
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DSHA3_BUILD_TESTS=ON -DSHA3_FETCH_DEPS=ON -DCMAKE_CXX_COMPILER=clang++
 ```
 
 ## Benchmarking
@@ -166,29 +142,80 @@ For benchmarking SHA3 hash and extendable output functions, targeting CPU system
 > When benchmarking extendable output functions ( XOFs ), fixed length output of 32/ 64 -bytes are squeezed from sponge ( s.t. all output bytes are requested in a single call to the `squeeze` function ), for input message byte array of length N s.t. N = 2^i (i.e. power of 2).
 
 ```bash
-make perf -j      # You must issue this if you built your google-benchmark library with libPFM support.
-make benchmark -j # Else you have to issue this one.
+cmake -B build -DSHA3_BUILD_BENCHMARKS=ON -DSHA3_FETCH_DEPS=ON -DCMAKE_BUILD_TYPE=Release -DSHA3_NATIVE_OPT=ON
+cmake --build build -j
+
+# Run benchmarks, with cpu-cycle count. Must be built with libPFM.
+./build/sha3_benchmarks --benchmark_min_warmup_time=.05 --benchmark_enable_random_interleaving=false --benchmark_repetitions=10 --benchmark_min_time=0.1s --benchmark_display_aggregates_only=true --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
+
+# Run benchmarks, with just time.
+./build/sha3_benchmarks --benchmark_min_warmup_time=.05 --benchmark_enable_random_interleaving=false --benchmark_repetitions=10 --benchmark_min_time=0.1s --benchmark_display_aggregates_only=true --benchmark_counters_tabular=true
 ```
 
-### On 12th Gen Intel(R) Core(TM) i7-1260P
+> [!NOTE]
+> If `libpfm` is installed on the system, it will be automatically linked to the benchmark binary, enabling hardware performance counter support.
 
-Compiled with `g++ (Ubuntu 15.2.0-4ubuntu4) 15.2.0` while running on `Linux 6.17.0-6-generic x86_64`.
+## Development
 
-We maintain benchmark results in JSON format @ [bench_result_at_commit_79994d4_on_Linux_6.17.0-6-generic_x86_64_with_g++_15](./bench_result_at_commit_79994d4_on_Linux_6.17.0-6-generic_x86_64_with_g++_15.json).
+### Static Analysis
 
-### On Apple M1 Max
+Run `clang-tidy` across all headers via the example translation units:
 
-Compiled with `Apple Clang version 16.0.0` while running kernel `Darwin 24.1.0 arm64`.
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DSHA3_BUILD_EXAMPLES=ON
+cmake --build build --target tidy
+```
 
-Maintaining benchmark results in JSON format @ [bench_result_on_Darwin_24.3.0_arm64_with_c++_16.0.0](./bench_result_on_Darwin_24.3.0_arm64_with_c++_16.0.0.json).
+### Code Formatting
+
+Run `clang-format` on all source files (requires a `.clang-format` file in the project root):
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DSHA3_BUILD_EXAMPLES=ON -DSHA3_BUILD_TESTS=ON
+cmake --build build --target format
+```
 
 ## Usage
 
-`sha3` - C++ header-only library is written such that it's very easy to get started with. All one needs to do
+`sha3` is a header-only C++20 library, designed to be easy to integrate into your CMake project.
 
-- Include proper header files (select which scheme you need by name).
-- Use proper struct(s)/ API(s)/ constant(s) (see [usage examples](./examples) or [test cases](./tests/)).
-- When compiling, let your compiler know where it can find respective header files, which is `./include` directory.
+### Integration
+
+You can install `sha3` system-wide and use `find_package`:
+
+```bash
+# Install system-wide (default prefix: /usr/local)
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
+
+# Install to custom directory (e.g., ./dist)
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./dist
+cmake --build build
+cmake --install build
+```
+
+Or using `FetchContent` in your `CMakeLists.txt`:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+  sha3
+  GIT_REPOSITORY https://github.com/itzmeanjan/sha3.git
+  GIT_TAG master
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(sha3)
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE sha3)
+```
+
+Alternatively, just point your compiler's include path to the `./include` directory.
+
+See [examples/CMakeLists.txt](./examples/CMakeLists.txt) for a standalone consumption example that uses `find_package` with `FetchContent` fallback.
+
+### API
 
 Scheme | Header | Namespace | Example
 --- | --- | --- | --:
@@ -201,53 +228,63 @@ SHAKE256 | ./include/sha3/shake256.hpp | `shake256::` | [examples/shake256.cpp](
 TurboSHAKE128 | ./include/sha3/turboshake128.hpp | `turboshake128::` | [examples/turboshake128.cpp](./examples/turboshake128.cpp)
 TurboSHAKE256 | ./include/sha3/turboshake256.hpp | `turboshake256::` | [examples/turboshake256.cpp](./examples/turboshake256.cpp)
 
-We maintain couple of examples, showing how to use SHA3 hash functions and XOF API, inside [examples](./examples/) directory. Run them all by issuing.
+### Examples
+
+We maintain a couple of examples, showing how to use SHA3 hash functions and XOF API, inside [examples](./examples/) directory. Build and run them by issuing:
 
 ```bash
-make example -j
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DSHA3_BUILD_EXAMPLES=ON
+cmake --build build -j
 ```
 
 ```bash
+$ ./build/sha3_224
 SHA3-224
 
 Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Message Digest : bfc9c1e8939aee953ca0d425a2f0cbdd2d18025d5d6b798f1c8150b9
---- --- ---
+
+$ ./build/sha3_256
 SHA3-256
 
 Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Message Digest : 050a48733bd5c2756ba95c5828cc83ee16fabcd3c086885b7744f84a0f9e0d94
---- --- ---
+
+$ ./build/sha3_384
 SHA3-384
 
 Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Message Digest : e086a2b6a69bb6fae37caa70735723e7cc8ae2183788fbb4a5f1ccacd83226852ca6faff503e12ff95423f94f872dda3
---- --- ---
+
+$ ./build/sha3_512
 SHA3-512
 
 Message        : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Message Digest : cbd3f6eeba676b21e0f2c47522292482fd830f330c1d84a794bb94728b2d93febe4c18eae5a7e017e35fa090de24262e70951ad1d7dfb3a8c96d1134fb1879f2
---- --- ---
+
+$ ./build/shake128
 SHAKE128
 
 Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Output   : 066a361dc675f856cecdc02b25218a10cec0cecf79859ec0fec3d409e5847a92ba9d4e33d16a3a44
---- --- ---
+
+$ ./build/shake256
 SHAKE256
 
 Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Output   : 69f07c8840ce80024db30939882c3d5bbc9c98b3e31e4513ebd2ca9b4503cdd3c9c90742452c7173
---- --- ---
+
+$ ./build/turboshake128
 TurboSHAKE128
 
 Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Output   : f433704a62d1b17fd5ad80e9ba281fbdf2579b84bd941ea2748c10973d7458a212c4ab868d09af4f
---- --- ---
+
+$ ./build/turboshake256
 TurboSHAKE256
 
 Message  : 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 Output   : 4d5596cae904a6171715e08defa88f81dc7676c9f63b48740bcfbb6d932b1377a1414490f39cfcf1
---- --- ---
 ```
 
 > [!NOTE]

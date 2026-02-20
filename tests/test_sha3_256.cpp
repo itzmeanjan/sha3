@@ -4,31 +4,16 @@
 #include <algorithm>
 #include <fstream>
 #include <gtest/gtest.h>
-#include <numeric>
 #include <vector>
-
-// Eval SHA3-256 hash on statically defined input message during compilation-time.
-constexpr std::array<uint8_t, sha3_256::DIGEST_LEN>
-eval_sha3_256()
-{
-  // Statically defined input.
-  std::array<uint8_t, sha3_256::DIGEST_LEN * 2> data{};
-  std::iota(data.begin(), data.end(), 0);
-
-  // Computed output message digest.
-  return sha3_256::sha3_256_t::hash(data);
-}
 
 // Ensure that SHA3-256 implementation is compile-time evaluable.
 TEST(Sha3Hashing, CompileTimeEvalSha3_256)
 {
-  // Input  =
-  // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f
-  // Output = c8ad478f4e1dd9d47dfc3b985708d92db1f8db48fe9cddd459e63c321f490402
+  constexpr auto input = sha3_test_utils::from_hex<sha3_256::DIGEST_LEN * 2>(
+    "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f");
+  constexpr auto digest = sha3_256::sha3_256_t::hash(input);
 
-  constexpr auto md = eval_sha3_256();
-  static_assert(md == std::array<uint8_t, sha3_256::DIGEST_LEN>{ 200, 173, 71,  143, 78,  29,  217, 212, 125, 252, 59, 152, 87, 8,  217, 45,
-                                                                 177, 248, 219, 72,  254, 156, 221, 212, 89,  230, 60, 50,  31, 73, 4,   2 },
+  static_assert(digest == sha3_test_utils::from_hex<sha3_256::DIGEST_LEN>("c8ad478f4e1dd9d47dfc3b985708d92db1f8db48fe9cddd459e63c321f490402"),
                 "Must be able to compute Sha3-256 hash during compile-time !");
 }
 
@@ -93,7 +78,7 @@ TEST(Sha3Hashing, Sha3_256KnownAnswerTests)
 
       auto msg = sha3_test_utils::parse_dynamic_sized_hex_string(msg2);
 
-      auto expected_md = sha3_test_utils::parse_static_sized_hex_string<sha3_256::DIGEST_LEN>(md2);
+      auto expected_md = sha3_test_utils::from_hex<sha3_256::DIGEST_LEN>(md2);
       auto computed_md = sha3_256::sha3_256_t::hash(msg);
 
       EXPECT_EQ(computed_md, expected_md);

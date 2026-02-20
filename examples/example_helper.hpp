@@ -8,12 +8,12 @@
 static inline std::string
 to_hex(std::span<const uint8_t> bytes)
 {
-  std::stringstream ss;
-  ss << std::hex;
+  std::stringstream stream;
+  stream << std::hex;
 
-  for (size_t i = 0; i < bytes.size(); i++) {
-    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
+  for (unsigned char byte : bytes) {
+    stream << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(byte);
   }
 
-  return ss.str();
+  return stream.str();
 }

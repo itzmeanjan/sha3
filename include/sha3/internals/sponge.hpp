@@ -18,7 +18,7 @@ static constexpr size_t KECCAK_WORD_BYTE_LEN = keccak::LANE_BW / std::numeric_li
 constexpr bool
 check_domain_separator(const size_t dom_sep_bit_len)
 {
-  return dom_sep_bit_len <= 6u;
+  return dom_sep_bit_len <= 6U;
 }
 
 /**
@@ -32,7 +32,7 @@ check_domain_separator(const size_t dom_sep_bit_len)
  */
 template<size_t num_bits_in_rate, size_t num_rounds>
 static forceinline constexpr void
-absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t> msg)
+absorb(std::array<uint64_t, keccak::LANE_CNT>& state, size_t& offset, std::span<const uint8_t> msg)
 {
   constexpr size_t num_bytes_in_rate = num_bits_in_rate / std::numeric_limits<uint8_t>::digits;
 
@@ -81,7 +81,7 @@ absorb(uint64_t state[keccak::LANE_CNT], size_t& offset, std::span<const uint8_t
  */
 template<uint8_t domain_separator, size_t ds_bit_len, size_t num_bits_in_rate, size_t num_rounds>
 static forceinline constexpr void
-finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
+finalize(std::array<uint64_t, keccak::LANE_CNT>& state, size_t& offset)
   requires(check_domain_separator(ds_bit_len))
 {
   constexpr size_t num_bytes_in_rate = num_bits_in_rate / std::numeric_limits<uint8_t>::digits;
@@ -91,8 +91,8 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
   const auto byte_index_in_state_word = offset % KECCAK_WORD_BYTE_LEN;
   const auto shl_bit_offset = byte_index_in_state_word * std::numeric_limits<uint8_t>::digits;
 
-  constexpr uint8_t mask = (1u << ds_bit_len) - 1u;
-  constexpr uint8_t pad_byte = (1u << ds_bit_len) | (domain_separator & mask);
+  constexpr uint8_t mask = (1U << ds_bit_len) - 1U;
+  constexpr uint8_t pad_byte = (1U << ds_bit_len) | (domain_separator & mask);
 
   state[state_word_index] ^= static_cast<uint64_t>(pad_byte) << shl_bit_offset;
   state[num_words_in_rate - 1] ^= UINT64_C(0x80) << 56;
@@ -112,7 +112,7 @@ finalize(uint64_t state[keccak::LANE_CNT], size_t& offset)
  */
 template<size_t num_bits_in_rate, size_t num_rounds>
 static forceinline constexpr void
-squeeze(uint64_t state[keccak::LANE_CNT], size_t& squeezable, std::span<uint8_t> out)
+squeeze(std::array<uint64_t, keccak::LANE_CNT>& state, size_t& squeezable, std::span<uint8_t> out)
 {
   constexpr size_t num_bytes_in_rate = num_bits_in_rate / std::numeric_limits<uint8_t>::digits;
 
