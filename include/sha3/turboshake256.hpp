@@ -107,7 +107,7 @@ public:
       const auto ratchetable_portion_byte_len = std::min(byte_len, keccak::STATE_BYTE_LEN);
 
       auto state_bytes = std::as_writable_bytes(std::span(state));
-      std::fill_n(state_bytes.begin(), ratchetable_portion_byte_len, std::byte{0});
+      std::fill_n(state_bytes.begin(), ratchetable_portion_byte_len, std::byte{ 0 });
 
       keccak::permute<NUM_KECCAK_ROUNDS>(state);
     }

@@ -34,10 +34,10 @@ static constexpr size_t MAX_NUM_ROUNDS = 12 + (2 * L);
  *
  * Note, following offsets are obtained by performing % 64 (bit width of lane) on offsets provided in above mentioned link.
  */
-static constexpr std::array<size_t, LANE_CNT> ROT{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW, 91 % LANE_BW, 36 % LANE_BW,  300 % LANE_BW,
-                                                   6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW, 3 % LANE_BW,  10 % LANE_BW, 171 % LANE_BW, 153 % LANE_BW,
-                                                   231 % LANE_BW, 105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW, 21 % LANE_BW, 136 % LANE_BW, 210 % LANE_BW,
-                                                   66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW };
+static constexpr std::array<int, LANE_CNT> ROT{ 0 % LANE_BW,   1 % LANE_BW,   190 % LANE_BW, 28 % LANE_BW, 91 % LANE_BW, 36 % LANE_BW,  300 % LANE_BW,
+                                                6 % LANE_BW,   55 % LANE_BW,  276 % LANE_BW, 3 % LANE_BW,  10 % LANE_BW, 171 % LANE_BW, 153 % LANE_BW,
+                                                231 % LANE_BW, 105 % LANE_BW, 45 % LANE_BW,  15 % LANE_BW, 21 % LANE_BW, 136 % LANE_BW, 210 % LANE_BW,
+                                                66 % LANE_BW,  253 % LANE_BW, 120 % LANE_BW, 78 % LANE_BW };
 
 /**
  * Precomputed table used for looking up source index during application of `π` step mapping function on Keccak-f[1600] state.
