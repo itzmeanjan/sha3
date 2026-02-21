@@ -4,6 +4,9 @@
 #include "sha3/turboshake128.hpp"
 #include "sha3/turboshake256.hpp"
 #include <benchmark/benchmark.h>
+#include <cstdint>
+
+namespace {
 
 /**
  * Benchmarks SHAKE128 extendable output function with variable length input and squeezed output.
@@ -14,13 +17,13 @@
 void
 bench_shake128(benchmark::State& state)
 {
-  const size_t mlen = static_cast<size_t>(state.range(0));
-  const size_t olen = static_cast<size_t>(state.range(1));
+  const auto mlen = static_cast<size_t>(state.range(0));
+  const auto olen = static_cast<size_t>(state.range(1));
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  random_data<uint8_t>(msg);
+  generate_random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     shake128::shake128_t hasher;
@@ -35,10 +38,10 @@ bench_shake128(benchmark::State& state)
   }
 
   const size_t bytes_processed = state.iterations() * (msg.size() + out.size());
-  state.SetBytesProcessed(bytes_processed);
+  state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / static_cast<double>(bytes_processed);
 #endif
 }
 
@@ -51,13 +54,13 @@ bench_shake128(benchmark::State& state)
 void
 bench_shake256(benchmark::State& state)
 {
-  const size_t mlen = static_cast<size_t>(state.range(0));
-  const size_t olen = static_cast<size_t>(state.range(1));
+  const auto mlen = static_cast<size_t>(state.range(0));
+  const auto olen = static_cast<size_t>(state.range(1));
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  random_data<uint8_t>(msg);
+  generate_random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     shake256::shake256_t hasher;
@@ -72,10 +75,10 @@ bench_shake256(benchmark::State& state)
   }
 
   const size_t bytes_processed = state.iterations() * (msg.size() + out.size());
-  state.SetBytesProcessed(bytes_processed);
+  state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / static_cast<double>(bytes_processed);
 #endif
 }
 
@@ -88,13 +91,13 @@ bench_shake256(benchmark::State& state)
 void
 bench_turboshake128(benchmark::State& state)
 {
-  const size_t mlen = static_cast<size_t>(state.range(0));
-  const size_t olen = static_cast<size_t>(state.range(1));
+  const auto mlen = static_cast<size_t>(state.range(0));
+  const auto olen = static_cast<size_t>(state.range(1));
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  random_data<uint8_t>(msg);
+  generate_random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     turboshake128::turboshake128_t hasher;
@@ -109,10 +112,10 @@ bench_turboshake128(benchmark::State& state)
   }
 
   const size_t bytes_processed = state.iterations() * (msg.size() + out.size());
-  state.SetBytesProcessed(bytes_processed);
+  state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / static_cast<double>(bytes_processed);
 #endif
 }
 
@@ -125,13 +128,13 @@ bench_turboshake128(benchmark::State& state)
 void
 bench_turboshake256(benchmark::State& state)
 {
-  const size_t mlen = static_cast<size_t>(state.range(0));
-  const size_t olen = static_cast<size_t>(state.range(1));
+  const auto mlen = static_cast<size_t>(state.range(0));
+  const auto olen = static_cast<size_t>(state.range(1));
 
   std::vector<uint8_t> msg(mlen);
   std::vector<uint8_t> out(olen);
 
-  random_data<uint8_t>(msg);
+  generate_random_data<uint8_t>(msg);
 
   for (auto _ : state) {
     turboshake256::turboshake256_t hasher;
@@ -146,11 +149,13 @@ bench_turboshake256(benchmark::State& state)
   }
 
   const size_t bytes_processed = state.iterations() * (msg.size() + out.size());
-  state.SetBytesProcessed(bytes_processed);
+  state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
-  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / bytes_processed;
+  state.counters["CYCLES/ BYTE"] = state.counters["CYCLES"] / static_cast<double>(bytes_processed);
 #endif
+}
+
 }
 
 BENCHMARK(bench_shake128)

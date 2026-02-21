@@ -10,7 +10,7 @@ const auto compute_max = [](const std::vector<double>& v) -> double { return *st
 // Generates N -many random values of type T | N >= 0
 template<typename T>
 static inline void
-random_data(std::span<T> data)
+generate_random_data(std::span<T> data)
   requires(std::is_unsigned_v<T>)
 {
   std::random_device rd;
