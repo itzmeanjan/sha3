@@ -103,22 +103,18 @@ target_compile_features(sha3 INTERFACE cxx_std_20)
 # --- Tests ---
 if(SHA3_BUILD_TESTS)
   enable_testing()
-  find_package(GTest QUIET)
-
-  if(NOT GTest_FOUND)
-    if(SHA3_FETCH_DEPS)
-      message(STATUS "GTest not found locally. Fetching...")
-      include(FetchContent)
-      FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-      )
-      set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-      FetchContent_MakeAvailable(googletest)
-    else()
-      message(FATAL_ERROR "GTest not found. Install it locally or set SHA3_FETCH_DEPS=ON")
-    endif()
+  if(SHA3_FETCH_DEPS)
+    message(STATUS "Fetching GTest...")
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+  else()
+    find_package(GTest REQUIRED)
   endif()
 
   file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "tests/*.cpp")
@@ -136,23 +132,19 @@ endif()
 
 # --- Benchmarks ---
 if(SHA3_BUILD_BENCHMARKS)
-  find_package(benchmark QUIET)
-
-  if(NOT benchmark_FOUND)
-    if(SHA3_FETCH_DEPS)
-      message(STATUS "Google Benchmark not found locally. Fetching...")
-      include(FetchContent)
-      FetchContent_Declare(
-        benchmark
-        URL https://github.com/google/benchmark/archive/refs/tags/v1.9.5.zip
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-      )
-      set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-      set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
-      FetchContent_MakeAvailable(benchmark)
-    else()
-      message(FATAL_ERROR "Google Benchmark not found. Install it locally or set SHA3_FETCH_DEPS=ON")
-    endif()
+  if(SHA3_FETCH_DEPS)
+    message(STATUS "Fetching Google Benchmark...")
+    include(FetchContent)
+    FetchContent_Declare(
+      benchmark
+      URL https://github.com/google/benchmark/archive/refs/tags/v1.9.5.zip
+      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(benchmark)
+  else()
+    find_package(benchmark REQUIRED)
   endif()
 
   file(GLOB BENCHMARK_SOURCES CONFIGURE_DEPENDS "benches/*.cpp")
