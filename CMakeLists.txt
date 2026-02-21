@@ -1,79 +1,95 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(sha3 VERSION 0.1.0 LANGUAGES CXX)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # --- Options ---
 option(SHA3_BUILD_TESTS "Build tests" OFF)
 option(SHA3_BUILD_EXAMPLES "Build examples" OFF)
 option(SHA3_BUILD_BENCHMARKS "Build benchmarks" OFF)
-option(SHA3_ENABLE_LTO "Enable Interprocedural Optimization (LTO)" ON)
-option(SHA3_NATIVE_OPT "Enable -march=native (not suitable for cross-compilation)" OFF)
-option(SHA3_ASAN "Enable AddressSanitizer" OFF)
-option(SHA3_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 option(SHA3_FETCH_DEPS "Fetch missing dependencies (GTest, Benchmark)" OFF)
 
-# --- Tools ---
-find_program(CLANG_TIDY_EXE clang-tidy)
-find_program(CLANG_FORMAT_EXE clang-format)
+# --- Top-level-only settings (skipped when consumed via FetchContent/add_subdirectory) ---
+if(PROJECT_IS_TOP_LEVEL)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(CLANG_TIDY_EXE)
-  file(GLOB_RECURSE TIDY_SOURCES "examples/*.cpp")
+  option(SHA3_ENABLE_LTO "Enable Interprocedural Optimization (LTO)" ON)
+  option(SHA3_NATIVE_OPT "Enable -march=native (not suitable for cross-compilation)" OFF)
+  option(SHA3_ASAN "Enable AddressSanitizer" OFF)
+  option(SHA3_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 
-  add_custom_target(tidy
-    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/sha3/.* ${TIDY_SOURCES}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Running clang-tidy"
-  )
-endif()
+  # --- Tools ---
+  find_program(CLANG_TIDY_EXE clang-tidy)
+  find_program(CLANG_FORMAT_EXE clang-format)
 
-if(CLANG_FORMAT_EXE)
-  file(GLOB_RECURSE FORMAT_SOURCES
-       "include/**/*.hpp"
-       "examples/*.cpp"
-       "benches/*.hpp"
-       "benches/*.cpp"
-       "tests/*.hpp"
-       "tests/*.cpp")
+  if(CLANG_TIDY_EXE)
+    file(GLOB_RECURSE TIDY_SOURCES "examples/*.cpp")
 
-  add_custom_target(format
-    COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${FORMAT_SOURCES}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Running clang-format"
-  )
-endif()
-
-# --- Standard settings ---
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# --- Compiler Warnings ---
-if(MSVC)
-  set(SHA3_WARNING_FLAGS /W4)
-  add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
-else()
-  set(SHA3_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wcast-qual -Wold-style-cast -Wundef -Werror)
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    list(APPEND SHA3_WARNING_FLAGS -Wno-pass-failed)
+    add_custom_target(tidy
+      COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/sha3/.* ${TIDY_SOURCES}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMENT "Running clang-tidy"
+    )
   endif()
-endif()
 
-# --- Sanitizers ---
-if(SHA3_ASAN)
-  add_compile_options(-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls)
-  add_link_options(-fsanitize=address)
-endif()
+  if(CLANG_FORMAT_EXE)
+    file(GLOB_RECURSE FORMAT_SOURCES
+         "include/**/*.hpp"
+         "examples/*.cpp"
+         "benches/*.hpp"
+         "benches/*.cpp"
+         "tests/*.hpp"
+         "tests/*.cpp")
 
-if(SHA3_UBSAN)
-  add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-sanitize-recover=undefined)
-  add_link_options(-fsanitize=undefined)
-endif()
+    add_custom_target(format
+      COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${FORMAT_SOURCES}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMENT "Running clang-format"
+    )
+  endif()
 
-# --- Native Optimization ---
-if(SHA3_NATIVE_OPT)
-  add_compile_options(-march=native)
-  message(STATUS "Enabled -march=native (machine-specific optimization)")
+  # --- Standard settings ---
+  set(CMAKE_CXX_STANDARD 20)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+
+  # --- Compiler Warnings ---
+  if(MSVC)
+    set(SHA3_WARNING_FLAGS /W4)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
+  else()
+    set(SHA3_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wcast-qual -Wold-style-cast -Wundef -Werror)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      list(APPEND SHA3_WARNING_FLAGS -Wno-pass-failed)
+    endif()
+  endif()
+
+  # --- Sanitizers ---
+  if(SHA3_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls)
+    add_link_options(-fsanitize=address)
+  endif()
+
+  if(SHA3_UBSAN)
+    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-sanitize-recover=undefined)
+    add_link_options(-fsanitize=undefined)
+  endif()
+
+  # --- Native Optimization ---
+  if(SHA3_NATIVE_OPT)
+    add_compile_options(-march=native)
+    message(STATUS "Enabled -march=native (machine-specific optimization)")
+  endif()
+
+  # --- LTO ---
+  if(SHA3_ENABLE_LTO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT result OUTPUT output)
+    if(result)
+      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    else()
+      message(WARNING "LTO is not supported: ${output}")
+    endif()
+  endif()
 endif()
 
 # --- Library (header-only → INTERFACE) ---
@@ -83,17 +99,6 @@ target_include_directories(sha3 INTERFACE
   $<INSTALL_INTERFACE:include>
 )
 target_compile_features(sha3 INTERFACE cxx_std_20)
-
-# --- LTO ---
-if(SHA3_ENABLE_LTO)
-  include(CheckIPOSupported)
-  check_ipo_supported(RESULT result OUTPUT output)
-  if(result)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-  else()
-    message(WARNING "LTO is not supported: ${output}")
-  endif()
-endif()
 
 # --- Tests ---
 if(SHA3_BUILD_TESTS)
