@@ -78,6 +78,6 @@ jobs:
       - name: Run Examples
         if: ${{ matrix.sanitizer == 'none' && matrix.build_type == 'Release' }}
         run: |
-          for exe in build/sha3_224 build/sha3_256 build/sha3_384 build/sha3_512 build/shake128 build/shake256 build/turboshake128 build/turboshake256; do
+          for exe in build/sha3_224_example build/sha3_256_example build/sha3_384_example build/sha3_512_example build/shake128_example build/shake256_example build/turboshake128_example build/turboshake256_example; do
             ./$exe
           done
