@@ -33,7 +33,7 @@ make -C "$XKCP_DIR" generic64/libXKCP.a \
 echo ""
 echo "=== Step 2: Build benchmark executable ==="
 cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
-cmake --build "$BUILD_DIR" -j "$(nproc)"
+cmake --build "$BUILD_DIR" -j
 
 echo ""
 echo "=== Step 3: Run benchmarks (XKCP plain64 + portable, single binary) ==="
@@ -46,11 +46,18 @@ mkdir -p "$RESULTS_DIR"
 echo ""
 echo "=== Step 4: Compare (XKCP plain64 as baseline vs. portable) ==="
 COMPARE_PY="$(find "$BUILD_DIR" -path "*tools/compare.py" -print -quit)"
+REQUIREMENTS_TXT="$(find "$BUILD_DIR" -path "*tools/requirements.txt" -print -quit)"
 
 if [ -z "$COMPARE_PY" ]; then
   echo "ERROR: compare.py not found in build directory."
   exit 1
 fi
 
-python3 "$COMPARE_PY" filters \
+VENV_DIR="$BUILD_DIR/.venv"
+if [ ! -d "$VENV_DIR" ]; then
+  python3 -m venv "$VENV_DIR"
+  "$VENV_DIR/bin/pip" install -r "$REQUIREMENTS_TXT"
+fi
+
+"$VENV_DIR/bin/python" "$COMPARE_PY" filters \
   "$RESULTS_DIR/turboshake128.json" "xkcp_turboshake128" "portable_turboshake128"
