@@ -36,7 +36,7 @@ cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
 cmake --build "$BUILD_DIR" -j
 
 echo ""
-echo "=== Step 3: Run benchmarks (XKCP plain64 + portable, single binary) ==="
+echo "=== Step 3: Run benchmarks (XKCP-plain64 + portable-sha3, single binary) ==="
 mkdir -p "$RESULTS_DIR"
 "$BUILD_DIR/benchmarks" \
   "${BENCH_FLAGS[@]}" \
@@ -44,7 +44,7 @@ mkdir -p "$RESULTS_DIR"
   --benchmark_out_format=json
 
 echo ""
-echo "=== Step 4: Compare (XKCP plain64 as baseline vs. portable) ==="
+echo "=== Step 4: Compare (XKCP plain64 as baseline vs. portable-sha3) ==="
 COMPARE_PY="$(find "$BUILD_DIR" -path "*tools/compare.py" -print -quit)"
 REQUIREMENTS_TXT="$(find "$BUILD_DIR" -path "*tools/requirements.txt" -print -quit)"
 

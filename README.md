@@ -7,7 +7,7 @@
 
 ## Overview
 
-SHA3 standard i.e. NIST FIPS 202, specifies four permutation-based hash functions and two eXtendable Output Functions (XOF), which are built on top of 24-rounds keccak-p[1600, 24] permutation. In IETF RFC 9861, two additional XOFs are defined based on 12-rounds keccak-p[1600, 12] permutation. The round reduced keccak permutation almost doubles the performance of TurboSHAKE compared to the original SHAKE XOFs.
+SHA3 standard i.e. NIST FIPS 202, specifies four permutation-based hash functions and two eXtendable Output Functions (XOF), which are built on top of 24-rounds keccak-p[1600, 24] permutation. In IETF RFC 9861, two additional XOFs are defined based on 12-rounds keccak-p[1600, 12] permutation. The round-reduced keccak permutation almost doubles the performance of TurboSHAKE compared to the original SHAKE XOFs.
 
 These hash functions and extendable output functions are commonly used in various post-quantum cryptography algorithms (i.e. those used for public key encryption, key establishment mechanism and digital signature). Some of which are already standardized (e.g. ML-KEM, ML-DSA, SLH-DSA etc.) by NIST, some are waiting to be standardized (e.g. FN-DSA) or some are still competing. We implement SHA3 specification as a **header-only fully constexpr C++ library**, so that we can use it as a modular CMake dependency in libraries, where we implement various PQC schemes. We follow NIST FIPS 202 @ <https://dx.doi.org/10.6028/NIST.FIPS.202> and RFC 9861 @ <https://datatracker.ietf.org/doc/rfc9861>.
 
@@ -24,14 +24,24 @@ SHAKE256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes digest | Given N -bytes i
 TurboSHAKE128 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[256] sponge, which has already *(incrementally)* absorbed input bytes. **It is faster than SHAKE128, because it is powered by 12-rounds keccak permutation.** | [`turboshake128::turboshake128_t`](./include/sha3/turboshake128.hpp)
 TurboSHAKE256 | N ( >=0 ) -bytes message | M ( >=0 ) -bytes output | Given N -bytes input message, this routine squeezes arbitrary ( = M ) number of output bytes from Keccak[512] sponge, which has already *(incrementally)* absorbed input bytes. **It is faster than SHAKE256, because it is powered by 12-rounds keccak permutation.** | [`turboshake256::turboshake256_t`](./include/sha3/turboshake256.hpp)
 
-XKCP is the state-of-the-art C library implementation, for all common constructions based on keccak permutation. It is available @ <https://github.com/XKCP/XKCP>. Following screen capture shows a performance comparison of generic and portable TurboSHAKE128 XOF, implemented in this library, against the baseline of XKCP's optimized TurboSHAKE128 implementation. To compare performance of TurboSHAKE128, for both short and long messages, we absorb messages of variable length, starting from 32B to 1GB, with a multiplicative jump factor of 32, while squeezing a fixed length output of 64B.
+XKCP is the state-of-the-art C library implementation, for all common constructions based on keccak permutation. It is available @ <https://github.com/XKCP/XKCP>. Following screen capture, shows a performance comparison of generic and portable TurboSHAKE128 XOF, implemented in this library, against the baseline of XKCP's `generic64` (plain 64-bit C, no platform-specific optimizations) TurboSHAKE128 implementation. To compare performance of TurboSHAKE128, for both short and long messages, we absorb messages of variable length, starting from 32B to 1GB, with a multiplicative jump factor of 32, while squeezing a fixed length output of 64B.
 
-Benchmark comparison shows a clear and consistent trend of this portable implementation taking ~(10-15)% more time compared to XKCP.
+Benchmark comparison shows a clear and consistent trend of this portable implementation taking ~(12-17)% more time compared to XKCP, for messages >= 1KB where the keccak permutation dominates.
 
 > [!IMPORTANT]
-> This performance comparison was carried out on a `12th Gen Intel(R) Core(TM) i7-1260P` machine, running `Linux 6.17.0-6-generic` kernel. The benchmark executable was compiled using `GCC-15.2.0`, with optimization options `-O3 -march=native -flto`. For XKCP, we built the library at git commit `e7a08f7baa3d43d64f5c21e641cb18fe292f2b75`. We used google-benchmark's benchmark comparison tool @ <https://github.com/google/benchmark/blob/v1.9.4/docs/tools.md> for easily comparing JSON dump.
+> This performance comparison was carried out on a `12th Gen Intel(R) Core(TM) i7-1260P` machine, running `Linux 6.17.0-6-generic` kernel. The benchmark executable was compiled using `GCC-15.2.0`, with optimization options `-O3 -march=native -flto`. For XKCP, we built the `generic64` target (plain 64-bit C implementation). We used google-benchmark's benchmark comparison tool @ <https://github.com/google/benchmark/blob/v1.9.4/docs/tools.md> for easily comparing JSON dump.
 
 ![benchcmp_with_xkcp_turboshake128_on_x86_64.png](./benchcmp_with_xkcp_turboshake128_on_x86_64.png)
+
+You can reproduce this benchmark comparison on your own machine (x86-64 or ARM64) by running the self-contained script in [`benchcmp_xkcp/`](./benchcmp_xkcp/). It clones XKCP, builds its `generic64` library, compiles both benchmarks into a single executable, runs them, and produces a comparison table.
+
+```bash
+cd benchcmp_xkcp
+bash run_benchmarks.sh
+```
+
+> [!NOTE]
+> The script requires `git`, `cmake`, `make`, `xsltproc`, `python3` (with `python3-venv`) and a C/C++ compiler with C++20 support. Python dependencies (`scipy`, `numpy`) are automatically installed in a virtual environment by the script. You should disable CPU frequency scaling during benchmarking, following [this](https://github.com/google/benchmark/blob/4931aefb51d1e5872b096a97f43e13fa0fc33c8c/docs/reducing_variance.md) guide.
 
 Ideally, one should just go ahead with XKCP. Though, one edge this portable implementation of `sha3` has over XKCP - it is fully `constexpr`. In following code snippet, we compute SHA3-256 message digest (MD) of a compile-time known string, in program compilation time itself. The MD is checked using a static assertion. This header-only lightweight library allows you to embed SHA3-256 `MD` as a constant, which is computed by the compiler. It's not hard-coded.
 
