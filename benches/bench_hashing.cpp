@@ -25,7 +25,7 @@ bench_sha3_224(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_processed = state.iterations() * (msg.size() + sha3_224::DIGEST_LEN);
+  const size_t bytes_processed = static_cast<size_t>(state.iterations()) * (msg.size() + sha3_224::DIGEST_LEN);
   state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
@@ -50,7 +50,7 @@ bench_sha3_256(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_processed = state.iterations() * (msg.size() + sha3_256::DIGEST_LEN);
+  const size_t bytes_processed = static_cast<size_t>(state.iterations()) * (msg.size() + sha3_256::DIGEST_LEN);
   state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
@@ -75,7 +75,7 @@ bench_sha3_384(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_processed = state.iterations() * (msg.size() + sha3_384::DIGEST_LEN);
+  const size_t bytes_processed = static_cast<size_t>(state.iterations()) * (msg.size() + sha3_384::DIGEST_LEN);
   state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
@@ -100,7 +100,7 @@ bench_sha3_512(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
-  const size_t bytes_processed = state.iterations() * (msg.size() + sha3_512::DIGEST_LEN);
+  const size_t bytes_processed = static_cast<size_t>(state.iterations()) * (msg.size() + sha3_512::DIGEST_LEN);
   state.SetBytesProcessed(static_cast<int64_t>(bytes_processed));
 
 #ifdef CYCLES_PER_BYTE
