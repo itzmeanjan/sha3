@@ -81,3 +81,28 @@ jobs:
           for exe in build/sha3_224_example build/sha3_256_example build/sha3_384_example build/sha3_512_example build/shake128_example build/shake256_example build/turboshake128_example build/turboshake256_example; do
             ./$exe
           done
+
+  test-avx2:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [g++, clang++]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure (AVX2)
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DSHA3_BUILD_TESTS=ON
+          -DSHA3_BUILD_BENCHMARKS=ON
+          -DSHA3_FETCH_DEPS=ON
+          -DSHA3_NATIVE_OPT=ON
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -j
